@@ -2,7 +2,6 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.sitemaps.views import sitemap
 from django.views.generic import RedirectView, TemplateView
-from django.contrib.staticfiles.storage import staticfiles_storage
 from .sitemaps import StaticSitemap, ServiceSitemap
 
 sitemaps = {
@@ -23,9 +22,7 @@ urlpatterns = [
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
 
     # Browsers request /favicon.ico directly regardless of <link> tags
-    path('favicon.ico', RedirectView.as_view(
-        url=staticfiles_storage.url('img/favicon.ico'), permanent=True,
-    )),
+    path('favicon.ico', RedirectView.as_view(url='/static/img/favicon.ico', permanent=True)),
 ]
 
 handler404 = 'accounts.views.error_404'
