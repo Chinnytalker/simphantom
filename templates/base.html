@@ -1208,20 +1208,18 @@
                 });
             }
 
-            // ========== SERVICES DROPDOWN ==========
-            const dropToggle = document.querySelector('.dropdown-toggle');
-            const dropMenu   = document.querySelector('.dropdown-menu');
-            let dropClose;
-
-            function openDrop()  { clearTimeout(dropClose); dropMenu.style.display = 'block'; }
-            function scheduleDrop() { dropClose = setTimeout(function() { dropMenu.style.display = 'none'; }, 150); }
-
-            if (dropToggle && dropMenu) {
-                dropToggle.addEventListener('mouseenter', openDrop);
-                dropToggle.addEventListener('mouseleave', scheduleDrop);
-                dropMenu.addEventListener('mouseenter', openDrop);
-                dropMenu.addEventListener('mouseleave', scheduleDrop);
-            }
+            // ========== DESKTOP DROPDOWNS (Services + Company) ==========
+            document.querySelectorAll('.dropdown-toggle').forEach(function(toggle) {
+                const menu = toggle.querySelector('.dropdown-menu');
+                if (!menu) return;
+                let closeTimer;
+                function openDrop()  { clearTimeout(closeTimer); menu.style.display = 'block'; }
+                function closeDrop() { closeTimer = setTimeout(function() { menu.style.display = 'none'; }, 150); }
+                toggle.addEventListener('mouseenter', openDrop);
+                toggle.addEventListener('mouseleave', closeDrop);
+                menu.addEventListener('mouseenter', openDrop);
+                menu.addEventListener('mouseleave', closeDrop);
+            });
 
             // ========== USER MENU DROPDOWN ==========
             const userMenuBtn  = document.getElementById('user-menu-btn');

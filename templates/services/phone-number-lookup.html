@@ -81,7 +81,7 @@
                     Buy Pack
                 </button>
                 {% else %}
-                <a href="/login-page/?next=/services/phone-number-lookup/"
+                <a href="/login/?next=/services/phone-number-lookup/"
                    class="mt-auto block text-center w-full bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-semibold py-2.5 rounded-xl transition">
                     Sign In to Buy
                 </a>
@@ -94,12 +94,30 @@
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
             <h3 class="text-white font-bold text-lg mb-5">What Each Lookup Returns</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {% for item in "Country & calling code,Carrier / network name,Line type (mobile / landline / VoIP),E.164 formatted number,National display format,Number validity check" %}
                 <div class="flex items-start gap-2.5">
                     <svg class="w-4 h-4 text-rose-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                    <span class="text-zinc-300 text-sm">{{ item }}</span>
+                    <span class="text-zinc-300 text-sm">Country &amp; calling code</span>
                 </div>
-                {% endfor %}
+                <div class="flex items-start gap-2.5">
+                    <svg class="w-4 h-4 text-rose-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    <span class="text-zinc-300 text-sm">Carrier / network name</span>
+                </div>
+                <div class="flex items-start gap-2.5">
+                    <svg class="w-4 h-4 text-rose-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    <span class="text-zinc-300 text-sm">Line type (mobile / landline / VoIP)</span>
+                </div>
+                <div class="flex items-start gap-2.5">
+                    <svg class="w-4 h-4 text-rose-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    <span class="text-zinc-300 text-sm">E.164 formatted number</span>
+                </div>
+                <div class="flex items-start gap-2.5">
+                    <svg class="w-4 h-4 text-rose-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    <span class="text-zinc-300 text-sm">National display format</span>
+                </div>
+                <div class="flex items-start gap-2.5">
+                    <svg class="w-4 h-4 text-rose-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    <span class="text-zinc-300 text-sm">Number validity check</span>
+                </div>
             </div>
         </div>
     </div>

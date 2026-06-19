@@ -85,7 +85,7 @@
                     Buy Credits
                 </button>
                 {% else %}
-                <a href="/login-page/?next=/services/bulk-sms/"
+                <a href="/login/?next=/services/bulk-sms/"
                    class="mt-auto block text-center w-full bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-semibold py-2.5 rounded-xl transition">
                     Sign In to Buy
                 </a>
@@ -118,12 +118,30 @@
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
             <h3 class="text-white font-bold mb-4">Features</h3>
             <ul class="space-y-3">
-                {% for feat in "Instant delivery worldwide,Reliable global carrier network,160-char standard SMS,Paste or type recipients,Per-send credit tracking,No expiry on credits" %}
                 <li class="flex items-start gap-2.5 text-sm">
                     <svg class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                    <span class="text-zinc-300">{{ feat }}</span>
+                    <span class="text-zinc-300">Instant delivery worldwide</span>
                 </li>
-                {% endfor %}
+                <li class="flex items-start gap-2.5 text-sm">
+                    <svg class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    <span class="text-zinc-300">Reliable global carrier network</span>
+                </li>
+                <li class="flex items-start gap-2.5 text-sm">
+                    <svg class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    <span class="text-zinc-300">160-char standard SMS</span>
+                </li>
+                <li class="flex items-start gap-2.5 text-sm">
+                    <svg class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    <span class="text-zinc-300">Paste or type recipients</span>
+                </li>
+                <li class="flex items-start gap-2.5 text-sm">
+                    <svg class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    <span class="text-zinc-300">Per-send credit tracking</span>
+                </li>
+                <li class="flex items-start gap-2.5 text-sm">
+                    <svg class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    <span class="text-zinc-300">No expiry on credits</span>
+                </li>
             </ul>
         </div>
 
