@@ -1,0 +1,176 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin SimPhantom{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
+    <style>
+        .sidebar-link {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.625rem 1.25rem; border-radius: 0.75rem;
+            margin: 0.125rem 0.75rem; font-size: 0.875rem; font-weight: 500;
+            color: #a1a1aa; transition: all 0.15s;
+        }
+        .sidebar-link:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .sidebar-link.active { background: rgba(59,130,246,0.2); color: #60a5fa; }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-zinc-950 text-gray-900 dark:text-zinc-100">
+
+<!-- ── Sidebar ── -->
+<aside id="sidebar"
+       class="fixed left-0 top-0 h-screen w-64 bg-zinc-950 flex flex-col z-40
+              transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+
+    <div class="px-5 py-5 border-b border-zinc-800 flex-shrink-0">
+        <a href="/" class="block mb-1">
+            <img src="{% static 'img/logo-white.svg' %}" alt="SimPhantom" class="h-7 w-auto">
+        </a>
+        <p class="text-zinc-600 text-xs font-medium">Admin Panel</p>
+    </div>
+
+    <nav class="flex-1 py-3 overflow-y-auto">
+        <p class="text-zinc-600 text-xs font-bold uppercase tracking-widest px-5 py-2">Overview</p>
+        <a href="/manage/"
+           class="sidebar-link {% if request.path == '/manage/' %}active{% endif %}">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10-3a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z"/>
+            </svg>
+            Dashboard
+        </a>
+
+        <p class="text-zinc-600 text-xs font-bold uppercase tracking-widest px-5 py-2 mt-3">Management</p>
+        {% if user.is_staff or user.is_superuser %}
+        <a href="/manage/agents/"
+           class="sidebar-link {% if '/manage/agents' in request.path %}active{% endif %}">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+            Team / Agents
+        </a>
+        {% endif %}
+        <a href="/manage/users/"
+           class="sidebar-link {% if '/manage/users' in request.path %}active{% endif %}">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            Users
+        </a>
+        <a href="/manage/orders/"
+           class="sidebar-link {% if '/manage/orders' in request.path %}active{% endif %}">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            Orders
+        </a>
+        <a href="/manage/transactions/"
+           class="sidebar-link {% if '/manage/transactions' in request.path %}active{% endif %}">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+            </svg>
+            Transactions
+        </a>
+        <a href="/manage/tickets/"
+           class="sidebar-link {% if '/manage/tickets' in request.path %}active{% endif %}">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+            </svg>
+            Support Tickets
+            {% if staff_unread_count %}
+                <span class="ml-auto bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">{{ staff_unread_count }}</span>
+            {% endif %}
+        </a>
+    </nav>
+
+    <div class="p-4 border-t border-zinc-800 flex-shrink-0">
+        <div class="flex items-center gap-2.5 mb-3">
+            <div class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs">
+                {{ user.username|first|upper }}
+            </div>
+            <div>
+                <p class="text-white text-xs font-semibold truncate">{{ user.username }}</p>
+                <p class="text-zinc-600 text-xs">{% if user.is_staff or user.is_superuser %}Administrator{% else %}Support Agent{% endif %}</p>
+            </div>
+        </div>
+        <a href="/" class="flex items-center gap-2 text-zinc-500 hover:text-white text-xs transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Back to Site
+        </a>
+    </div>
+</aside>
+
+<!-- Sidebar overlay (mobile) -->
+<div id="sidebar-overlay"
+     class="fixed inset-0 bg-black/60 z-30 hidden lg:hidden"
+     onclick="document.getElementById('sidebar').classList.add('-translate-x-full');this.classList.add('hidden')">
+</div>
+
+<!-- ── Main area ── -->
+<div class="lg:ml-64 min-h-screen flex flex-col">
+
+    <!-- Top bar -->
+    <header class="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800
+                   px-4 lg:px-6 py-3.5 flex items-center gap-4 sticky top-0 z-20">
+        <button onclick="document.getElementById('sidebar').classList.toggle('-translate-x-full');document.getElementById('sidebar-overlay').classList.toggle('hidden')"
+                class="lg:hidden text-gray-500 hover:text-gray-700 dark:hover:text-white">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+        <h1 class="font-bold text-gray-900 dark:text-white text-sm lg:text-base">
+            {% block page_title %}Dashboard{% endblock %}
+        </h1>
+        <div class="ml-auto flex items-center gap-3">
+            <!-- Dark mode toggle -->
+            <button id="dm-toggle"
+                    class="bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-white p-2 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
+                <svg class="w-4 h-4 dark:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                </svg>
+                <svg class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M14 12a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+            </button>
+            <form action="/logout/" method="post">
+                {% csrf_token %}
+                <button type="submit"
+                        class="text-xs bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400
+                               px-3 py-1.5 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/40 transition font-semibold">
+                    Logout
+                </button>
+            </form>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <main class="flex-1 p-4 lg:p-8">
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+<script>
+(function() {
+    var stored = localStorage.getItem('SimPhantom_theme');
+    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (stored === 'dark' || (!stored && prefersDark)) {
+        document.documentElement.classList.add('dark');
+    }
+})();
+document.addEventListener('DOMContentLoaded', function() {
+    var btn = document.getElementById('dm-toggle');
+    if (btn) {
+        btn.addEventListener('click', function() {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('SimPhantom_theme',
+                document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+        });
+    }
+});
+</script>
+</body>
+</html>

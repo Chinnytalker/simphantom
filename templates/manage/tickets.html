@@ -1,0 +1,155 @@
+﻿{% extends 'manage/base.html' %}
+{% block title %}Support Tickets SimPhantom Admin{% endblock %}
+{% block page_title %}Support Tickets{% endblock %}
+
+{% block content %}
+
+<!-- Filters row -->
+<div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+    <!-- Status tabs -->
+    <div class="flex flex-wrap gap-2">
+        <a href="/manage/tickets/"
+           class="text-xs px-3.5 py-1.5 rounded-full font-semibold transition
+                  {% if not status_filter %}bg-gray-900 dark:bg-white text-white dark:text-gray-900{% else %}bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700{% endif %}">
+            All ({{ counts.ALL }})
+        </a>
+        <a href="/manage/tickets/?status=OPEN"
+           class="text-xs px-3.5 py-1.5 rounded-full font-semibold transition
+                  {% if status_filter == 'OPEN' %}bg-blue-600 text-white{% else %}bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 hover:bg-blue-200{% endif %}">
+            Open ({{ counts.OPEN }})
+        </a>
+        <a href="/manage/tickets/?status=IN_PROGRESS"
+           class="text-xs px-3.5 py-1.5 rounded-full font-semibold transition
+                  {% if status_filter == 'IN_PROGRESS' %}bg-orange-500 text-white{% else %}bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-300 hover:bg-orange-200{% endif %}">
+            In Progress ({{ counts.IN_PROGRESS }})
+        </a>
+        <a href="/manage/tickets/?status=RESOLVED"
+           class="text-xs px-3.5 py-1.5 rounded-full font-semibold transition
+                  {% if status_filter == 'RESOLVED' %}bg-green-600 text-white{% else %}bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 hover:bg-green-200{% endif %}">
+            Resolved ({{ counts.RESOLVED }})
+        </a>
+        <a href="/manage/tickets/?status=CLOSED"
+           class="text-xs px-3.5 py-1.5 rounded-full font-semibold transition
+                  {% if status_filter == 'CLOSED' %}bg-gray-600 text-white{% else %}bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200{% endif %}">
+            Closed ({{ counts.CLOSED }})
+        </a>
+    </div>
+
+    <!-- Search -->
+    <form method="get" class="flex gap-2 sm:ml-auto">
+        {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}"/>{% endif %}
+        <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                 fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" name="q" value="{{ query }}" placeholder="Search tickets..."
+                   class="pl-9 pr-4 py-2 border border-gray-200 dark:border-zinc-700 rounded-xl
+                          bg-white dark:bg-zinc-800 text-gray-900 dark:text-white text-sm
+                          focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"/>
+        </div>
+        <button type="submit" class="bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-blue-700 transition">Go</button>
+    </form>
+</div>
+
+<!-- Table -->
+<div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden">
+    {% if page_obj %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide border-b border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/50">
+                <tr>
+                    <th class="px-5 py-3.5 text-left font-medium">#</th>
+                    <th class="px-5 py-3.5 text-left font-medium">User</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Subject</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Category</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Priority</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Status</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Last Update</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50 dark:divide-zinc-800">
+                {% for ticket in page_obj %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition">
+                    <td class="px-5 py-3.5 text-gray-400 dark:text-gray-500 text-xs">
+                        #{{ ticket.pk }}
+                        {% if ticket.staff_unread %}
+                            <span class="ml-1 w-1.5 h-1.5 rounded-full bg-blue-500 inline-block"></span>
+                        {% endif %}
+                    </td>
+                    <td class="px-5 py-3.5">
+                        <a href="/manage/users/{{ ticket.user.pk }}/"
+                           class="font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400">
+                            {{ ticket.user.username }}
+                        </a>
+                    </td>
+                    <td class="px-5 py-3.5">
+                        <a href="/manage/tickets/{{ ticket.pk }}/"
+                           class="text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 font-medium
+                                  {% if ticket.staff_unread %}font-bold{% endif %}">
+                            {{ ticket.subject|truncatechars:45 }}
+                        </a>
+                    </td>
+                    <td class="px-5 py-3.5 text-gray-500 dark:text-gray-400 text-xs">{{ ticket.get_category_display }}</td>
+                    <td class="px-5 py-3.5">
+                        <span class="text-xs px-2 py-0.5 rounded-full font-semibold
+                            {% if ticket.priority == 'HIGH' %}bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300
+                            {% elif ticket.priority == 'MEDIUM' %}bg-yellow-100 dark:bg-yellow-900/40 text-yellow-600 dark:text-yellow-300
+                            {% else %}bg-gray-100 dark:bg-zinc-800 text-gray-500{% endif %}">
+                            {{ ticket.get_priority_display }}
+                        </span>
+                    </td>
+                    <td class="px-5 py-3.5">
+                        <span class="text-xs px-2.5 py-1 rounded-full font-semibold
+                            {% if ticket.status == 'OPEN' %}bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300
+                            {% elif ticket.status == 'IN_PROGRESS' %}bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-300
+                            {% elif ticket.status == 'RESOLVED' %}bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300
+                            {% else %}bg-gray-100 dark:bg-zinc-800 text-gray-500{% endif %}">
+                            {{ ticket.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="px-5 py-3.5 text-gray-400 dark:text-gray-500 text-xs whitespace-nowrap">{{ ticket.updated_at|timesince }} ago</td>
+                    <td class="px-5 py-3.5">
+                        <a href="/manage/tickets/{{ ticket.pk }}/"
+                           class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold">
+                            Open →
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <div class="flex items-center justify-between px-5 py-3.5 border-t border-gray-100 dark:border-zinc-800">
+        <p class="text-xs text-gray-400 dark:text-gray-500">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            ({{ page_obj.paginator.count }} tickets)
+        </p>
+        <div class="flex gap-2">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if query %}&q={{ query }}{% endif %}"
+               class="text-xs px-3 py-1.5 border border-gray-200 dark:border-zinc-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition">← Prev</a>
+            {% endif %}
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if query %}&q={{ query }}{% endif %}"
+               class="text-xs px-3 py-1.5 border border-gray-200 dark:border-zinc-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition">Next →</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="py-16 text-center">
+        <div class="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mx-auto mb-3">
+            <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+        </div>
+        <p class="text-gray-500 dark:text-gray-400 font-semibold">No tickets found</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

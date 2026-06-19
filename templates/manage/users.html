@@ -1,0 +1,132 @@
+﻿{% extends 'manage/base.html' %}
+{% block title %}Users — SimPhantom Admin{% endblock %}
+{% block page_title %}User Management{% endblock %}
+
+{% block content %}
+
+<!-- Search -->
+<div class="mb-6">
+    <form method="get" class="flex gap-3">
+        <div class="relative flex-1 max-w-md">
+            <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                 fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" name="q" value="{{ query }}" placeholder="Search by username or email..."
+                   class="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-zinc-700 rounded-xl
+                          bg-white dark:bg-zinc-800 text-gray-900 dark:text-white text-sm
+                          focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+        </div>
+        <button type="submit"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl transition text-sm">
+            Search
+        </button>
+        {% if query %}
+        <a href="/manage/users/"
+           class="border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-400
+                  px-4 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition text-sm">
+            Clear
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Table -->
+<div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden">
+    {% if page_obj %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide border-b border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/50">
+                <tr>
+                    <th class="px-5 py-3.5 text-left font-medium">User</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Email</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Wallet</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Orders</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Joined</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Status</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50 dark:divide-zinc-800">
+                {% for u in page_obj %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition">
+                    <td class="px-5 py-3.5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600
+                                        flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                                {{ u.username|first|upper }}
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900 dark:text-white">{{ u.username }}</p>
+                                {% if u.is_staff or u.is_superuser %}
+                                    <span class="text-xs text-purple-600 dark:text-purple-400 font-medium">Admin</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-5 py-3.5 text-gray-500 dark:text-gray-400 text-xs">{{ u.email }}</td>
+                    <td class="px-5 py-3.5 font-semibold text-gray-900 dark:text-white">₦{{ u.wallet_balance|floatformat:0 }}</td>
+                    <td class="px-5 py-3.5 text-gray-600 dark:text-gray-400">{{ u.order_count }}</td>
+                    <td class="px-5 py-3.5 text-gray-400 dark:text-gray-500 text-xs whitespace-nowrap">{{ u.date_joined|date:"d M Y" }}</td>
+                    <td class="px-5 py-3.5">
+                        {% if u.is_active %}
+                            <span class="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-semibold bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>Active
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-semibold bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300">
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span>Suspended
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-5 py-3.5">
+                        <a href="/manage/users/{{ u.pk }}/"
+                           class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold">
+                            View →
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex items-center justify-between px-5 py-3.5 border-t border-gray-100 dark:border-zinc-800">
+        <p class="text-xs text-gray-400 dark:text-gray-500">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            ({{ page_obj.paginator.count }} users)
+        </p>
+        <div class="flex gap-2">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}"
+               class="text-xs px-3 py-1.5 border border-gray-200 dark:border-zinc-700 rounded-lg
+                      hover:bg-gray-50 dark:hover:bg-zinc-800 transition">
+                ← Prev
+            </a>
+            {% endif %}
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}"
+               class="text-xs px-3 py-1.5 border border-gray-200 dark:border-zinc-700 rounded-lg
+                      hover:bg-gray-50 dark:hover:bg-zinc-800 transition">
+                Next →
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="py-16 text-center">
+        <div class="w-12 h-12 rounded-full bg-gray-50 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-3">
+            <svg class="w-6 h-6 text-gray-300 dark:text-zinc-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+        </div>
+        <p class="text-gray-500 dark:text-gray-400 font-semibold mb-1">No users found</p>
+        {% if query %}<p class="text-gray-400 dark:text-gray-500 text-sm">Try a different search term.</p>{% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

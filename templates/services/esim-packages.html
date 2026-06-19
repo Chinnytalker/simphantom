@@ -1,0 +1,675 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}eSIM Packages - SimPhantom{% endblock %}
+
+{% block content %}
+    <!-- Breadcrumb -->
+    <div class="mb-6 text-sm">
+        <a href="/" class="text-blue-600 dark:text-blue-400 hover:underline">Home</a>
+        <span class="text-gray-600 dark:text-gray-400"> / </span>
+        <a href="/services/" class="text-blue-600 dark:text-blue-400 hover:underline">Services</a>
+        <span class="text-gray-600 dark:text-gray-400"> / eSIM Packages</span>
+    </div>
+
+    <!-- Service Header -->
+    <div class="bg-zinc-950 rounded-2xl shadow-sm p-8 mb-8 text-white">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-violet-600 flex items-center justify-center flex-shrink-0">
+                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-3xl font-extrabold">eSIM Packages</h1>
+                <p class="text-zinc-400 mt-1 text-sm">Digital SIM cards, instant activation, global coverage</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-2 mb-6 border-b border-gray-200 dark:border-zinc-800">
+        <button id="tab-browse" onclick="switchTab('browse')"
+            class="tab-btn px-5 py-2.5 text-sm font-semibold border-b-2 border-violet-600 text-violet-600 dark:text-violet-400 -mb-px transition">
+            Browse Plans
+        </button>
+        {% if user.is_authenticated %}
+        <button id="tab-myesims" onclick="switchTab('myesims')"
+            class="tab-btn px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 -mb-px transition hover:text-gray-700 dark:hover:text-gray-300">
+            My eSIMs
+        </button>
+        {% endif %}
+    </div>
+
+    <!-- Browse Plans Tab -->
+    <div id="panel-browse">
+
+        <!-- Mobile Country Picker (visible only below lg) -->
+        <div class="lg:hidden mb-4">
+            <div class="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 overflow-hidden">
+                <button onclick="toggleMobCountryPanel()" class="w-full flex items-center justify-between px-4 py-3.5 text-left">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-4 h-4 text-violet-600 dark:text-violet-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p id="mob-country-title" class="text-sm font-semibold text-gray-900 dark:text-white">Select a Country</p>
+                            <p id="mob-country-sub" class="text-xs text-gray-500 dark:text-zinc-400">100+ countries available</p>
+                        </div>
+                    </div>
+                    <svg id="mob-country-arrow" class="w-4 h-4 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div id="mob-country-panel" class="hidden border-t border-gray-200 dark:border-zinc-800 px-4 pb-4 pt-3">
+                    <input id="mob-country-search" type="text" placeholder="Search countries..."
+                        class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500 mb-2">
+                    <div id="mob-countries-list" class="space-y-0.5 max-h-64 overflow-y-auto">
+                        <div class="text-center py-4 text-gray-400 dark:text-zinc-500 text-sm">
+                            <svg class="w-4 h-4 animate-spin mx-auto mb-1" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                            Loading...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left: Country Browser (desktop only) -->
+            <div class="hidden lg:block lg:col-span-1">
+                <div class="bg-white dark:bg-zinc-900 rounded-lg shadow border border-gray-200 dark:border-zinc-800 p-5 sticky top-4">
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-3">Select Country</h2>
+                    <input id="country-search" type="text" placeholder="Search countries..."
+                        class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500 mb-3">
+
+                    <div id="countries-list" class="space-y-1 max-h-[420px] overflow-y-auto pr-1">
+                        <div class="text-center py-6 text-gray-400 dark:text-zinc-500 text-sm">
+                            <svg class="w-5 h-5 animate-spin mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                            Loading countries...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Packages -->
+            <div id="packages-area" class="lg:col-span-2">
+                <!-- Empty state -->
+                <div id="packages-empty" class="bg-white dark:bg-zinc-900 rounded-lg shadow border border-gray-200 dark:border-zinc-800 p-12 text-center">
+                    <svg class="w-12 h-12 text-gray-300 dark:text-zinc-600 mx-auto mb-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                    <p class="text-gray-500 dark:text-zinc-400 font-medium">Select a country to see available plans</p>
+                    <p class="text-gray-400 dark:text-zinc-500 text-sm mt-1">Coverage in 100+ countries worldwide</p>
+                </div>
+
+                <!-- Packages loading -->
+                <div id="packages-loading" class="hidden bg-white dark:bg-zinc-900 rounded-lg shadow border border-gray-200 dark:border-zinc-800 p-12 text-center">
+                    <svg class="w-6 h-6 animate-spin mx-auto mb-3 text-violet-500" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    <p class="text-gray-500 dark:text-zinc-400 text-sm">Fetching available plans...</p>
+                </div>
+
+                <!-- Packages grid -->
+                <div id="packages-panel" class="hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 id="packages-heading" class="text-xl font-bold text-gray-900 dark:text-white"></h2>
+                        <div class="flex gap-2">
+                            <button onclick="filterPackages('DATA-ONLY')" id="filter-data"
+                                class="filter-btn text-xs px-3 py-1.5 rounded-full bg-violet-600 text-white font-medium">Data Only</button>
+                            <button onclick="filterPackages('DATA-VOICE-SMS')" id="filter-voice"
+                                class="filter-btn text-xs px-3 py-1.5 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-zinc-700 transition">Data + Voice + SMS</button>
+                        </div>
+                    </div>
+                    <div id="packages-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+                    <p id="packages-none" class="hidden text-center text-gray-400 dark:text-zinc-500 py-8 text-sm">No packages available for this filter.</p>
+                </div>
+            </div>
+        </div><!-- end grid -->
+    </div><!-- end panel-browse -->
+
+    <!-- My eSIMs Tab -->
+    {% if user.is_authenticated %}
+    <div id="panel-myesims" class="hidden">
+        <div id="myesims-loading" class="text-center py-12 text-gray-400 dark:text-zinc-500 text-sm">
+            <svg class="w-5 h-5 animate-spin mx-auto mb-2 text-violet-500" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            Loading your eSIMs...
+        </div>
+        <div id="myesims-empty" class="hidden text-center py-12">
+            <svg class="w-12 h-12 text-gray-300 dark:text-zinc-600 mx-auto mb-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+            <p class="text-gray-500 dark:text-zinc-400 font-medium">No eSIM purchases yet</p>
+            <button onclick="switchTab('browse')" class="mt-3 text-violet-600 dark:text-violet-400 text-sm hover:underline">Browse plans →</button>
+        </div>
+        <div id="myesims-grid" class="hidden grid grid-cols-1 md:grid-cols-2 gap-5"></div>
+    </div>
+    {% endif %}
+
+    <!-- Purchase Modal -->
+    <div id="purchase-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closePurchaseModal()"></div>
+        <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-md p-6 z-10">
+            <button onclick="closePurchaseModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1">Confirm Purchase</h3>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mb-5">Your eSIM will be delivered instantly</p>
+
+            <div class="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 mb-5 space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-500 dark:text-gray-400">Package</span>
+                    <span id="modal-pkg-name" class="font-semibold text-gray-900 dark:text-white text-right max-w-[220px]"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500 dark:text-gray-400">Data</span>
+                    <span id="modal-pkg-data" class="font-semibold text-gray-900 dark:text-white"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500 dark:text-gray-400">Validity</span>
+                    <span id="modal-pkg-validity" class="font-semibold text-gray-900 dark:text-white"></span>
+                </div>
+                <div class="flex justify-between border-t border-gray-200 dark:border-zinc-700 pt-2 mt-2">
+                    <span class="text-gray-700 dark:text-gray-300 font-medium">Total</span>
+                    <span id="modal-pkg-price" class="text-violet-600 dark:text-violet-400 font-bold text-base"></span>
+                </div>
+            </div>
+
+            <div id="modal-error" class="hidden bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm rounded-lg px-4 py-3 mb-4"></div>
+
+            <button id="modal-confirm-btn" onclick="confirmPurchase()"
+                class="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 rounded-xl transition">
+                Confirm &amp; Pay
+            </button>
+        </div>
+    </div>
+
+    <!-- eSIM Detail Modal -->
+    <div id="esim-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeEsimModal()"></div>
+        <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-md p-6 z-10">
+            <button onclick="closeEsimModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1">Your eSIM</h3>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mb-5">Scan the QR code or use the activation link</p>
+
+            <div id="esim-modal-content"></div>
+        </div>
+    </div>
+
+<script>
+const API_BASE = '/api/services/';
+let selectedCountryId = null;
+let selectedCountryName = '';
+let currentPackageType = 'DATA-ONLY';
+let purchaseTarget = null;
+let allCountries = [];
+
+function getCsrf() {
+    const m = document.cookie.match(/csrftoken=([^;]+)/);
+    return m ? m[1] : '';
+}
+
+function switchTab(tab) {
+    document.getElementById('panel-browse').classList.toggle('hidden', tab !== 'browse');
+    {% if user.is_authenticated %}
+    document.getElementById('panel-myesims').classList.toggle('hidden', tab !== 'myesims');
+    {% endif %}
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        const isActive = btn.id === `tab-${tab}`;
+        btn.classList.toggle('border-violet-600', isActive);
+        btn.classList.toggle('text-violet-600', isActive);
+        btn.classList.toggle('dark:text-violet-400', isActive);
+        btn.classList.toggle('border-transparent', !isActive);
+        btn.classList.toggle('text-gray-500', !isActive);
+        btn.classList.toggle('dark:text-gray-400', !isActive);
+    });
+    if (tab === 'myesims') loadMyEsims();
+}
+
+// ── Countries ─────────────────────────────────────────────────────────────────
+
+async function loadCountries() {
+    try {
+        const res = await fetch(`${API_BASE}esim/countries/`);
+        allCountries = await res.json();
+        renderCountries(allCountries);
+    } catch (e) {
+        document.getElementById('countries-list').innerHTML =
+            '<p class="text-red-500 text-sm text-center py-4">Failed to load countries.</p>';
+    }
+}
+
+function countryBtnHTML(c) {
+    return `<button onclick="selectCountry(${c.id}, '${c.name.replace(/'/g, "\\'")}')"
+        id="country-${c.id}"
+        class="country-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-700 dark:hover:text-violet-300 transition">
+        <img src="https://flagcdn.com/w40/${getFlagCode(c.name)}.png" class="w-6 h-4 object-cover rounded-sm flex-shrink-0" onerror="this.style.display='none'">
+        <span>${c.name}</span>
+    </button>`;
+}
+
+function renderCountries(countries) {
+    const empty = '<p class="text-gray-400 text-sm text-center py-4">No countries found.</p>';
+    const html = countries.length ? countries.map(countryBtnHTML).join('') : empty;
+    const desktop = document.getElementById('countries-list');
+    const mobile = document.getElementById('mob-countries-list');
+    if (desktop) desktop.innerHTML = html;
+    if (mobile) mobile.innerHTML = html;
+}
+
+function toggleMobCountryPanel() {
+    const panel = document.getElementById('mob-country-panel');
+    const arrow = document.getElementById('mob-country-arrow');
+    const hidden = panel.classList.toggle('hidden');
+    arrow.style.transform = hidden ? '' : 'rotate(180deg)';
+}
+
+document.getElementById('mob-country-search').addEventListener('input', function () {
+    const q = this.value.toLowerCase();
+    const filtered = allCountries.filter(c => c.name.toLowerCase().includes(q));
+    const el = document.getElementById('mob-countries-list');
+    el.innerHTML = filtered.length
+        ? filtered.map(countryBtnHTML).join('')
+        : '<p class="text-gray-400 text-sm text-center py-4">No countries found.</p>';
+});
+
+function getFlagCode(countryName) {
+    // Map common country names to ISO codes for flag CDN
+    const map = {
+        'United States': 'us', 'United Kingdom': 'gb', 'Germany': 'de', 'France': 'fr',
+        'Italy': 'it', 'Spain': 'es', 'Netherlands': 'nl', 'Belgium': 'be', 'Sweden': 'se',
+        'Norway': 'no', 'Denmark': 'dk', 'Finland': 'fi', 'Switzerland': 'ch', 'Austria': 'at',
+        'Portugal': 'pt', 'Poland': 'pl', 'Czech Republic': 'cz', 'Hungary': 'hu', 'Romania': 'ro',
+        'Greece': 'gr', 'Turkey': 'tr', 'Israel': 'il', 'Japan': 'jp', 'South Korea': 'kr',
+        'China': 'cn', 'Hong Kong': 'hk', 'Taiwan': 'tw', 'Singapore': 'sg', 'Malaysia': 'my',
+        'Thailand': 'th', 'Vietnam': 'vn', 'Philippines': 'ph', 'Indonesia': 'id', 'India': 'in',
+        'Australia': 'au', 'New Zealand': 'nz', 'Canada': 'ca', 'Mexico': 'mx', 'Brazil': 'br',
+        'Argentina': 'ar', 'Colombia': 'co', 'Chile': 'cl', 'Peru': 'pe', 'Nigeria': 'ng',
+        'Ghana': 'gh', 'Kenya': 'ke', 'South Africa': 'za', 'Egypt': 'eg', 'Morocco': 'ma',
+        'Tunisia': 'tn', 'United Arab Emirates': 'ae', 'Saudi Arabia': 'sa', 'Qatar': 'qa',
+        'Kuwait': 'kw', 'Jordan': 'jo', 'Lebanon': 'lb', 'Pakistan': 'pk', 'Bangladesh': 'bd',
+        'Sri Lanka': 'lk', 'Nepal': 'np', 'Cambodia': 'kh', 'Myanmar': 'mm', 'Honduras': 'hn',
+        'Guatemala': 'gt', 'Costa Rica': 'cr', 'Panama': 'pa', 'Ecuador': 'ec', 'Bolivia': 'bo',
+        'Paraguay': 'py', 'Uruguay': 'uy', 'Venezuela': 've', 'Russia': 'ru', 'Ukraine': 'ua',
+        'Bulgaria': 'bg', 'Croatia': 'hr', 'Serbia': 'rs', 'Slovakia': 'sk', 'Slovenia': 'si',
+        'Estonia': 'ee', 'Latvia': 'lv', 'Lithuania': 'lt', 'Iceland': 'is', 'Ireland': 'ie',
+        'Luxembourg': 'lu', 'Malta': 'mt', 'Cyprus': 'cy', 'Albania': 'al', 'Moldova': 'md',
+        'Georgia': 'ge', 'Armenia': 'am', 'Azerbaijan': 'az', 'Kazakhstan': 'kz',
+        'Uzbekistan': 'uz', 'Mongolia': 'mn', 'Laos': 'la', 'Brunei': 'bn', 'Maldives': 'mv',
+        'Ethiopia': 'et', 'Tanzania': 'tz', 'Uganda': 'ug', 'Rwanda': 'rw', 'Cameroon': 'cm',
+        'Ivory Coast': 'ci', 'Senegal': 'sn', 'Burkina Faso': 'bf', 'Zambia': 'zm',
+        'Zimbabwe': 'zw', 'Madagascar': 'mg', 'Mozambique': 'mz', 'Namibia': 'na',
+        'Botswana': 'bw', 'Algeria': 'dz', 'Libya': 'ly', 'Sudan': 'sd',
+    };
+    return map[countryName] || countryName.substring(0, 2).toLowerCase();
+}
+
+const desktopSearch = document.getElementById('country-search');
+if (desktopSearch) {
+    desktopSearch.addEventListener('input', function () {
+        const q = this.value.toLowerCase();
+        const filtered = allCountries.filter(c => c.name.toLowerCase().includes(q));
+        const el = document.getElementById('countries-list');
+        el.innerHTML = filtered.length
+            ? filtered.map(countryBtnHTML).join('')
+            : '<p class="text-gray-400 text-sm text-center py-4">No countries found.</p>';
+    });
+}
+
+// ── Packages ──────────────────────────────────────────────────────────────────
+
+async function selectCountry(id, name) {
+    selectedCountryId = id;
+    selectedCountryName = name;
+
+    document.querySelectorAll('.country-btn').forEach(btn => {
+        btn.classList.remove('bg-violet-100', 'dark:bg-violet-900/30', 'text-violet-700', 'dark:text-violet-300', 'font-semibold');
+    });
+    const active = document.getElementById(`country-${id}`);
+    if (active) active.classList.add('bg-violet-100', 'dark:bg-violet-900/30', 'text-violet-700', 'dark:text-violet-300', 'font-semibold');
+
+    // On mobile: update label and collapse the picker
+    const mobPanel = document.getElementById('mob-country-panel');
+    if (mobPanel && !mobPanel.classList.contains('hidden')) {
+        mobPanel.classList.add('hidden');
+        document.getElementById('mob-country-arrow').style.transform = '';
+    }
+    document.getElementById('mob-country-title').textContent = name;
+    document.getElementById('mob-country-sub').textContent = 'Tap to change country';
+
+    await loadPackages();
+
+    // Scroll to packages on mobile
+    if (window.innerWidth < 1024) {
+        const area = document.getElementById('packages-area');
+        if (area) area.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+async function loadPackages() {
+    if (!selectedCountryId) return;
+
+    document.getElementById('packages-empty').classList.add('hidden');
+    document.getElementById('packages-panel').classList.add('hidden');
+    document.getElementById('packages-loading').classList.remove('hidden');
+
+    try {
+        const res = await fetch(`${API_BASE}esim/packages/${selectedCountryId}/?package_type=${currentPackageType}`);
+        const json = await res.json();
+
+        document.getElementById('packages-loading').classList.add('hidden');
+
+        const packages = json.data || [];
+        document.getElementById('packages-heading').textContent = `Plans for ${selectedCountryName}`;
+        document.getElementById('packages-panel').classList.remove('hidden');
+
+        const grid = document.getElementById('packages-grid');
+        const none = document.getElementById('packages-none');
+
+        if (!packages.length) {
+            grid.innerHTML = '';
+            none.classList.remove('hidden');
+            return;
+        }
+        none.classList.add('hidden');
+        grid.innerHTML = packages.map(pkg => renderPackageCard(pkg)).join('');
+    } catch (e) {
+        document.getElementById('packages-loading').classList.add('hidden');
+        document.getElementById('packages-empty').classList.remove('hidden');
+        document.getElementById('packages-empty').innerHTML = '<p class="text-red-500 text-sm text-center py-8">Failed to load packages. Please try again.</p>';
+    }
+}
+
+function renderPackageCard(pkg) {
+    const dataLabel = pkg.unlimited ? 'Unlimited' : `${pkg.data_quantity}${pkg.data_unit}`;
+    const validityLabel = `${pkg.package_validity} ${pkg.package_validity_unit}${pkg.package_validity > 1 ? 's' : ''}`;
+    const price = pkg.naira_price ? `₦${Number(pkg.naira_price).toLocaleString()}` : `$${pkg.price_usd}`;
+    const hasVoice = pkg.voice_quantity > 0;
+    const hasSms = pkg.sms_quantity > 0;
+
+    {% if user.is_authenticated %}
+    const buyBtn = `<button onclick='openPurchaseModal(${JSON.stringify(pkg)})'
+        class="w-full mt-4 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold py-2.5 rounded-lg transition">
+        Buy — ${price}
+    </button>`;
+    {% else %}
+    const buyBtn = `<a href="/login/" class="block w-full mt-4 text-center bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold py-2.5 rounded-lg transition">
+        Sign in to Buy
+    </a>`;
+    {% endif %}
+
+    return `
+    <div class="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-5 flex flex-col hover:shadow-lg transition">
+        <h4 class="font-semibold text-gray-900 dark:text-white text-sm leading-snug mb-3">${pkg.name}</h4>
+        <div class="grid grid-cols-2 gap-y-2 text-xs text-gray-600 dark:text-gray-400 flex-1">
+            <div>
+                <span class="block text-gray-400 dark:text-zinc-500">Data</span>
+                <span class="font-semibold text-gray-900 dark:text-white text-sm">${dataLabel}</span>
+            </div>
+            <div>
+                <span class="block text-gray-400 dark:text-zinc-500">Validity</span>
+                <span class="font-semibold text-gray-900 dark:text-white text-sm">${validityLabel}</span>
+            </div>
+            ${hasVoice ? `<div>
+                <span class="block text-gray-400 dark:text-zinc-500">Voice</span>
+                <span class="font-semibold text-gray-900 dark:text-white text-sm">${pkg.voice_quantity >= 10000 ? 'Unlimited' : pkg.voice_quantity + ' min'}</span>
+            </div>` : ''}
+            ${hasSms ? `<div>
+                <span class="block text-gray-400 dark:text-zinc-500">SMS</span>
+                <span class="font-semibold text-gray-900 dark:text-white text-sm">${pkg.sms_quantity >= 10000 ? 'Unlimited' : pkg.sms_quantity}</span>
+            </div>` : ''}
+        </div>
+        <div class="mt-3 pt-3 border-t border-gray-100 dark:border-zinc-800 flex items-center justify-between">
+            <span class="text-violet-600 dark:text-violet-400 font-bold text-lg">${price}</span>
+            <span class="text-xs text-gray-400 dark:text-zinc-500">$${Number(pkg.price_usd || 0).toFixed(2)}</span>
+        </div>
+        ${buyBtn}
+    </div>`;
+}
+
+function filterPackages(type) {
+    currentPackageType = type;
+    document.getElementById('filter-data').className = type === 'DATA-ONLY'
+        ? 'filter-btn text-xs px-3 py-1.5 rounded-full bg-violet-600 text-white font-medium'
+        : 'filter-btn text-xs px-3 py-1.5 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-zinc-700 transition';
+    document.getElementById('filter-voice').className = type === 'DATA-VOICE-SMS'
+        ? 'filter-btn text-xs px-3 py-1.5 rounded-full bg-violet-600 text-white font-medium'
+        : 'filter-btn text-xs px-3 py-1.5 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-zinc-700 transition';
+    loadPackages();
+}
+
+// ── Purchase ──────────────────────────────────────────────────────────────────
+
+function openPurchaseModal(pkg) {
+    purchaseTarget = pkg;
+    const dataLabel = pkg.unlimited ? 'Unlimited' : `${pkg.data_quantity}${pkg.data_unit}`;
+    const validityLabel = `${pkg.package_validity} ${pkg.package_validity_unit}${pkg.package_validity > 1 ? 's' : ''}`;
+
+    document.getElementById('modal-pkg-name').textContent = pkg.name;
+    document.getElementById('modal-pkg-data').textContent = dataLabel;
+    document.getElementById('modal-pkg-validity').textContent = validityLabel;
+    document.getElementById('modal-pkg-price').textContent = `₦${Number(pkg.naira_price).toLocaleString()}`;
+    document.getElementById('modal-error').classList.add('hidden');
+    document.getElementById('modal-confirm-btn').disabled = false;
+    document.getElementById('modal-confirm-btn').textContent = 'Confirm & Pay';
+    document.getElementById('purchase-modal').classList.remove('hidden');
+}
+
+function closePurchaseModal() {
+    document.getElementById('purchase-modal').classList.add('hidden');
+    purchaseTarget = null;
+}
+
+async function confirmPurchase() {
+    if (!purchaseTarget) return;
+
+    const btn = document.getElementById('modal-confirm-btn');
+    const errEl = document.getElementById('modal-error');
+
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+    errEl.classList.add('hidden');
+
+    try {
+        const res = await fetch(`${API_BASE}esim/purchase/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrf(),
+            },
+            body: JSON.stringify({ package_id: purchaseTarget.id }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            errEl.textContent = data.error || 'Purchase failed. Please try again.';
+            errEl.classList.remove('hidden');
+            btn.disabled = false;
+            btn.textContent = 'Confirm & Pay';
+            return;
+        }
+
+        closePurchaseModal();
+        showEsimResult(data);
+    } catch (e) {
+        errEl.textContent = 'Network error. Please try again.';
+        errEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Confirm & Pay';
+    }
+}
+
+// ── eSIM Result / Detail ──────────────────────────────────────────────────────
+
+function showEsimResult(data) {
+    const content = document.getElementById('esim-modal-content');
+    if (data.sim_applied && data.universal_link) {
+        content.innerHTML = `
+            <div class="text-center mb-4">
+                <div class="inline-block bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 mb-3">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(data.universal_link)}"
+                        class="w-44 h-44 rounded-lg" alt="eSIM QR Code">
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Scan with your device camera to install</p>
+            </div>
+            ${data.iccid ? `<div class="bg-gray-50 dark:bg-zinc-800 rounded-lg px-4 py-3 mb-4 text-sm">
+                <span class="text-gray-500 dark:text-gray-400">ICCID: </span>
+                <span class="font-mono font-semibold text-gray-900 dark:text-white">${data.iccid}</span>
+            </div>` : ''}
+            <a href="${data.universal_link}" target="_blank" rel="noopener noreferrer"
+                class="block w-full text-center bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 rounded-xl transition text-sm mb-2">
+                Open Activation Link
+            </a>
+            <p class="text-center text-xs text-gray-400 dark:text-zinc-500 mt-2">Order #${data.id} saved to My eSIMs</p>`;
+    } else {
+        content.innerHTML = `
+            <div class="text-center py-4">
+                <div class="w-14 h-14 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-7 h-7 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <h4 class="font-bold text-gray-900 dark:text-white mb-1">eSIM Being Provisioned</h4>
+                <p class="text-gray-500 dark:text-gray-400 text-sm mb-5">${data.message || 'Your eSIM is being set up. Please wait a moment.'}</p>
+                <button onclick="checkRefresh(${data.id})"
+                    class="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 rounded-xl transition text-sm">
+                    Check Status
+                </button>
+                <p class="text-center text-xs text-gray-400 dark:text-zinc-500 mt-3">Order #${data.id} saved to My eSIMs</p>
+            </div>`;
+    }
+    document.getElementById('esim-modal').classList.remove('hidden');
+}
+
+async function checkRefresh(orderId) {
+    const btn = event.currentTarget;
+    btn.disabled = true;
+    btn.textContent = 'Checking...';
+
+    try {
+        const res = await fetch(`${API_BASE}esim/orders/${orderId}/refresh/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCsrf(), 'Content-Type': 'application/json' },
+        });
+        const data = await res.json();
+
+        if (data.ready) {
+            showEsimResult({ ...data, sim_applied: true, id: orderId });
+        } else {
+            btn.disabled = false;
+            btn.textContent = 'Check Status';
+            alert(data.message || 'Not ready yet. Please wait a moment and try again.');
+        }
+    } catch (e) {
+        btn.disabled = false;
+        btn.textContent = 'Check Status';
+    }
+}
+
+function closeEsimModal() {
+    document.getElementById('esim-modal').classList.add('hidden');
+}
+
+// ── My eSIMs ─────────────────────────────────────────────────────────────────
+
+{% if user.is_authenticated %}
+async function loadMyEsims() {
+    document.getElementById('myesims-loading').classList.remove('hidden');
+    document.getElementById('myesims-empty').classList.add('hidden');
+    document.getElementById('myesims-grid').classList.add('hidden');
+
+    try {
+        const res = await fetch(`${API_BASE}esim/orders/`);
+        const orders = await res.json();
+
+        document.getElementById('myesims-loading').classList.add('hidden');
+
+        if (!orders.length) {
+            document.getElementById('myesims-empty').classList.remove('hidden');
+            return;
+        }
+
+        const grid = document.getElementById('myesims-grid');
+        grid.innerHTML = orders.map(o => renderMyEsimCard(o)).join('');
+        grid.classList.remove('hidden');
+    } catch (e) {
+        document.getElementById('myesims-loading').classList.add('hidden');
+        document.getElementById('myesims-empty').classList.remove('hidden');
+    }
+}
+
+function renderMyEsimCard(o) {
+    const statusColor = {
+        'FINISHED': 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
+        'PENDING': 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400',
+        'EXPIRED': 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400',
+        'CANCELED': 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
+    }[o.status] || 'bg-gray-100 dark:bg-zinc-800 text-gray-500';
+
+    const expires = o.expires_at ? new Date(o.expires_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) : '—';
+    const created = new Date(o.created_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+
+    let actions = '';
+    if (o.sim_applied && o.universal_link) {
+        actions = `
+            <button onclick='viewEsimDetail(${JSON.stringify(o)})'
+                class="flex-1 bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold py-2 rounded-lg transition">
+                View QR Code
+            </button>`;
+    } else if (o.status === 'PENDING') {
+        actions = `
+            <button onclick="checkRefresh(${o.id})"
+                class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-semibold py-2 rounded-lg transition">
+                Check Status
+            </button>`;
+    }
+
+    return `
+    <div class="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-5">
+        <div class="flex items-start justify-between mb-3">
+            <h4 class="font-semibold text-gray-900 dark:text-white text-sm leading-snug max-w-[200px]">${o.package}</h4>
+            <span class="text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ml-2 ${statusColor}">${o.status}</span>
+        </div>
+        ${o.iccid ? `<p class="text-xs font-mono text-gray-500 dark:text-zinc-400 mb-3 truncate">ICCID: ${o.iccid}</p>` : ''}
+        <div class="grid grid-cols-2 gap-y-1.5 text-xs text-gray-500 dark:text-zinc-400 mb-4">
+            <span>Purchased</span><span class="text-right text-gray-700 dark:text-gray-300">${created}</span>
+            <span>Expires</span><span class="text-right text-gray-700 dark:text-gray-300">${expires}</span>
+            <span>Paid</span><span class="text-right text-gray-700 dark:text-gray-300">₦${Number(o.amount_charged).toLocaleString()}</span>
+        </div>
+        <div class="flex gap-2">${actions}</div>
+    </div>`;
+}
+
+function viewEsimDetail(o) {
+    showEsimResult({
+        id: o.id,
+        sim_applied: o.sim_applied,
+        universal_link: o.universal_link,
+        iccid: o.iccid,
+    });
+}
+{% endif %}
+
+// Init
+loadCountries();
+</script>
+{% endblock %}

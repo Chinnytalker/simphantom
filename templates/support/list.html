@@ -1,0 +1,200 @@
+﻿{% extends 'base.html' %}
+{% block title %}Support — SimPhantom{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+
+    <!-- Page header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Support</h1>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">
+                {% if counts.ALL %}{{ counts.ALL }} ticket{{ counts.ALL|pluralize }} total{% else %}Get help from our team anytime{% endif %}
+            </p>
+        </div>
+        <a href="/support/new/"
+           class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl
+                  transition flex items-center gap-2 text-sm shadow-sm self-start sm:self-auto">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+            </svg>
+            New Ticket
+        </a>
+    </div>
+
+    <!-- Status filter tabs -->
+    <div class="flex items-center gap-1 overflow-x-auto scrollbar-hide mb-5
+                bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                rounded-2xl p-1.5 shadow-sm">
+        {% with tab_base="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap" %}
+        <a href="/support/"
+           class="{{ tab_base }} {% if not status_filter %}bg-blue-600 text-white shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-gray-900 dark:hover:text-white{% endif %}">
+            All
+            {% if counts.ALL %}<span class="{% if not status_filter %}bg-blue-500 text-white{% else %}bg-gray-100 dark:bg-zinc-700 text-gray-500 dark:text-gray-400{% endif %} text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">{{ counts.ALL }}</span>{% endif %}
+        </a>
+        <a href="/support/?status=OPEN"
+           class="{{ tab_base }} {% if status_filter == 'OPEN' %}bg-blue-600 text-white shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-gray-900 dark:hover:text-white{% endif %}">
+            Open
+            {% if counts.OPEN %}<span class="{% if status_filter == 'OPEN' %}bg-blue-500 text-white{% else %}bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400{% endif %} text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">{{ counts.OPEN }}</span>{% endif %}
+        </a>
+        <a href="/support/?status=IN_PROGRESS"
+           class="{{ tab_base }} {% if status_filter == 'IN_PROGRESS' %}bg-blue-600 text-white shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-gray-900 dark:hover:text-white{% endif %}">
+            In Progress
+            {% if counts.IN_PROGRESS %}<span class="{% if status_filter == 'IN_PROGRESS' %}bg-blue-500 text-white{% else %}bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400{% endif %} text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">{{ counts.IN_PROGRESS }}</span>{% endif %}
+        </a>
+        <a href="/support/?status=RESOLVED"
+           class="{{ tab_base }} {% if status_filter == 'RESOLVED' %}bg-blue-600 text-white shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-gray-900 dark:hover:text-white{% endif %}">
+            Resolved
+            {% if counts.RESOLVED %}<span class="{% if status_filter == 'RESOLVED' %}bg-blue-500 text-white{% else %}bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400{% endif %} text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">{{ counts.RESOLVED }}</span>{% endif %}
+        </a>
+        <a href="/support/?status=CLOSED"
+           class="{{ tab_base }} {% if status_filter == 'CLOSED' %}bg-blue-600 text-white shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-gray-900 dark:hover:text-white{% endif %}">
+            Closed
+            {% if counts.CLOSED %}<span class="{% if status_filter == 'CLOSED' %}bg-blue-500 text-white{% else %}bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400{% endif %} text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">{{ counts.CLOSED }}</span>{% endif %}
+        </a>
+        {% endwith %}
+    </div>
+
+    <!-- Ticket list -->
+    {% if tickets %}
+    <div class="space-y-2.5">
+        {% for ticket in tickets %}
+        <a href="/support/ticket/{{ ticket.pk }}/"
+           class="flex items-start gap-4 bg-white dark:bg-zinc-900 border
+                  {% if ticket.user_unread %}border-blue-200 dark:border-blue-800/60{% else %}border-gray-100 dark:border-zinc-800{% endif %}
+                  rounded-2xl px-5 py-4 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800
+                  transition group">
+
+            <!-- Status icon -->
+            <div class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center mt-0.5
+                        {% if ticket.status == 'OPEN' %}bg-blue-100 dark:bg-blue-900/30
+                        {% elif ticket.status == 'IN_PROGRESS' %}bg-orange-100 dark:bg-orange-900/30
+                        {% elif ticket.status == 'RESOLVED' %}bg-green-100 dark:bg-green-900/30
+                        {% else %}bg-gray-100 dark:bg-zinc-800{% endif %}">
+                {% if ticket.status == 'RESOLVED' or ticket.status == 'CLOSED' %}
+                <svg class="w-5 h-5 {% if ticket.status == 'RESOLVED' %}text-green-600 dark:text-green-400{% else %}text-gray-400{% endif %}"
+                     fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {% elif ticket.status == 'IN_PROGRESS' %}
+                <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {% else %}
+                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+                {% endif %}
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 min-w-0">
+                <div class="flex items-start justify-between gap-3 mb-1.5">
+                    <div class="flex items-center gap-2 min-w-0">
+                        {% if ticket.user_unread %}
+                        <span class="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0"></span>
+                        {% endif %}
+                        <h3 class="font-semibold text-gray-900 dark:text-white truncate text-sm
+                                   group-hover:text-blue-600 dark:group-hover:text-blue-400 transition
+                                   {% if ticket.user_unread %}text-blue-700 dark:text-blue-300{% endif %}">
+                            {{ ticket.subject }}
+                        </h3>
+                    </div>
+                    <span class="flex-shrink-0 inline-block text-xs px-2.5 py-1 rounded-full font-semibold
+                        {% if ticket.status == 'OPEN' %}bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300
+                        {% elif ticket.status == 'IN_PROGRESS' %}bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-300
+                        {% elif ticket.status == 'RESOLVED' %}bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300
+                        {% else %}bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400{% endif %}">
+                        {{ ticket.get_status_display }}
+                    </span>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500 flex-wrap">
+                    <span class="font-mono">#{{ ticket.pk }}</span>
+                    <span class="w-1 h-1 bg-gray-300 dark:bg-zinc-600 rounded-full"></span>
+                    <span>{{ ticket.get_category_display }}</span>
+                    <span class="w-1 h-1 bg-gray-300 dark:bg-zinc-600 rounded-full"></span>
+                    <span>{{ ticket.updated_at|timesince }} ago</span>
+                    {% if ticket.message_count %}
+                    <span class="w-1 h-1 bg-gray-300 dark:bg-zinc-600 rounded-full"></span>
+                    <span class="flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                        </svg>
+                        {{ ticket.message_count }}
+                    </span>
+                    {% endif %}
+                    {% if ticket.user_unread %}
+                    <span class="text-blue-500 dark:text-blue-400 font-semibold">New reply</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Arrow -->
+            <div class="flex-shrink-0 self-center">
+                <svg class="w-4 h-4 text-gray-300 dark:text-zinc-700 group-hover:text-blue-400 transition"
+                     fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                </svg>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- Empty state -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                rounded-2xl py-20 text-center">
+        <div class="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center
+                    justify-center mx-auto mb-5">
+            <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+        </div>
+        {% if status_filter %}
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">No tickets here</h3>
+        <p class="text-gray-400 dark:text-gray-500 text-sm mb-6">
+            You don't have any
+            {% if status_filter == 'OPEN' %}open{% elif status_filter == 'IN_PROGRESS' %}in-progress{% elif status_filter == 'RESOLVED' %}resolved{% else %}closed{% endif %}
+            tickets yet.
+        </p>
+        <a href="/support/"
+           class="text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium">
+            View all tickets
+        </a>
+        {% else %}
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">No tickets yet</h3>
+        <p class="text-gray-400 dark:text-gray-500 text-sm mb-6 max-w-xs mx-auto">
+            Having an issue? Open a support ticket and we'll get back to you within a few hours.
+        </p>
+        <a href="/support/new/"
+           class="bg-blue-600 text-white font-semibold px-6 py-2.5 rounded-xl hover:bg-blue-700 transition inline-block">
+            Open Your First Ticket
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Info footer strip -->
+    <div class="mt-6 bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40
+                rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+        <div class="flex items-center gap-3 flex-1">
+            <div class="w-9 h-9 bg-blue-100 dark:bg-blue-900/40 rounded-xl flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div>
+                <p class="text-sm font-semibold text-blue-900 dark:text-blue-200">Response time</p>
+                <p class="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                    We typically reply within 1–4 hours during business hours. Mark your subject <strong>URGENT</strong> for faster response.
+                </p>
+            </div>
+        </div>
+        <a href="/support/new/"
+           class="text-xs bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-xl transition whitespace-nowrap flex-shrink-0">
+            New ticket &rarr;
+        </a>
+    </div>
+
+</div>
+{% endblock %}

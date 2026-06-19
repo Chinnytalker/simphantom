@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60">
+  <defs>
+    <linearGradient id="lg-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#0c0a2e"/>
+    </linearGradient>
+    <linearGradient id="lg-txt" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#c7d2fe"/>
+      <stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Icon: circle -->
+  <circle cx="30" cy="30" r="30" fill="url(#lg-bg)"/>
+  <circle cx="30" cy="30" r="29.5" fill="none" stroke="#4f46e5" stroke-width="1" opacity="0.4"/>
+  <text x="30" y="40"
+        text-anchor="middle"
+        font-family="'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif"
+        font-weight="800"
+        font-size="27"
+        letter-spacing="-1"
+        fill="url(#lg-txt)">SP</text>
+
+  <!-- Wordmark: Sim in slate-900, Phantom in indigo-600 -->
+  <text x="70" y="39"
+        font-family="'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif"
+        font-size="26"
+        font-weight="700"
+        letter-spacing="-0.4">
+    <tspan fill="#0f172a">Sim</tspan><tspan fill="#4f46e5">Phantom</tspan>
+  </text>
+</svg>

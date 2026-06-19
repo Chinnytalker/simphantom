@@ -1,0 +1,439 @@
+﻿{% extends 'base.html' %}
+{% block title %}Phone Number Lookup - SimPhantom{% endblock %}
+
+{% block content %}
+<div class="mb-6 text-sm">
+    <a href="/" class="text-blue-400 hover:underline">Home</a>
+    <span class="text-zinc-500"> / </span>
+    <a href="/services/" class="text-blue-400 hover:underline">Services</a>
+    <span class="text-zinc-500"> / Phone Number Lookup</span>
+</div>
+
+<!-- Hero -->
+<div class="rounded-2xl bg-gradient-to-br from-rose-600 via-pink-700 to-purple-800 p-8 mb-8 text-white relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10" style="background-image:radial-gradient(circle at 70% 50%,#fff 0%,transparent 60%)"></div>
+    <div class="relative flex flex-col md:flex-row md:items-center gap-6">
+        <div class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center flex-shrink-0">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+        </div>
+        <div class="flex-1">
+            <h1 class="text-3xl font-extrabold mb-1">Phone Number Lookup</h1>
+            <p class="text-rose-100 text-sm max-w-xl">Instantly validate and enrich any phone number carrier, line type, country, and more.</p>
+        </div>
+        <div class="flex gap-6 text-center">
+            <div><p class="text-2xl font-bold">180+</p><p class="text-xs text-rose-200">Countries</p></div>
+            <div><p class="text-2xl font-bold">98%+</p><p class="text-xs text-rose-200">Accuracy</p></div>
+            <div><p class="text-2xl font-bold">&lt;1s</p><p class="text-xs text-rose-200">Response</p></div>
+        </div>
+    </div>
+</div>
+
+<!-- Active credits banner -->
+{% if user.is_authenticated and lookup_orders %}
+<div class="bg-zinc-900 border border-zinc-700 rounded-2xl p-4 mb-8 flex flex-col sm:flex-row sm:items-center gap-4">
+    <div class="flex items-center gap-3 flex-1">
+        <div class="w-10 h-10 rounded-xl bg-rose-600/20 flex items-center justify-center">
+            <svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+            </svg>
+        </div>
+        <div>
+            <p class="text-white font-semibold text-sm">Your Lookup Credits</p>
+            <p class="text-zinc-400 text-xs">Select a pack to run a lookup</p>
+        </div>
+    </div>
+    <div class="flex gap-2 flex-wrap">
+        {% for o in lookup_orders %}
+        <button onclick="selectLookupOrder({{ o.id }}, {{ o.credits_remaining }})"
+                class="lookup-order-btn px-3 py-1.5 rounded-lg border border-zinc-600 text-sm text-zinc-300 hover:border-rose-500 hover:text-white transition"
+                data-order-id="{{ o.id }}"
+                data-remaining="{{ o.credits_remaining }}">
+            {{ o.credits_remaining }} credits
+        </button>
+        {% endfor %}
+    </div>
+    <button onclick="openLookupModal()" class="bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold px-4 py-2 rounded-xl transition flex-shrink-0">
+        Run Lookup
+    </button>
+</div>
+{% endif %}
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Plans -->
+    <div class="lg:col-span-2">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-5">Choose a Lookup Pack</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-10">
+            {% for plan in lookup_plans %}
+            <div class="relative bg-zinc-900 border {% if plan.badge == 'Popular' %}border-rose-500{% elif plan.badge == 'Best Value' %}border-emerald-500{% else %}border-zinc-800{% endif %} rounded-2xl p-5 flex flex-col hover:border-zinc-600 transition">
+                {% if plan.badge %}
+                <span class="absolute -top-2.5 left-4 text-xs font-bold px-2.5 py-0.5 rounded-full {% if plan.badge == 'Popular' %}bg-rose-600 text-white{% else %}bg-emerald-600 text-white{% endif %}">{{ plan.badge }}</span>
+                {% endif %}
+                <div class="mb-3">
+                    <p class="text-2xl font-extrabold text-white">{{ plan.credits }} <span class="text-sm font-normal text-zinc-400">lookups</span></p>
+                    <p class="text-xs text-zinc-500 mt-0.5">{{ plan.description }}</p>
+                </div>
+                <p class="text-rose-400 text-xl font-bold mb-4">₦{{ plan.price_ngn|floatformat:0 }}</p>
+                {% if user.is_authenticated %}
+                <button onclick="openBuyModal('{{ plan.id }}', {{ plan.credits }}, {{ plan.price_ngn }})"
+                        class="mt-auto w-full bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold py-2.5 rounded-xl transition">
+                    Buy Pack
+                </button>
+                {% else %}
+                <a href="/login-page/?next=/services/phone-number-lookup/"
+                   class="mt-auto block text-center w-full bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-semibold py-2.5 rounded-xl transition">
+                    Sign In to Buy
+                </a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- What you get -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+            <h3 class="text-white font-bold text-lg mb-5">What Each Lookup Returns</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {% for item in "Country & calling code,Carrier / network name,Line type (mobile / landline / VoIP),E.164 formatted number,National display format,Number validity check" %}
+                <div class="flex items-start gap-2.5">
+                    <svg class="w-4 h-4 text-rose-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    <span class="text-zinc-300 text-sm">{{ item }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-6">
+        <!-- How it works -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+            <h3 class="text-white font-bold mb-4">How It Works</h3>
+            <div class="space-y-4">
+                {% for step in "1234" %}
+                <div class="flex items-start gap-3">
+                    <div class="w-7 h-7 rounded-full bg-rose-600/20 text-rose-400 text-xs font-bold flex items-center justify-center flex-shrink-0">{{ step }}</div>
+                    <div class="text-sm">
+                        {% if step == "1" %}<p class="text-white font-semibold">Buy a pack</p><p class="text-zinc-500 text-xs">Top up your lookup credits</p>
+                        {% elif step == "2" %}<p class="text-white font-semibold">Enter a number</p><p class="text-zinc-500 text-xs">E.164 format recommended</p>
+                        {% elif step == "3" %}<p class="text-white font-semibold">1 credit deducted</p><p class="text-zinc-500 text-xs">Only on successful results</p>
+                        {% elif step == "4" %}<p class="text-white font-semibold">Get full details</p><p class="text-zinc-500 text-xs">Carrier, type, country & more</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Credit history -->
+        {% if user.is_authenticated and lookup_orders %}
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+            <h3 class="text-white font-bold mb-4">Lookup Packs</h3>
+            <div class="space-y-3">
+                {% for o in lookup_orders %}
+                <div class="flex items-center justify-between py-2 border-b border-zinc-800 last:border-0">
+                    <div>
+                        <p class="text-white text-sm font-semibold">{{ o.credits_remaining }} left</p>
+                        <p class="text-zinc-500 text-xs">of {{ o.credits_total }} total</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="w-20 h-1.5 bg-zinc-700 rounded-full overflow-hidden">
+                            <div class="h-full bg-rose-500 rounded-full" style="width:{% widthratio o.credits_remaining o.credits_total 100 %}%"></div>
+                        </div>
+                        <p class="text-zinc-500 text-xs mt-1">{{ o.lookup_count }} used</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 text-sm text-zinc-400">
+            Use <span class="text-white font-semibold">E.164 format</span> for best results e.g. <code class="text-rose-400">+2348012345678</code>. Credits never expire.
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════ BUY MODAL ═══════════════ -->
+<div id="buyModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeBuyModal()"></div>
+    <div class="absolute inset-x-4 bottom-0 md:inset-0 md:flex md:items-center md:justify-center">
+        <div class="bg-zinc-900 border border-zinc-700 rounded-t-3xl md:rounded-2xl w-full md:max-w-md p-6 relative">
+            <button onclick="closeBuyModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-white">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+
+            <div id="buyStepConfirm">
+                <h3 class="text-white font-bold text-lg mb-1">Confirm Purchase</h3>
+                <p class="text-zinc-400 text-sm mb-5">Credits are added instantly to your account.</p>
+                <div class="bg-zinc-800 rounded-xl p-4 mb-5 space-y-2 text-sm">
+                    <div class="flex justify-between"><span class="text-zinc-400">Pack</span><span class="text-white font-semibold" id="buyModalCredits">—</span></div>
+                    <div class="flex justify-between"><span class="text-zinc-400">Cost</span><span class="text-rose-400 font-bold" id="buyModalPrice">—</span></div>
+                </div>
+                <p id="buyModalBalanceWarn" class="text-red-400 text-sm mb-4 hidden"></p>
+                <div class="flex gap-3">
+                    <button onclick="closeBuyModal()" class="flex-1 border border-zinc-700 text-zinc-300 py-2.5 rounded-xl text-sm transition">Cancel</button>
+                    <button onclick="confirmBuy()" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-semibold py-2.5 rounded-xl text-sm transition">Pay from Wallet</button>
+                </div>
+            </div>
+
+            <div id="buyStepProcessing" class="hidden text-center py-8">
+                <div class="w-12 h-12 border-4 border-rose-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p class="text-white font-semibold">Processing...</p>
+            </div>
+
+            <div id="buyStepSuccess" class="hidden text-center py-6">
+                <div class="w-14 h-14 bg-emerald-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-7 h-7 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <h3 class="text-white font-bold text-lg mb-1">Credits Added!</h3>
+                <p class="text-zinc-400 text-sm mb-5" id="buySuccessMsg">—</p>
+                <button onclick="location.reload()" class="bg-rose-600 hover:bg-rose-500 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition">Run a Lookup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════ LOOKUP MODAL ═══════════════ -->
+<div id="lookupModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeLookupModal()"></div>
+    <div class="absolute inset-x-4 bottom-0 md:inset-0 md:flex md:items-center md:justify-center">
+        <div class="bg-zinc-900 border border-zinc-700 rounded-t-3xl md:rounded-2xl w-full md:max-w-md p-6 relative">
+            <button onclick="closeLookupModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-white">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+
+            <!-- Form -->
+            <div id="lookupStepForm">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-9 h-9 rounded-xl bg-rose-600/20 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-bold">Run Lookup</h3>
+                        <p class="text-zinc-500 text-xs">1 credit per lookup · <span id="lookupCreditsLabel">—</span> available</p>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-zinc-400 text-xs font-semibold mb-1.5 uppercase tracking-wide">Credit Pack</label>
+                    <select id="lookupOrderSelect" class="w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-rose-500" onchange="updateLookupCredits()"></select>
+                </div>
+
+                <div class="mb-5">
+                    <label class="block text-zinc-400 text-xs font-semibold mb-1.5 uppercase tracking-wide">Phone Number</label>
+                    <input type="text" id="lookupPhone" placeholder="+2348012345678"
+                        class="w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-3 py-2.5 text-sm placeholder-zinc-600 focus:outline-none focus:border-rose-500 font-mono">
+                    <p id="lookupError" class="text-red-400 text-xs mt-1 hidden"></p>
+                </div>
+
+                <button onclick="runLookup()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-semibold py-3 rounded-xl text-sm transition">
+                    Lookup — 1 Credit
+                </button>
+            </div>
+
+            <!-- Loading -->
+            <div id="lookupStepLoading" class="hidden text-center py-10">
+                <div class="w-12 h-12 border-4 border-rose-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p class="text-white font-semibold">Looking up...</p>
+            </div>
+
+            <!-- Result -->
+            <div id="lookupStepResult" class="hidden">
+                <div class="flex items-center gap-3 mb-5">
+                    <div id="lookupResultIcon" class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"></div>
+                    <div>
+                        <p class="text-white font-bold" id="lookupResultNumber">—</p>
+                        <p class="text-zinc-500 text-xs" id="lookupResultNational">—</p>
+                    </div>
+                </div>
+
+                <div class="bg-zinc-800 rounded-xl divide-y divide-zinc-700 mb-5 text-sm overflow-hidden">
+                    <div class="flex justify-between px-4 py-2.5"><span class="text-zinc-400">Valid</span><span id="resValid" class="font-semibold">—</span></div>
+                    <div class="flex justify-between px-4 py-2.5"><span class="text-zinc-400">Country</span><span id="resCountry" class="text-white">—</span></div>
+                    <div class="flex justify-between px-4 py-2.5"><span class="text-zinc-400">Calling Code</span><span id="resCallingCode" class="text-white">—</span></div>
+                    <div class="flex justify-between px-4 py-2.5"><span class="text-zinc-400">Line Type</span><span id="resLineType" class="text-white capitalize">—</span></div>
+                    <div class="flex justify-between px-4 py-2.5"><span class="text-zinc-400">Carrier</span><span id="resCarrier" class="text-white">—</span></div>
+                </div>
+
+                <p class="text-zinc-500 text-xs text-right mb-4">Credits remaining: <span id="resCreditsLeft" class="text-white font-semibold">—</span></p>
+
+                <div class="flex gap-3">
+                    <button onclick="resetLookup()" class="flex-1 border border-zinc-700 text-zinc-300 hover:text-white py-2.5 rounded-xl text-sm transition">Lookup Another</button>
+                    <button onclick="closeLookupModal()" class="flex-1 bg-zinc-700 hover:bg-zinc-600 text-white font-semibold py-2.5 rounded-xl text-sm transition">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const CSRF = '{{ csrf_token }}';
+{% if user.is_authenticated %}
+const LOOKUP_ORDERS = {{ lookup_orders_json|default:"[]"|safe }};
+{% else %}
+const LOOKUP_ORDERS = [];
+{% endif %}
+
+// ── Buy flow ──────────────────────────────────────────────────────────────────
+let currentPlanId = null;
+
+function openBuyModal(planId, credits, priceNgn) {
+    currentPlanId = planId;
+    document.getElementById('buyModalCredits').textContent = credits.toLocaleString() + ' lookup credits';
+    document.getElementById('buyModalPrice').textContent = '₦' + priceNgn.toLocaleString();
+    document.getElementById('buyModalBalanceWarn').classList.add('hidden');
+    showBuyStep('confirm');
+    document.getElementById('buyModal').classList.remove('hidden');
+}
+function closeBuyModal() { document.getElementById('buyModal').classList.add('hidden'); }
+
+function showBuyStep(step) {
+    ['Confirm','Processing','Success'].forEach(s =>
+        document.getElementById('buyStep' + s).classList.toggle('hidden', s.toLowerCase() !== step)
+    );
+}
+
+async function confirmBuy() {
+    showBuyStep('processing');
+    try {
+        const resp = await fetch('/api/services/lookup/buy/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': CSRF},
+            body: JSON.stringify({plan_id: currentPlanId}),
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+            document.getElementById('buySuccessMsg').textContent = data.credits.toLocaleString() + ' lookup credits added.';
+            showBuyStep('success');
+        } else {
+            showBuyStep('confirm');
+            document.getElementById('buyModalBalanceWarn').textContent = data.error || 'Purchase failed.';
+            document.getElementById('buyModalBalanceWarn').classList.remove('hidden');
+        }
+    } catch {
+        showBuyStep('confirm');
+        document.getElementById('buyModalBalanceWarn').textContent = 'Network error. Please try again.';
+        document.getElementById('buyModalBalanceWarn').classList.remove('hidden');
+    }
+}
+
+// ── Lookup flow ───────────────────────────────────────────────────────────────
+let selectedOrderId = null;
+
+function buildOrderSelect() {
+    const sel = document.getElementById('lookupOrderSelect');
+    if (!sel) return;
+    sel.innerHTML = '';
+    LOOKUP_ORDERS.forEach(o => {
+        const opt = document.createElement('option');
+        opt.value = o.id;
+        opt.dataset.remaining = o.credits_remaining;
+        opt.textContent = `Pack #${o.id} — ${o.credits_remaining.toLocaleString()} credits`;
+        sel.appendChild(opt);
+    });
+    updateLookupCredits();
+}
+
+function updateLookupCredits() {
+    const sel = document.getElementById('lookupOrderSelect');
+    if (!sel || !sel.options.length) return;
+    const opt = sel.options[sel.selectedIndex];
+    selectedOrderId = parseInt(opt.value);
+    document.getElementById('lookupCreditsLabel').textContent =
+        parseInt(opt.dataset.remaining).toLocaleString();
+}
+
+function selectLookupOrder(id, remaining) {
+    selectedOrderId = id;
+    openLookupModal();
+}
+
+function openLookupModal() {
+    if (!LOOKUP_ORDERS.length) return;
+    buildOrderSelect();
+    if (selectedOrderId) {
+        const sel = document.getElementById('lookupOrderSelect');
+        for (let i = 0; i < sel.options.length; i++) {
+            if (parseInt(sel.options[i].value) === selectedOrderId) { sel.selectedIndex = i; break; }
+        }
+        updateLookupCredits();
+    }
+    showLookupStep('form');
+    document.getElementById('lookupModal').classList.remove('hidden');
+}
+function closeLookupModal() { document.getElementById('lookupModal').classList.add('hidden'); }
+
+function showLookupStep(step) {
+    const map = {form: 'lookupStepForm', loading: 'lookupStepLoading', result: 'lookupStepResult'};
+    Object.values(map).forEach(id => document.getElementById(id).classList.add('hidden'));
+    document.getElementById(map[step]).classList.remove('hidden');
+}
+
+async function runLookup() {
+    const sel = document.getElementById('lookupOrderSelect');
+    const orderId = parseInt(sel.value);
+    const phone = document.getElementById('lookupPhone').value.trim();
+    const errEl = document.getElementById('lookupError');
+    errEl.classList.add('hidden');
+    if (!phone) { errEl.textContent = 'Enter a phone number.'; errEl.classList.remove('hidden'); return; }
+
+    showLookupStep('loading');
+    try {
+        const resp = await fetch('/api/services/lookup/run/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': CSRF},
+            body: JSON.stringify({order_id: orderId, phone}),
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+            document.getElementById('lookupResultNumber').textContent = data.phone_number || phone;
+            document.getElementById('lookupResultNational').textContent = data.national_format || '';
+
+            const validEl = document.getElementById('resValid');
+            validEl.textContent = data.valid ? 'Yes' : 'No';
+            validEl.className = 'font-semibold ' + (data.valid ? 'text-emerald-400' : 'text-red-400');
+
+            const iconEl = document.getElementById('lookupResultIcon');
+            if (data.valid) {
+                iconEl.className = 'w-10 h-10 rounded-xl bg-emerald-600/20 flex items-center justify-center flex-shrink-0';
+                iconEl.innerHTML = '<svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';
+            } else {
+                iconEl.className = 'w-10 h-10 rounded-xl bg-red-600/20 flex items-center justify-center flex-shrink-0';
+                iconEl.innerHTML = '<svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>';
+            }
+
+            document.getElementById('resCountry').textContent = data.country_code || '—';
+            document.getElementById('resCallingCode').textContent = data.calling_code ? '+' + data.calling_code : '—';
+            document.getElementById('resLineType').textContent = data.line_type || '—';
+            document.getElementById('resCarrier').textContent = data.carrier || '—';
+            document.getElementById('resCreditsLeft').textContent = data.credits_remaining.toLocaleString();
+
+            // Update local order balance
+            const order = LOOKUP_ORDERS.find(o => o.id === orderId);
+            if (order) order.credits_remaining = data.credits_remaining;
+
+            showLookupStep('result');
+        } else {
+            showLookupStep('form');
+            errEl.textContent = data.error || 'Lookup failed. Try again.';
+            errEl.classList.remove('hidden');
+        }
+    } catch {
+        showLookupStep('form');
+        errEl.textContent = 'Network error. Please try again.';
+        errEl.classList.remove('hidden');
+    }
+}
+
+function resetLookup() {
+    document.getElementById('lookupPhone').value = '';
+    buildOrderSelect();
+    showLookupStep('form');
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeBuyModal(); closeLookupModal(); }
+});
+</script>
+{% endblock %}

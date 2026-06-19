@@ -1,0 +1,32 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('countries/', views.CountriesView.as_view(), name='countries'),
+    path('products/<str:country>/', views.ProductsView.as_view(), name='products'),
+    path('prices/', views.PricesByProductView.as_view(), name='prices-by-product'),
+    path('catalog/', views.ServiceCatalogView.as_view(), name='service-catalog'),
+    # Temporary Email (mail.tm)
+    path('email/create/', views.TempEmailCreateView.as_view(), name='email-create'),
+    path('email/<int:order_id>/inbox/', views.TempEmailInboxView.as_view(), name='email-inbox'),
+    path('email/<int:order_id>/message/<str:message_id>/', views.TempEmailMessageView.as_view(), name='email-message'),
+    path('email/<int:order_id>/delete/', views.TempEmailDeleteView.as_view(), name='email-delete'),
+    # Residential Proxies (Bright Data)
+    path('proxy/purchase/', views.ProxyPurchaseView.as_view(), name='proxy-purchase'),
+    path('proxy/<int:order_id>/', views.ProxyOrderDetailView.as_view(), name='proxy-detail'),
+    # Bulk SMS (Twilio)
+    path('sms/buy/', views.SMSBuyCreditsView.as_view(), name='sms-buy'),
+    path('sms/send/', views.SMSSendView.as_view(), name='sms-send'),
+    path('sms/orders/', views.SMSOrdersView.as_view(), name='sms-orders'),
+    # Phone Number Lookup (Twilio)
+    path('lookup/buy/', views.LookupBuyView.as_view(), name='lookup-buy'),
+    path('lookup/run/', views.LookupView.as_view(), name='lookup-run'),
+    path('lookup/orders/', views.LookupOrdersView.as_view(), name='lookup-orders'),
+    # eSIM (ESIMCard)
+    path('esim/countries/', views.ESIMCountriesView.as_view(), name='esim-countries'),
+    path('esim/packages/<int:country_id>/', views.ESIMCountryPackagesView.as_view(), name='esim-packages'),
+    path('esim/purchase/', views.ESIMPurchaseView.as_view(), name='esim-purchase'),
+    path('esim/orders/', views.ESIMOrdersView.as_view(), name='esim-orders'),
+    path('esim/orders/<int:order_id>/', views.ESIMOrderDetailView.as_view(), name='esim-order-detail'),
+    path('esim/orders/<int:order_id>/refresh/', views.ESIMRefreshView.as_view(), name='esim-refresh'),
+]

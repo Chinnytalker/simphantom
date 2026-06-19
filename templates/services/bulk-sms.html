@@ -1,0 +1,480 @@
+﻿{% extends 'base.html' %}
+{% block title %}Bulk SMS - SimPhantom{% endblock %}
+
+{% block content %}
+<div class="mb-6 text-sm">
+    <a href="/" class="text-blue-400 hover:underline">Home</a>
+    <span class="text-zinc-500"> / </span>
+    <a href="/services/" class="text-blue-400 hover:underline">Services</a>
+    <span class="text-zinc-500"> / Bulk SMS</span>
+</div>
+
+<!-- Hero -->
+<div class="rounded-2xl bg-gradient-to-br from-sky-600 via-blue-700 to-indigo-800 p-8 mb-8 text-white relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10" style="background-image:radial-gradient(circle at 70% 50%,#fff 0%,transparent 60%)"></div>
+    <div class="relative flex flex-col md:flex-row md:items-center gap-6">
+        <div class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center flex-shrink-0">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+            </svg>
+        </div>
+        <div class="flex-1">
+            <div class="flex items-center gap-3 mb-1">
+                <h1 class="text-3xl font-extrabold">Bulk SMS</h1>
+                <span class="bg-white/20 text-white text-xs font-semibold px-2.5 py-1 rounded-full">Global SMS Network</span>
+            </div>
+            <p class="text-blue-100 text-sm max-w-xl">Buy SMS credits and send messages to any number worldwide. Real delivery through a global carrier network.</p>
+        </div>
+        <div class="flex gap-6 text-center">
+            <div><p class="text-2xl font-bold">99%</p><p class="text-xs text-blue-200">Delivery Rate</p></div>
+            <div><p class="text-2xl font-bold">180+</p><p class="text-xs text-blue-200">Countries</p></div>
+            <div><p class="text-2xl font-bold">&lt;3s</p><p class="text-xs text-blue-200">Avg Speed</p></div>
+        </div>
+    </div>
+</div>
+
+<!-- Credits wallet banner (if user has credits) -->
+{% if user.is_authenticated and sms_orders %}
+<div id="activeCreditsBar" class="bg-zinc-900 border border-zinc-700 rounded-2xl p-4 mb-8 flex flex-col sm:flex-row sm:items-center gap-4">
+    <div class="flex items-center gap-3 flex-1">
+        <div class="w-10 h-10 rounded-xl bg-sky-600/20 flex items-center justify-center">
+            <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+            </svg>
+        </div>
+        <div>
+            <p class="text-white font-semibold text-sm">Your SMS Credits</p>
+            <p class="text-zinc-400 text-xs">Select a credit pack below to compose and send</p>
+        </div>
+    </div>
+    <div class="flex gap-2 flex-wrap">
+        {% for o in sms_orders %}
+        <button onclick="selectCreditOrder({{ o.id }}, {{ o.credits_remaining }})"
+                class="credit-order-btn px-3 py-1.5 rounded-lg border border-zinc-600 text-sm text-zinc-300 hover:border-sky-500 hover:text-white transition"
+                data-order-id="{{ o.id }}"
+                data-remaining="{{ o.credits_remaining }}">
+            {{ o.credits_remaining|floatformat:0 }} credits
+        </button>
+        {% endfor %}
+    </div>
+    <button onclick="openComposeModal()" class="bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold px-4 py-2 rounded-xl transition flex-shrink-0">
+        Compose & Send
+    </button>
+</div>
+{% endif %}
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Plans -->
+    <div class="lg:col-span-2">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-5">Choose a Credit Pack</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-10">
+            {% for plan in sms_plans %}
+            <div class="relative bg-zinc-900 border {% if plan.badge == 'Popular' %}border-sky-500{% elif plan.badge == 'Best Value' %}border-emerald-500{% else %}border-zinc-800{% endif %} rounded-2xl p-5 flex flex-col hover:border-zinc-600 transition group">
+                {% if plan.badge %}
+                <span class="absolute -top-2.5 left-4 text-xs font-bold px-2.5 py-0.5 rounded-full {% if plan.badge == 'Popular' %}bg-sky-600 text-white{% else %}bg-emerald-600 text-white{% endif %}">{{ plan.badge }}</span>
+                {% endif %}
+                <div class="mb-3">
+                    <p class="text-2xl font-extrabold text-white">{{ plan.credits|floatformat:0 }} <span class="text-sm font-normal text-zinc-400">SMS</span></p>
+                    <p class="text-xs text-zinc-500 mt-0.5">{{ plan.description }}</p>
+                </div>
+                <p class="text-sky-400 text-xl font-bold mb-1">₦{{ plan.price_ngn|floatformat:0 }}</p>
+                <p class="text-zinc-500 text-xs mb-4">₦{{ plan.price_ngn|floatformat:0 }} / {{ plan.credits }} credits</p>
+                {% if user.is_authenticated %}
+                <button onclick="openBuyModal('{{ plan.id }}', {{ plan.credits }}, {{ plan.price_ngn }})"
+                        class="mt-auto w-full bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold py-2.5 rounded-xl transition">
+                    Buy Credits
+                </button>
+                {% else %}
+                <a href="/login-page/?next=/services/bulk-sms/"
+                   class="mt-auto block text-center w-full bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-semibold py-2.5 rounded-xl transition">
+                    Sign In to Buy
+                </a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- How it works -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+            <h3 class="text-white font-bold text-lg mb-5">How It Works</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {% for step in "1234" %}
+                <div class="text-center">
+                    <div class="w-10 h-10 rounded-full bg-sky-600/20 text-sky-400 font-bold text-sm flex items-center justify-center mx-auto mb-3">{{ step }}</div>
+                    {% if step == "1" %}<p class="text-white text-sm font-semibold">Buy Credits</p><p class="text-zinc-500 text-xs mt-1">Choose a credit pack</p>
+                    {% elif step == "2" %}<p class="text-white text-sm font-semibold">Enter Numbers</p><p class="text-zinc-500 text-xs mt-1">Paste recipient list</p>
+                    {% elif step == "3" %}<p class="text-white text-sm font-semibold">Write Message</p><p class="text-zinc-500 text-xs mt-1">Up to 160 characters</p>
+                    {% elif step == "4" %}<p class="text-white text-sm font-semibold">Send & Track</p><p class="text-zinc-500 text-xs mt-1">Real-time results</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-6">
+        <!-- Features -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+            <h3 class="text-white font-bold mb-4">Features</h3>
+            <ul class="space-y-3">
+                {% for feat in "Instant delivery worldwide,Reliable global carrier network,160-char standard SMS,Paste or type recipients,Per-send credit tracking,No expiry on credits" %}
+                <li class="flex items-start gap-2.5 text-sm">
+                    <svg class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    <span class="text-zinc-300">{{ feat }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Your Orders History -->
+        {% if user.is_authenticated and sms_orders %}
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+            <h3 class="text-white font-bold mb-4">Credit Packs</h3>
+            <div class="space-y-3">
+                {% for o in sms_orders %}
+                <div class="flex items-center justify-between py-2 border-b border-zinc-800 last:border-0">
+                    <div>
+                        <p class="text-white text-sm font-semibold">{{ o.credits_remaining }} left</p>
+                        <p class="text-zinc-500 text-xs">of {{ o.credits_total }} total</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="w-20 h-1.5 bg-zinc-700 rounded-full overflow-hidden">
+                            <div class="h-full bg-sky-500 rounded-full" style="width:{% widthratio o.credits_remaining o.credits_total 100 %}%"></div>
+                        </div>
+                        <p class="text-zinc-500 text-xs mt-1">{{ o.sent_count }} sent</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Support note -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 text-sm">
+            <p class="text-zinc-400">Numbers must be in <span class="text-white font-semibold">E.164 format</span> — e.g. <code class="text-sky-400">+2348012345678</code></p>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════ BUY MODAL ═══════════════ -->
+<div id="buyModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeBuyModal()"></div>
+    <div class="absolute inset-x-4 bottom-0 md:inset-0 md:flex md:items-center md:justify-center">
+        <div class="bg-zinc-900 border border-zinc-700 rounded-t-3xl md:rounded-2xl w-full md:max-w-md p-6 relative">
+            <button onclick="closeBuyModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-white">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+
+            <!-- Step: confirm -->
+            <div id="buyStepConfirm">
+                <h3 class="text-white font-bold text-lg mb-1">Confirm Purchase</h3>
+                <p class="text-zinc-400 text-sm mb-5">Credits will be added to your account instantly.</p>
+                <div class="bg-zinc-800 rounded-xl p-4 mb-5 space-y-2 text-sm">
+                    <div class="flex justify-between"><span class="text-zinc-400">Pack</span><span class="text-white font-semibold" id="buyModalCredits">—</span></div>
+                    <div class="flex justify-between"><span class="text-zinc-400">Cost</span><span class="text-sky-400 font-bold" id="buyModalPrice">—</span></div>
+                </div>
+                <p id="buyModalBalanceWarn" class="text-red-400 text-sm mb-4 hidden"></p>
+                <div class="flex gap-3">
+                    <button onclick="closeBuyModal()" class="flex-1 border border-zinc-700 text-zinc-300 hover:text-white py-2.5 rounded-xl text-sm transition">Cancel</button>
+                    <button onclick="confirmBuy()" class="flex-1 bg-sky-600 hover:bg-sky-500 text-white font-semibold py-2.5 rounded-xl text-sm transition">Confirm — Pay from Wallet</button>
+                </div>
+            </div>
+
+            <!-- Step: processing -->
+            <div id="buyStepProcessing" class="hidden text-center py-8">
+                <div class="w-12 h-12 border-4 border-sky-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p class="text-white font-semibold">Processing...</p>
+            </div>
+
+            <!-- Step: success -->
+            <div id="buyStepSuccess" class="hidden text-center py-6">
+                <div class="w-14 h-14 bg-emerald-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-7 h-7 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <h3 class="text-white font-bold text-lg mb-1">Credits Added!</h3>
+                <p class="text-zinc-400 text-sm mb-5" id="buySuccessMsg">—</p>
+                <button onclick="location.reload()" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition">
+                    Start Sending
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════ COMPOSE MODAL ═══════════════ -->
+<div id="composeModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeComposeModal()"></div>
+    <div class="absolute inset-x-4 bottom-0 md:inset-0 md:flex md:items-center md:justify-center">
+        <div class="bg-zinc-900 border border-zinc-700 rounded-t-3xl md:rounded-2xl w-full md:max-w-lg p-6 relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeComposeModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-white">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+
+            <!-- Compose form -->
+            <div id="composeStepForm">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-9 h-9 rounded-xl bg-sky-600/20 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-bold">Compose SMS</h3>
+                        <p class="text-zinc-500 text-xs"><span id="composeCreditsLabel">—</span> credits available</p>
+                    </div>
+                </div>
+
+                <!-- Credit pack selector -->
+                <div class="mb-4">
+                    <label class="block text-zinc-400 text-xs font-semibold mb-1.5 uppercase tracking-wide">Credit Pack</label>
+                    <select id="composeOrderSelect" class="w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" onchange="updateComposeCredits()">
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-zinc-400 text-xs font-semibold mb-1.5 uppercase tracking-wide">Recipients</label>
+                    <textarea id="composeRecipients" rows="4"
+                        placeholder="+2348012345678&#10;+447911123456&#10;+12025551234"
+                        class="w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-3 py-2.5 text-sm placeholder-zinc-600 focus:outline-none focus:border-sky-500 resize-none font-mono"></textarea>
+                    <p class="text-zinc-600 text-xs mt-1">One number per line or comma-separated · E.164 format · max 500</p>
+                </div>
+
+                <div class="mb-5">
+                    <label class="block text-zinc-400 text-xs font-semibold mb-1.5 uppercase tracking-wide">Message</label>
+                    <textarea id="composeMessage" rows="3" maxlength="160"
+                        placeholder="Your message here..."
+                        class="w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-3 py-2.5 text-sm placeholder-zinc-600 focus:outline-none focus:border-sky-500 resize-none"
+                        oninput="updateCharCount()"></textarea>
+                    <div class="flex justify-between mt-1">
+                        <p id="composeError" class="text-red-400 text-xs hidden"></p>
+                        <p class="text-zinc-600 text-xs ml-auto"><span id="charCount">0</span>/160</p>
+                    </div>
+                </div>
+
+                <button onclick="sendSMS()" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 rounded-xl text-sm transition">
+                    Send SMS
+                </button>
+            </div>
+
+            <!-- Sending progress -->
+            <div id="composeStepSending" class="hidden text-center py-8">
+                <div class="w-12 h-12 border-4 border-sky-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p class="text-white font-semibold">Sending messages...</p>
+                <p class="text-zinc-500 text-sm mt-1">Please wait</p>
+            </div>
+
+            <!-- Results -->
+            <div id="composeStepResult" class="hidden">
+                <div class="text-center mb-5">
+                    <div id="resultIcon" class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3"></div>
+                    <h3 class="text-white font-bold text-lg" id="resultTitle">Done</h3>
+                    <p class="text-zinc-400 text-sm" id="resultSub"></p>
+                </div>
+                <div class="bg-zinc-800 rounded-xl p-4 text-sm space-y-2 mb-5">
+                    <div class="flex justify-between"><span class="text-zinc-400">Sent</span><span class="text-emerald-400 font-semibold" id="resultSent">0</span></div>
+                    <div class="flex justify-between"><span class="text-zinc-400">Failed</span><span class="text-red-400 font-semibold" id="resultFailed">0</span></div>
+                    <div class="flex justify-between"><span class="text-zinc-400">Credits Remaining</span><span class="text-white font-semibold" id="resultRemaining">0</span></div>
+                </div>
+                <div id="resultErrors" class="hidden mb-5">
+                    <p class="text-zinc-500 text-xs font-semibold uppercase mb-2">Failed Numbers</p>
+                    <div id="resultErrorsList" class="space-y-1 text-xs font-mono text-red-400 max-h-32 overflow-y-auto"></div>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="resetCompose()" class="flex-1 border border-zinc-700 text-zinc-300 hover:text-white py-2.5 rounded-xl text-sm transition">Send More</button>
+                    <button onclick="closeComposeModal()" class="flex-1 bg-zinc-700 hover:bg-zinc-600 text-white font-semibold py-2.5 rounded-xl text-sm transition">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const CSRF = '{{ csrf_token }}';
+{% if user.is_authenticated %}
+const SMS_ORDERS = {{ sms_orders_json|default:"[]"|safe }};
+{% else %}
+const SMS_ORDERS = [];
+{% endif %}
+
+// ── Buy flow ──────────────────────────────────────────────────────────────────
+let currentPlanId = null;
+let currentPlanPrice = 0;
+
+function openBuyModal(planId, credits, priceNgn) {
+    currentPlanId = planId;
+    currentPlanPrice = priceNgn;
+    document.getElementById('buyModalCredits').textContent = credits.toLocaleString() + ' SMS credits';
+    document.getElementById('buyModalPrice').textContent = '₦' + priceNgn.toLocaleString();
+    document.getElementById('buyModalBalanceWarn').classList.add('hidden');
+    showBuyStep('confirm');
+    document.getElementById('buyModal').classList.remove('hidden');
+}
+
+function closeBuyModal() {
+    document.getElementById('buyModal').classList.add('hidden');
+}
+
+function showBuyStep(step) {
+    ['confirm','processing','success'].forEach(s => {
+        document.getElementById('buyStep' + s.charAt(0).toUpperCase() + s.slice(1)).classList.toggle('hidden', s !== step);
+    });
+}
+
+async function confirmBuy() {
+    showBuyStep('processing');
+    try {
+        const resp = await fetch('/api/services/sms/buy/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': CSRF},
+            body: JSON.stringify({plan_id: currentPlanId}),
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+            document.getElementById('buySuccessMsg').textContent =
+                data.credits.toLocaleString() + ' credits added to your account.';
+            showBuyStep('success');
+        } else {
+            showBuyStep('confirm');
+            document.getElementById('buyModalBalanceWarn').textContent = data.error || 'Purchase failed.';
+            document.getElementById('buyModalBalanceWarn').classList.remove('hidden');
+        }
+    } catch {
+        showBuyStep('confirm');
+        document.getElementById('buyModalBalanceWarn').textContent = 'Network error. Please try again.';
+        document.getElementById('buyModalBalanceWarn').classList.remove('hidden');
+    }
+}
+
+// ── Compose / Send flow ───────────────────────────────────────────────────────
+let selectedOrderId = null;
+
+function buildOrderSelect() {
+    const sel = document.getElementById('composeOrderSelect');
+    if (!sel) return;
+    sel.innerHTML = '';
+    SMS_ORDERS.forEach(o => {
+        const opt = document.createElement('option');
+        opt.value = o.id;
+        opt.dataset.remaining = o.credits_remaining;
+        opt.textContent = `Pack #${o.id} — ${o.credits_remaining.toLocaleString()} credits remaining`;
+        sel.appendChild(opt);
+    });
+    updateComposeCredits();
+}
+
+function updateComposeCredits() {
+    const sel = document.getElementById('composeOrderSelect');
+    if (!sel || !sel.options.length) return;
+    const opt = sel.options[sel.selectedIndex];
+    selectedOrderId = parseInt(opt.value);
+    document.getElementById('composeCreditsLabel').textContent =
+        parseInt(opt.dataset.remaining).toLocaleString();
+}
+
+function selectCreditOrder(id, remaining) {
+    selectedOrderId = id;
+    openComposeModal();
+}
+
+function openComposeModal() {
+    if (!SMS_ORDERS.length) return;
+    buildOrderSelect();
+    if (selectedOrderId) {
+        const sel = document.getElementById('composeOrderSelect');
+        for (let i = 0; i < sel.options.length; i++) {
+            if (parseInt(sel.options[i].value) === selectedOrderId) { sel.selectedIndex = i; break; }
+        }
+        updateComposeCredits();
+    }
+    showComposeStep('form');
+    document.getElementById('composeModal').classList.remove('hidden');
+}
+
+function closeComposeModal() {
+    document.getElementById('composeModal').classList.add('hidden');
+}
+
+function showComposeStep(step) {
+    const map = {form: 'composeStepForm', sending: 'composeStepSending', result: 'composeStepResult'};
+    Object.values(map).forEach(id => document.getElementById(id).classList.add('hidden'));
+    document.getElementById(map[step]).classList.remove('hidden');
+}
+
+function updateCharCount() {
+    const msg = document.getElementById('composeMessage').value;
+    document.getElementById('charCount').textContent = msg.length;
+}
+
+async function sendSMS() {
+    const sel = document.getElementById('composeOrderSelect');
+    const orderId = parseInt(sel.value);
+    const recipients = document.getElementById('composeRecipients').value.trim();
+    const message = document.getElementById('composeMessage').value.trim();
+    const errEl = document.getElementById('composeError');
+
+    errEl.classList.add('hidden');
+    if (!message) { errEl.textContent = 'Message cannot be empty.'; errEl.classList.remove('hidden'); return; }
+    if (!recipients) { errEl.textContent = 'Add at least one recipient.'; errEl.classList.remove('hidden'); return; }
+
+    showComposeStep('sending');
+    try {
+        const resp = await fetch('/api/services/sms/send/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': CSRF},
+            body: JSON.stringify({order_id: orderId, recipients, message}),
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+            document.getElementById('resultSent').textContent = data.sent;
+            document.getElementById('resultFailed').textContent = data.failed;
+            document.getElementById('resultRemaining').textContent = data.credits_remaining.toLocaleString();
+            document.getElementById('resultTitle').textContent = data.sent > 0 ? 'Messages Sent!' : 'Send Failed';
+            document.getElementById('resultSub').textContent =
+                data.sent + ' of ' + (data.sent + data.failed) + ' messages delivered';
+
+            const iconEl = document.getElementById('resultIcon');
+            if (data.sent > 0) {
+                iconEl.className = 'w-14 h-14 rounded-full bg-emerald-600/20 flex items-center justify-center mx-auto mb-3';
+                iconEl.innerHTML = '<svg class="w-7 h-7 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';
+            } else {
+                iconEl.className = 'w-14 h-14 rounded-full bg-red-600/20 flex items-center justify-center mx-auto mb-3';
+                iconEl.innerHTML = '<svg class="w-7 h-7 text-red-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>';
+            }
+
+            if (data.errors && data.errors.length) {
+                const listEl = document.getElementById('resultErrorsList');
+                listEl.innerHTML = data.errors.map(e => `<div>${e.number}: ${e.error}</div>`).join('');
+                document.getElementById('resultErrors').classList.remove('hidden');
+            } else {
+                document.getElementById('resultErrors').classList.add('hidden');
+            }
+
+            // Update local credits count
+            const orderInList = SMS_ORDERS.find(o => o.id === orderId);
+            if (orderInList) orderInList.credits_remaining = data.credits_remaining;
+
+            showComposeStep('result');
+        } else {
+            showComposeStep('form');
+            errEl.textContent = data.error || 'Send failed. Try again.';
+            errEl.classList.remove('hidden');
+        }
+    } catch {
+        showComposeStep('form');
+        errEl.textContent = 'Network error. Please try again.';
+        errEl.classList.remove('hidden');
+    }
+}
+
+function resetCompose() {
+    document.getElementById('composeRecipients').value = '';
+    document.getElementById('composeMessage').value = '';
+    document.getElementById('charCount').textContent = '0';
+    buildOrderSelect();
+    showComposeStep('form');
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeBuyModal(); closeComposeModal(); }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,853 @@
+﻿{% extends 'base.html' %}
+{% block title %}SimPhantom Virtual Numbers, VPN & Digital Services{% endblock %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════════════════
+     HERO
+════════════════════════════════════════════════════════ -->
+<section class="-mx-4 -mt-8 relative overflow-hidden bg-zinc-950 text-white">
+
+    <!-- Background grid pattern -->
+    <div class="absolute inset-0 pointer-events-none"
+         style="background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:48px 48px"></div>
+
+    <!-- Glow blobs -->
+    <div class="absolute -top-40 left-1/4 w-[600px] h-[600px] bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute top-20 right-0 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="relative max-w-5xl mx-auto px-6 pt-24 pb-20 text-center">
+
+        <!-- Pill badge -->
+        <div class="inline-flex items-center gap-2 bg-white/10 border border-white/15 backdrop-blur-sm
+                    text-white text-xs font-semibold px-4 py-2 rounded-full mb-8 tracking-wide">
+            <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
+            Stealth Mode: Active
+        </div>
+
+        <!-- Headline -->
+        <h1 class="text-5xl md:text-7xl font-extrabold leading-[1.08] tracking-tight mb-6">
+            Stay Anonymous,<br>
+            <span class="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+                Stay in Control
+            </span>
+        </h1>
+
+        <!-- Subheadline -->
+        <p class="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+            Disposable phone numbers for WhatsApp, Telegram, Google &amp; 500+ apps
+            no traces, no exposure. Pay in Naira, instant delivery, automatic refunds.
+        </p>
+
+        <!-- CTA buttons -->
+        <div class="flex flex-col sm:flex-row gap-3 justify-center mb-6">
+            {% if not user.is_authenticated %}
+            <a href="/register/"
+               class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 rounded-xl
+                      transition-all shadow-lg shadow-blue-600/30 text-base">
+                Get Started It's Free
+            </a>
+            <a href="/services/"
+               class="bg-white/10 hover:bg-white/15 border border-white/15 text-white font-semibold
+                      px-8 py-4 rounded-xl transition-all text-base">
+                Explore Services
+            </a>
+            {% else %}
+            <a href="/services/virtual-numbers/"
+               class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 rounded-xl
+                      transition-all shadow-lg shadow-blue-600/30 text-base">
+                Buy a Number Now
+            </a>
+            <a href="/dashboard/"
+               class="bg-white/10 hover:bg-white/15 border border-white/15 text-white font-semibold
+                      px-8 py-4 rounded-xl transition-all text-base">
+                My Dashboard
+            </a>
+            {% endif %}
+        </div>
+
+        <!-- Micro-trust line -->
+        <p class="text-zinc-500 text-sm">
+            No credit card required &nbsp;·&nbsp; Cancel any order for instant refund &nbsp;·&nbsp; Active 24/7
+        </p>
+
+        <!-- App verification badges -->
+        <div class="mt-14 pt-8 border-t border-white/10">
+            <p class="text-zinc-500 text-xs font-semibold uppercase tracking-widest mb-5">
+                Receive SMS for any of these &amp; 500+ more
+            </p>
+            <div class="flex flex-wrap items-center justify-center gap-3">
+                <span class="bg-white/8 border border-white/10 text-zinc-300 text-xs font-medium px-3.5 py-1.5 rounded-lg">WhatsApp</span>
+                <span class="bg-white/8 border border-white/10 text-zinc-300 text-xs font-medium px-3.5 py-1.5 rounded-lg">Telegram</span>
+                <span class="bg-white/8 border border-white/10 text-zinc-300 text-xs font-medium px-3.5 py-1.5 rounded-lg">Google</span>
+                <span class="bg-white/8 border border-white/10 text-zinc-300 text-xs font-medium px-3.5 py-1.5 rounded-lg">Instagram</span>
+                <span class="bg-white/8 border border-white/10 text-zinc-300 text-xs font-medium px-3.5 py-1.5 rounded-lg">Facebook</span>
+                <span class="bg-white/8 border border-white/10 text-zinc-300 text-xs font-medium px-3.5 py-1.5 rounded-lg">TikTok</span>
+                <span class="bg-white/8 border border-white/10 text-zinc-300 text-xs font-medium px-3.5 py-1.5 rounded-lg">Twitter / X</span>
+                <span class="bg-white/8 border border-white/10 text-zinc-300 text-xs font-medium px-3.5 py-1.5 rounded-lg">Snapchat</span>
+                <span class="bg-white/8 border border-white/10 text-zinc-300 text-xs font-medium px-3.5 py-1.5 rounded-lg">Uber</span>
+                <span class="bg-white/8 border border-white/10 text-zinc-300 text-xs font-medium px-3.5 py-1.5 rounded-lg">Airbnb</span>
+                <span class="text-zinc-500 text-xs font-medium px-2">+500 more</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     STATS BAR
+════════════════════════════════════════════════════════ -->
+<section class="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-gray-100
+                dark:divide-zinc-800 border border-gray-100 dark:border-zinc-800 rounded-2xl
+                bg-white dark:bg-zinc-900 shadow-sm mb-16 overflow-hidden">
+    <div class="p-7 text-center">
+        <p class="text-4xl font-extrabold text-gray-900 dark:text-white counter"
+           data-target="{{ total_users|default:0 }}" data-suffix="+">0</p>
+        <p class="text-sm text-gray-400 dark:text-gray-500 mt-1.5 font-medium">Registered Users</p>
+    </div>
+    <div class="p-7 text-center">
+        <p class="text-4xl font-extrabold text-gray-900 dark:text-white counter"
+           data-target="{{ total_orders|default:0 }}" data-suffix="+">0</p>
+        <p class="text-sm text-gray-400 dark:text-gray-500 mt-1.5 font-medium">Orders Completed</p>
+    </div>
+    <div class="p-7 text-center">
+        <p class="text-4xl font-extrabold text-gray-900 dark:text-white counter"
+           data-target="190" data-suffix="+">0</p>
+        <p class="text-sm text-gray-400 dark:text-gray-500 mt-1.5 font-medium">Countries Covered</p>
+    </div>
+    <div class="p-7 text-center">
+        <p class="text-4xl font-extrabold text-gray-900 dark:text-white counter"
+           data-target="500" data-suffix="+">0</p>
+        <p class="text-sm text-gray-400 dark:text-gray-500 mt-1.5 font-medium">Apps Supported</p>
+    </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     HOW IT WORKS
+════════════════════════════════════════════════════════ -->
+<section class="mb-20">
+    <div class="text-center mb-12">
+        <p class="text-blue-600 dark:text-blue-400 text-sm font-bold uppercase tracking-widest mb-3">Simple process</p>
+        <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-4">Ready in under 60 seconds</h2>
+        <p class="text-gray-500 dark:text-gray-400 max-w-lg mx-auto">From account creation to receiving an SMS the whole flow takes less than a minute.</p>
+    </div>
+
+    <div class="relative">
+        <!-- Connector line (desktop) -->
+        <div class="hidden md:block absolute top-10 left-1/4 right-1/4 h-px bg-gradient-to-r
+                    from-transparent via-blue-200 dark:via-blue-900/60 to-transparent"></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            <div class="relative bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                        rounded-2xl p-7 shadow-sm text-center group hover:border-blue-200
+                        dark:hover:border-blue-800 transition-all">
+                <div class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-5
+                            group-hover:scale-105 transition-transform shadow-lg shadow-blue-600/25">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                </div>
+                <span class="absolute top-4 right-4 text-xs font-bold text-blue-400 dark:text-blue-500">01</span>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Create Account</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">Sign up free in 30 seconds. No ID, no documents just an email and password.</p>
+            </div>
+
+            <div class="relative bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                        rounded-2xl p-7 shadow-sm text-center group hover:border-blue-200
+                        dark:hover:border-blue-800 transition-all">
+                <div class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-5
+                            group-hover:scale-105 transition-transform shadow-lg shadow-blue-600/25">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                    </svg>
+                </div>
+                <span class="absolute top-4 right-4 text-xs font-bold text-blue-400 dark:text-blue-500">02</span>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Top Up Wallet</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">Fund your wallet in Naira via Paystack, or in USD and Crypto. Credited instantly.</p>
+            </div>
+
+            <div class="relative bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                        rounded-2xl p-7 shadow-sm text-center group hover:border-blue-200
+                        dark:hover:border-blue-800 transition-all">
+                <div class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-5
+                            group-hover:scale-105 transition-transform shadow-lg shadow-blue-600/25">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                <span class="absolute top-4 right-4 text-xs font-bold text-blue-400 dark:text-blue-500">03</span>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Get Your Number</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">Choose a country and service. Your number appears instantly receive the SMS code on screen.</p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     SERVICES
+════════════════════════════════════════════════════════ -->
+<section class="mb-20">
+    <div class="text-center mb-12">
+        <p class="text-blue-600 dark:text-blue-400 text-sm font-bold uppercase tracking-widest mb-3">What we offer</p>
+        <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-4">Everything in one place</h2>
+        <p class="text-gray-500 dark:text-gray-400 max-w-lg mx-auto">Anonymous numbers, private identities, and digital tools built to keep you off the radar.</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+        <!-- Virtual Numbers -->
+        <a href="/services/virtual-numbers/"
+           class="group bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-gray-100
+                  dark:border-zinc-800 hover:border-blue-300 dark:hover:border-blue-700
+                  hover:shadow-xl hover:-translate-y-0.5 transition-all">
+            <div class="w-11 h-11 bg-blue-100 dark:bg-blue-900/50 rounded-xl flex items-center justify-center mb-5
+                        group-hover:bg-blue-600 transition-colors">
+                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+            </div>
+            <div class="flex items-start justify-between mb-2">
+                <h3 class="font-bold text-gray-900 dark:text-white group-hover:text-blue-600
+                           dark:group-hover:text-blue-400 transition-colors">Virtual Numbers</h3>
+                <span class="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300
+                             px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ml-2">Hot</span>
+            </div>
+            <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">Temporary numbers from 190+ countries for any app verification.</p>
+        </a>
+
+        <!-- OTP Verification -->
+        <a href="/services/otp-verification/"
+           class="group bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-gray-100
+                  dark:border-zinc-800 hover:border-blue-300 dark:hover:border-blue-700
+                  hover:shadow-xl hover:-translate-y-0.5 transition-all">
+            <div class="w-11 h-11 bg-violet-100 dark:bg-violet-900/50 rounded-xl flex items-center justify-center mb-5
+                        group-hover:bg-violet-600 transition-colors">
+                <svg class="w-5 h-5 text-violet-600 dark:text-violet-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                </svg>
+            </div>
+            <div class="flex items-start justify-between mb-2">
+                <h3 class="font-bold text-gray-900 dark:text-white group-hover:text-violet-600
+                           dark:group-hover:text-violet-400 transition-colors">OTP Verification</h3>
+                <span class="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300
+                             px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ml-2">Hot</span>
+            </div>
+            <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">Receive one-time passwords for account registration on any platform.</p>
+        </a>
+
+        <!-- VPN -->
+        <a href="/services/vpn-subscription/"
+           class="group bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-gray-100
+                  dark:border-zinc-800 hover:border-blue-300 dark:hover:border-blue-700
+                  hover:shadow-xl hover:-translate-y-0.5 transition-all">
+            <div class="w-11 h-11 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl flex items-center justify-center mb-5
+                        group-hover:bg-emerald-600 transition-colors">
+                <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+            </div>
+            <div class="flex items-start justify-between mb-2">
+                <h3 class="font-bold text-gray-900 dark:text-white group-hover:text-emerald-600
+                           dark:group-hover:text-emerald-400 transition-colors">VPN Subscription</h3>
+                <span class="text-xs bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400
+                             px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ml-2">Soon</span>
+            </div>
+            <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">Browse securely and anonymously from 50+ server locations worldwide.</p>
+        </a>
+
+        <!-- Residential Proxies -->
+        <a href="/services/residential-proxies/"
+           class="group bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-gray-100
+                  dark:border-zinc-800 hover:border-blue-300 dark:hover:border-blue-700
+                  hover:shadow-xl hover:-translate-y-0.5 transition-all">
+            <div class="w-11 h-11 bg-orange-100 dark:bg-orange-900/50 rounded-xl flex items-center justify-center mb-5
+                        group-hover:bg-orange-500 transition-colors">
+                <svg class="w-5 h-5 text-orange-500 dark:text-orange-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/>
+                </svg>
+            </div>
+            <div class="flex items-start justify-between mb-2">
+                <h3 class="font-bold text-gray-900 dark:text-white group-hover:text-orange-500
+                           dark:group-hover:text-orange-400 transition-colors">Residential Proxies</h3>
+                <span class="text-xs bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300
+                             px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ml-2">New</span>
+            </div>
+            <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">Real residential IPs for scraping, automation and geo-unblocking.</p>
+        </a>
+
+        <!-- eSIM -->
+        <a href="/services/esim-packages/"
+           class="group bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-gray-100
+                  dark:border-zinc-800 hover:border-blue-300 dark:hover:border-blue-700
+                  hover:shadow-xl hover:-translate-y-0.5 transition-all">
+            <div class="w-11 h-11 bg-sky-100 dark:bg-sky-900/50 rounded-xl flex items-center justify-center mb-5
+                        group-hover:bg-sky-500 transition-colors">
+                <svg class="w-5 h-5 text-sky-500 dark:text-sky-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/>
+                </svg>
+            </div>
+            <div class="flex items-start justify-between mb-2">
+                <h3 class="font-bold text-gray-900 dark:text-white group-hover:text-sky-500
+                           dark:group-hover:text-sky-400 transition-colors">eSIM Packages</h3>
+                <span class="text-xs bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400
+                             px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ml-2">Soon</span>
+            </div>
+            <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">Digital SIMs for global connectivity no physical card swapping needed.</p>
+        </a>
+
+        <!-- Temp Email -->
+        <a href="/services/temporary-email/"
+           class="group bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-gray-100
+                  dark:border-zinc-800 hover:border-blue-300 dark:hover:border-blue-700
+                  hover:shadow-xl hover:-translate-y-0.5 transition-all">
+            <div class="w-11 h-11 bg-pink-100 dark:bg-pink-900/50 rounded-xl flex items-center justify-center mb-5
+                        group-hover:bg-pink-500 transition-colors">
+                <svg class="w-5 h-5 text-pink-500 dark:text-pink-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+            </div>
+            <div class="flex items-start justify-between mb-2">
+                <h3 class="font-bold text-gray-900 dark:text-white group-hover:text-pink-500
+                           dark:group-hover:text-pink-400 transition-colors">Temporary Email</h3>
+                <span class="text-xs bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300
+                             px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ml-2">New</span>
+            </div>
+            <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">Disposable email addresses that protect your real identity online.</p>
+        </a>
+
+        <!-- Bulk SMS -->
+        <a href="/services/bulk-sms/"
+           class="group bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-gray-100
+                  dark:border-zinc-800 hover:border-blue-300 dark:hover:border-blue-700
+                  hover:shadow-xl hover:-translate-y-0.5 transition-all">
+            <div class="w-11 h-11 bg-teal-100 dark:bg-teal-900/50 rounded-xl flex items-center justify-center mb-5
+                        group-hover:bg-teal-600 transition-colors">
+                <svg class="w-5 h-5 text-teal-600 dark:text-teal-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                </svg>
+            </div>
+            <div class="flex items-start justify-between mb-2">
+                <h3 class="font-bold text-gray-900 dark:text-white group-hover:text-teal-600
+                           dark:group-hover:text-teal-400 transition-colors">Bulk SMS</h3>
+                <span class="text-xs bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300
+                             px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ml-2">New</span>
+            </div>
+            <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">Send mass SMS messages for marketing campaigns and notifications.</p>
+        </a>
+
+        <!-- Phone Lookup -->
+        <a href="/services/phone-number-lookup/"
+           class="group bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-gray-100
+                  dark:border-zinc-800 hover:border-blue-300 dark:hover:border-blue-700
+                  hover:shadow-xl hover:-translate-y-0.5 transition-all">
+            <div class="w-11 h-11 bg-amber-100 dark:bg-amber-900/50 rounded-xl flex items-center justify-center mb-5
+                        group-hover:bg-amber-500 transition-colors">
+                <svg class="w-5 h-5 text-amber-500 dark:text-amber-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+            </div>
+            <div class="flex items-start justify-between mb-2">
+                <h3 class="font-bold text-gray-900 dark:text-white group-hover:text-amber-500
+                           dark:group-hover:text-amber-400 transition-colors">Phone Lookup</h3>
+                <span class="text-xs bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300
+                             px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ml-2">New</span>
+            </div>
+            <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">Verify phone numbers and retrieve detailed carrier information.</p>
+        </a>
+
+    </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     WHY CHOOSE US — Feature grid
+════════════════════════════════════════════════════════ -->
+<section class="mb-20">
+    <div class="bg-zinc-950 dark:bg-zinc-900 rounded-3xl overflow-hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2">
+
+            <!-- Left: headline + description -->
+            <div class="p-10 lg:p-14 flex flex-col justify-center border-b lg:border-b-0
+                        lg:border-r border-white/10">
+                <p class="text-blue-400 text-sm font-bold uppercase tracking-widest mb-4">Why SimPhantom</p>
+                <h2 class="text-3xl md:text-4xl font-extrabold text-white mb-5 leading-tight">
+                    Privacy first. Priced for Africa.
+                </h2>
+                <p class="text-zinc-400 leading-relaxed mb-8">
+                    Most virtual number platforms are priced in USD, process payments with cards most Nigerians
+                    don't have, and offer zero local support. We built SimPhantom to solve all three.
+                </p>
+                <a href="{% if user.is_authenticated %}/services/virtual-numbers/{% else %}/register/{% endif %}"
+                   class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500
+                          text-white font-semibold px-6 py-3 rounded-xl transition-all
+                          shadow-lg shadow-blue-600/30 self-start">
+                    Get started now
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
+
+            <!-- Right: feature list -->
+            <div class="divide-y divide-white/10">
+                <div class="flex items-start gap-4 p-7 group hover:bg-white/5 transition-colors">
+                    <div class="w-10 h-10 bg-blue-600/20 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-white mb-1">Instant number delivery</h4>
+                        <p class="text-sm text-zinc-400 leading-relaxed">Your number appears in under 3 seconds. No queue, no waiting for a human to process it.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4 p-7 group hover:bg-white/5 transition-colors">
+                    <div class="w-10 h-10 bg-green-600/20 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-white mb-1">Pay in Naira no dollar card needed</h4>
+                        <p class="text-sm text-zinc-400 leading-relaxed">Fund your wallet via Paystack using any Nigerian bank card, bank transfer, or USSD.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4 p-7 group hover:bg-white/5 transition-colors">
+                    <div class="w-10 h-10 bg-purple-600/20 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-white mb-1">Automatic refunds on cancellation</h4>
+                        <p class="text-sm text-zinc-400 leading-relaxed">Cancel a pending order anytime the money goes straight back to your wallet. No support ticket needed.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4 p-7 group hover:bg-white/5 transition-colors">
+                    <div class="w-10 h-10 bg-orange-600/20 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-white mb-1">Live support when you need it</h4>
+                        <p class="text-sm text-zinc-400 leading-relaxed">Chat with our support team directly from the site on any page, any time without leaving what you're doing.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PAYMENT OPTIONS
+════════════════════════════════════════════════════════ -->
+<section class="mb-20">
+    <div class="text-center mb-12">
+        <p class="text-blue-600 dark:text-blue-400 text-sm font-bold uppercase tracking-widest mb-3">Flexible payments</p>
+        <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-4">Pay however you like</h2>
+        <p class="text-gray-500 dark:text-gray-400 max-w-lg mx-auto">Three funding methods so you can always top up, no matter where you are or what you have.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+        <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                    rounded-2xl p-7 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-11 h-11 bg-green-100 dark:bg-green-900/40 rounded-xl
+                            flex items-center justify-center flex-shrink-0">
+                    <span class="text-green-700 dark:text-green-400 font-extrabold text-lg">₦</span>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-900 dark:text-white">Nigerian Naira</h3>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">via Paystack</p>
+                </div>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-5">
+                Fund instantly using any Nigerian bank card, bank transfer, USSD, or mobile money. Minimum ₦500.
+            </p>
+            <div class="flex flex-wrap gap-2">
+                <span class="bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs px-3 py-1 rounded-full border border-green-100 dark:border-green-800">Bank Card</span>
+                <span class="bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs px-3 py-1 rounded-full border border-green-100 dark:border-green-800">Bank Transfer</span>
+                <span class="bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs px-3 py-1 rounded-full border border-green-100 dark:border-green-800">USSD</span>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                    rounded-2xl p-7 shadow-sm opacity-70 relative overflow-hidden">
+            <div class="absolute top-3 right-3 bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400
+                        text-xs font-semibold px-2.5 py-1 rounded-full">Coming Soon</div>
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-11 h-11 bg-blue-100 dark:bg-blue-900/40 rounded-xl
+                            flex items-center justify-center flex-shrink-0">
+                    <span class="text-blue-700 dark:text-blue-400 font-extrabold text-lg">$</span>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-900 dark:text-white">International Card</h3>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">USD · EUR · GBP</p>
+                </div>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-5">
+                Pay with a foreign debit or credit card. We're enabling international card support notify me when it's live.
+            </p>
+            <div class="flex flex-wrap gap-2">
+                <span class="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs px-3 py-1 rounded-full border border-blue-100 dark:border-blue-800">Visa</span>
+                <span class="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs px-3 py-1 rounded-full border border-blue-100 dark:border-blue-800">Mastercard</span>
+                <span class="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs px-3 py-1 rounded-full border border-blue-100 dark:border-blue-800">Multi-currency</span>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                    rounded-2xl p-7 shadow-sm opacity-70 relative overflow-hidden">
+            <div class="absolute top-3 right-3 bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400
+                        text-xs font-semibold px-2.5 py-1 rounded-full">Coming Soon</div>
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-11 h-11 bg-orange-100 dark:bg-orange-900/40 rounded-xl
+                            flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-orange-500 dark:text-orange-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-900 dark:text-white">Cryptocurrency</h3>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">BTC · ETH · USDT</p>
+                </div>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-5">
+                Top up directly with Bitcoin, Ethereum, or USDT. Wallet credited automatically on confirmation.
+            </p>
+            <div class="flex flex-wrap gap-2">
+                <span class="bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs px-3 py-1 rounded-full border border-orange-100 dark:border-orange-800">Bitcoin</span>
+                <span class="bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs px-3 py-1 rounded-full border border-orange-100 dark:border-orange-800">Ethereum</span>
+                <span class="bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs px-3 py-1 rounded-full border border-orange-100 dark:border-orange-800">USDT</span>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     TESTIMONIALS
+════════════════════════════════════════════════════════ -->
+<section class="mb-20">
+    <div class="text-center mb-12">
+        <p class="text-blue-600 dark:text-blue-400 text-sm font-bold uppercase tracking-widest mb-3">User reviews</p>
+        <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-4">Trusted by real users</h2>
+        <p class="text-gray-500 dark:text-gray-400 max-w-lg mx-auto">Thousands of Nigerians and Africans use SimPhantom every week.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+        <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+            <div class="flex text-yellow-400 gap-0.5 mb-4">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            </div>
+            <p class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed mb-5">
+                "I've been using SimPhantom for WhatsApp verifications and it's the smoothest experience I've had. Number appeared instantly, SMS came in under a minute. The Paystack funding makes it so easy."
+            </p>
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">C</div>
+                <div>
+                    <p class="font-semibold text-gray-900 dark:text-white text-sm">Chukwuemeka A.</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">Lagos, Nigeria</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+            <div class="flex text-yellow-400 gap-0.5 mb-4">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            </div>
+            <p class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed mb-5">
+                "Finally a virtual number platform that accepts bank transfers. I tried two others before this and they required dollar cards I don't have. First number I bought for Telegram worked perfectly."
+            </p>
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-violet-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">A</div>
+                <div>
+                    <p class="font-semibold text-gray-900 dark:text-white text-sm">Adaeze M.</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">Enugu, Nigeria</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+            <div class="flex text-yellow-400 gap-0.5 mb-4">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            </div>
+            <p class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed mb-5">
+                "The refund feature is what keeps me coming back. Bought a Russian number for Google, didn't get the SMS after 10 minutes. Cancelled it, money was back instantly. No stress, no waiting."
+            </p>
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">K</div>
+                <div>
+                    <p class="font-semibold text-gray-900 dark:text-white text-sm">Kelechi O.</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">Port Harcourt, Nigeria</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     TIPS
+════════════════════════════════════════════════════════ -->
+<section class="mb-20">
+    <div class="text-center mb-12">
+        <p class="text-blue-600 dark:text-blue-400 text-sm font-bold uppercase tracking-widest mb-3">Pro tips</p>
+        <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-4">Get better results every time</h2>
+        <p class="text-gray-500 dark:text-gray-400 max-w-lg mx-auto">Small things that make a big difference when using virtual numbers.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        <div class="flex gap-4 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 hover:border-blue-200 dark:hover:border-blue-800 transition-colors">
+            <div class="flex-shrink-0 w-9 h-9 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div>
+                <h4 class="font-bold text-gray-900 dark:text-white mb-1 text-sm">Top up before you need it</h4>
+                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">Having balance ready means zero delay when you need a number urgently.</p>
+            </div>
+        </div>
+
+        <div class="flex gap-4 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 hover:border-blue-200 dark:hover:border-blue-800 transition-colors">
+            <div class="flex-shrink-0 w-9 h-9 bg-green-100 dark:bg-green-900/40 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+            </div>
+            <div>
+                <h4 class="font-bold text-gray-900 dark:text-white mb-1 text-sm">Cancel and try again</h4>
+                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">No SMS after 10 minutes? Cancel for a full refund, then try a different country or operator.</p>
+            </div>
+        </div>
+
+        <div class="flex gap-4 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 hover:border-blue-200 dark:hover:border-blue-800 transition-colors">
+            <div class="flex-shrink-0 w-9 h-9 bg-purple-100 dark:bg-purple-900/40 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064"/>
+                </svg>
+            </div>
+            <div>
+                <h4 class="font-bold text-gray-900 dark:text-white mb-1 text-sm">Try Russia or Ukraine</h4>
+                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">If a Nigerian number gets rejected, Russian and Ukrainian numbers have higher acceptance rates.</p>
+            </div>
+        </div>
+
+        <div class="flex gap-4 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 hover:border-blue-200 dark:hover:border-blue-800 transition-colors">
+            <div class="flex-shrink-0 w-9 h-9 bg-orange-100 dark:bg-orange-900/40 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-orange-500 dark:text-orange-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+            </div>
+            <div>
+                <h4 class="font-bold text-gray-900 dark:text-white mb-1 text-sm">Open the app first</h4>
+                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">Be on the "enter phone number" screen of the app before you purchase numbers expire after 20 minutes.</p>
+            </div>
+        </div>
+
+        <div class="flex gap-4 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 hover:border-blue-200 dark:hover:border-blue-800 transition-colors">
+            <div class="flex-shrink-0 w-9 h-9 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+            </div>
+            <div>
+                <h4 class="font-bold text-gray-900 dark:text-white mb-1 text-sm">Check availability first</h4>
+                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">The number shown beside each service is the stock count. Below 5? Pick another country with higher supply.</p>
+            </div>
+        </div>
+
+        <div class="flex gap-4 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 hover:border-blue-200 dark:hover:border-blue-800 transition-colors">
+            <div class="flex-shrink-0 w-9 h-9 bg-teal-100 dark:bg-teal-900/40 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                </svg>
+            </div>
+            <div>
+                <h4 class="font-bold text-gray-900 dark:text-white mb-1 text-sm">Resend works too</h4>
+                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">If the code doesn't arrive, tap "resend" in the app the same number stays active and will receive the new SMS.</p>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     FAQ
+════════════════════════════════════════════════════════ -->
+<section class="mb-20">
+    <div class="text-center mb-12">
+        <p class="text-blue-600 dark:text-blue-400 text-sm font-bold uppercase tracking-widest mb-3">FAQ</p>
+        <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-4">Common questions</h2>
+        <p class="text-gray-500 dark:text-gray-400 max-w-lg mx-auto">Everything you need to know before getting started.</p>
+    </div>
+
+    <div class="max-w-3xl mx-auto space-y-2" id="faq-list">
+
+        {% for q, a in faq %}
+        <div class="faq-item bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl overflow-hidden">
+            <button class="faq-btn w-full flex items-center justify-between px-6 py-4.5 text-left
+                           font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition">
+                <span class="pr-4">{{ q }}</span>
+                <svg class="faq-icon w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200"
+                     fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            <div class="faq-body hidden px-6 pb-5 text-gray-500 dark:text-gray-400 text-sm leading-relaxed border-t border-gray-50 dark:border-zinc-800 pt-4">{{ a }}</div>
+        </div>
+        {% empty %}
+        <div class="faq-item bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl overflow-hidden">
+            <button class="faq-btn w-full flex items-center justify-between px-6 py-4 text-left font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition">
+                <span class="pr-4">What is a virtual number?</span>
+                <svg class="faq-icon w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div class="faq-body hidden px-6 pb-5 text-gray-500 dark:text-gray-400 text-sm leading-relaxed border-t border-gray-50 dark:border-zinc-800 pt-4">A virtual number is a temporary phone number that can receive SMS messages online. It's used to verify accounts on apps like WhatsApp, Telegram, Google and more — without exposing your real phone number.</div>
+        </div>
+        <div class="faq-item bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl overflow-hidden">
+            <button class="faq-btn w-full flex items-center justify-between px-6 py-4 text-left font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition">
+                <span class="pr-4">How do I fund my wallet?</span>
+                <svg class="faq-icon w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div class="faq-body hidden px-6 pb-5 text-gray-500 dark:text-gray-400 text-sm leading-relaxed border-t border-gray-50 dark:border-zinc-800 pt-4">Go to your Dashboard and click "Top Up Wallet". Choose NGN, USD, or Crypto, enter an amount, and complete the payment. NGN and USD are processed instantly via Paystack. Crypto top-ups are verified within 30 minutes.</div>
+        </div>
+        <div class="faq-item bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl overflow-hidden">
+            <button class="faq-btn w-full flex items-center justify-between px-6 py-4 text-left font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition">
+                <span class="pr-4">What if the SMS never arrives?</span>
+                <svg class="faq-icon w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div class="faq-body hidden px-6 pb-5 text-gray-500 dark:text-gray-400 text-sm leading-relaxed border-t border-gray-50 dark:border-zinc-800 pt-4">If no SMS arrives within 10–15 minutes, cancel the order from your Dashboard. Your wallet balance is refunded automatically and instantly. Then try again with a different country or operator.</div>
+        </div>
+        <div class="faq-item bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl overflow-hidden">
+            <button class="faq-btn w-full flex items-center justify-between px-6 py-4 text-left font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition">
+                <span class="pr-4">Which apps can I verify with a virtual number?</span>
+                <svg class="faq-icon w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div class="faq-body hidden px-6 pb-5 text-gray-500 dark:text-gray-400 text-sm leading-relaxed border-t border-gray-50 dark:border-zinc-800 pt-4">WhatsApp, Telegram, Google, Facebook, Instagram, TikTok, Twitter/X, Snapchat, Airbnb, Uber and 500+ more. Search for the service name after selecting a country in the virtual numbers page.</div>
+        </div>
+        <div class="faq-item bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl overflow-hidden">
+            <button class="faq-btn w-full flex items-center justify-between px-6 py-4 text-left font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition">
+                <span class="pr-4">How long does a number stay active?</span>
+                <svg class="faq-icon w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div class="faq-body hidden px-6 pb-5 text-gray-500 dark:text-gray-400 text-sm leading-relaxed border-t border-gray-50 dark:border-zinc-800 pt-4">Typically 20 minutes from purchase. Request the verification code from the app immediately after buying don't wait. If it expires before the SMS arrives, cancel and get a refund.</div>
+        </div>
+        <div class="faq-item bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl overflow-hidden">
+            <button class="faq-btn w-full flex items-center justify-between px-6 py-4 text-left font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition">
+                <span class="pr-4">Is my personal information safe?</span>
+                <svg class="faq-icon w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div class="faq-body hidden px-6 pb-5 text-gray-500 dark:text-gray-400 text-sm leading-relaxed border-t border-gray-50 dark:border-zinc-800 pt-4">Yes. We store only your email, username and wallet balance. Payments go through Paystack — we never see your card details. Your data is never sold or shared with third parties.</div>
+        </div>
+        {% endfor %}
+
+    </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     FINAL CTA
+════════════════════════════════════════════════════════ -->
+<section class="-mx-4 px-4 py-20 bg-zinc-950 relative overflow-hidden mb-0">
+    <div class="absolute inset-0 pointer-events-none"
+         style="background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:48px 48px"></div>
+    <div class="absolute top-0 left-1/3 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="relative max-w-2xl mx-auto text-center">
+        <p class="text-blue-400 text-sm font-bold uppercase tracking-widest mb-4">Start today</p>
+        <h2 class="text-4xl md:text-5xl font-extrabold text-white mb-5 leading-tight">
+            Your number is<br>waiting
+        </h2>
+        <p class="text-zinc-400 text-lg mb-10 max-w-md mx-auto">
+            Create a free account, add ₦500, and buy your first virtual number in under 2 minutes.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+            {% if not user.is_authenticated %}
+            <a href="/register/"
+               class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-10 py-4 rounded-xl
+                      transition-all shadow-lg shadow-blue-600/30 text-base">
+                Create Free Account
+            </a>
+            <a href="/services/"
+               class="bg-white/10 hover:bg-white/15 border border-white/15 text-white font-semibold
+                      px-8 py-4 rounded-xl transition-all text-base">
+                Browse Services
+            </a>
+            {% else %}
+            <a href="/services/virtual-numbers/"
+               class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-10 py-4 rounded-xl
+                      transition-all shadow-lg shadow-blue-600/30 text-base">
+                Buy a Number Now
+            </a>
+            {% endif %}
+        </div>
+        <p class="text-zinc-600 text-sm mt-6">No credit card · No hidden fees · Instant refunds</p>
+    </div>
+</section>
+
+{% endblock %}
+
+
+{% block extra_scripts %}
+<script>
+// ── Animated counters ────────────────────────────────────────────────────────
+document.querySelectorAll('.counter').forEach(function(el) {
+    var target   = parseInt(el.dataset.target, 10) || 0;
+    var suffix   = el.dataset.suffix || '';
+    var duration = 1800;
+    var start    = null;
+
+    function step(ts) {
+        if (!start) start = ts;
+        var progress = Math.min((ts - start) / duration, 1);
+        var ease = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.floor(ease * target).toLocaleString() + suffix;
+        if (progress < 1) requestAnimationFrame(step);
+    }
+
+    new IntersectionObserver(function(entries) {
+        if (entries[0].isIntersecting) { requestAnimationFrame(step); this.disconnect(); }
+    }, { threshold: 0.3 }).observe(el);
+});
+
+// ── FAQ accordion ────────────────────────────────────────────────────────────
+document.querySelectorAll('.faq-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var body = btn.nextElementSibling;
+        var icon = btn.querySelector('.faq-icon');
+        var open = !body.classList.contains('hidden');
+
+        document.querySelectorAll('.faq-body').forEach(function(b) { b.classList.add('hidden'); });
+        document.querySelectorAll('.faq-icon').forEach(function(i) { i.classList.remove('rotate-180'); });
+
+        if (!open) {
+            body.classList.remove('hidden');
+            icon.classList.add('rotate-180');
+        }
+    });
+});
+</script>
+{% endblock %}

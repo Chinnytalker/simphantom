@@ -1,0 +1,224 @@
+﻿{% extends 'manage/base.html' %}
+{% block title %}{{ target.username }} SimPhantom Admin{% endblock %}
+{% block page_title %}User: {{ target.username }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="/manage/users/" class="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-blue-500 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Back to users
+    </a>
+</div>
+
+<!-- User header card -->
+<div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-6 shadow-sm mb-6">
+    <div class="flex items-start gap-5">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600
+                    flex items-center justify-center text-white font-extrabold text-2xl flex-shrink-0">
+            {{ target.username|first|upper }}
+        </div>
+        <div class="flex-1">
+            <div class="flex items-center gap-3 flex-wrap">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ target.username }}</h2>
+                {% if target.is_active %}
+                    <span class="text-xs px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 font-semibold">Active</span>
+                {% else %}
+                    <span class="text-xs px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 font-semibold">Suspended</span>
+                {% endif %}
+                {% if target.is_staff %}
+                    <span class="text-xs px-2.5 py-1 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 font-semibold">Staff</span>
+                {% endif %}
+            </div>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mt-0.5">{{ target.email }}</p>
+            <p class="text-gray-400 dark:text-gray-500 text-xs mt-1">Joined {{ target.date_joined|date:"d M Y" }}</p>
+        </div>
+        <div class="text-right flex-shrink-0">
+            <p class="text-2xl font-extrabold text-blue-600 dark:text-blue-400">₦{{ target.wallet_balance|floatformat:2 }}</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500">Wallet balance</p>
+        </div>
+    </div>
+</div>
+
+<!-- Actions row -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+
+    <!-- Adjust balance -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+        <h3 class="font-bold text-gray-900 dark:text-white mb-1 text-sm">Adjust Wallet Balance</h3>
+        {% if user.is_staff or user.is_superuser %}
+        <p class="text-xs text-gray-400 dark:text-gray-500 mb-4">Positive = credit, negative = debit. A transaction record will be created.</p>
+        <form method="post" class="space-y-3">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="adjust_balance"/>
+            <div class="flex gap-2">
+                <input type="number" name="amount" step="0.01" placeholder="e.g. 500 or -200"
+                       class="flex-1 border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5
+                              bg-white dark:bg-zinc-800 text-gray-900 dark:text-white text-sm
+                              focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+            </div>
+            <input type="text" name="note" placeholder="Reason (e.g. Refund, Bonus)"
+                   class="w-full border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5
+                          bg-white dark:bg-zinc-800 text-gray-900 dark:text-white text-sm
+                          focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+            <button type="submit"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition text-sm">
+                Apply Adjustment
+            </button>
+        </form>
+        {% else %}
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">
+            Balance adjustments are restricted to administrators.
+        </p>
+        {% endif %}
+    </div>
+
+    <!-- Suspend / Activate -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+        <h3 class="font-bold text-gray-900 dark:text-white mb-1 text-sm">Account Status</h3>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mb-4">
+            {% if target.is_active %}
+                This account is <strong class="text-green-600 dark:text-green-400">active</strong>.
+                {% if user.is_staff or user.is_superuser %}Suspending will prevent the user from logging in.{% endif %}
+            {% else %}
+                This account is <strong class="text-red-500">suspended</strong>.
+                The user cannot log in.
+            {% endif %}
+        </p>
+        {% if user.is_staff or user.is_superuser %}
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="toggle_active"/>
+            <button type="submit"
+                    class="w-full font-semibold py-2.5 rounded-xl transition text-sm
+                           {% if target.is_active %}
+                               bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400
+                               hover:bg-red-200 dark:hover:bg-red-900/40
+                           {% else %}
+                               bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300
+                               hover:bg-green-200 dark:hover:bg-green-800/40
+                           {% endif %}">
+                {% if target.is_active %}Suspend Account{% else %}Activate Account{% endif %}
+            </button>
+        </form>
+        {% else %}
+        <p class="text-xs text-gray-400 dark:text-gray-500">Account actions are restricted to administrators.</p>
+        {% endif %}
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-3">
+            Tickets: {{ tickets|length }} &nbsp;|&nbsp; Orders: {{ orders|length }}
+        </p>
+    </div>
+</div>
+
+<!-- Tabs / Data sections -->
+<div class="space-y-6">
+
+    <!-- Orders -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 dark:border-zinc-800">
+            <h3 class="font-bold text-gray-900 dark:text-white text-sm">Recent Orders</h3>
+        </div>
+        {% if orders %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="text-xs text-gray-400 dark:text-gray-500 uppercase border-b border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/50">
+                    <tr>
+                        <th class="px-5 py-3 text-left font-medium">Product</th>
+                        <th class="px-5 py-3 text-left font-medium">Number</th>
+                        <th class="px-5 py-3 text-left font-medium">Amount</th>
+                        <th class="px-5 py-3 text-left font-medium">Status</th>
+                        <th class="px-5 py-3 text-left font-medium">Date</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 dark:divide-zinc-800">
+                    {% for order in orders %}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition">
+                        <td class="px-5 py-3 text-gray-900 dark:text-white font-medium">{{ order.product|default:"—" }}</td>
+                        <td class="px-5 py-3 text-gray-400 dark:text-gray-500 font-mono text-xs">{{ order.phone|default:"—" }}</td>
+                        <td class="px-5 py-3 font-semibold text-gray-900 dark:text-white">₦{{ order.amount_charged|floatformat:2 }}</td>
+                        <td class="px-5 py-3">
+                            <span class="text-xs px-2.5 py-1 rounded-full font-semibold
+                                {% if order.status == 'FINISHED' or order.status == 'RECEIVED' %}bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300
+                                {% elif order.status == 'PENDING' %}bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-300
+                                {% elif order.status == 'CANCELED' %}bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300
+                                {% else %}bg-gray-100 dark:bg-zinc-800 text-gray-500{% endif %}">
+                                {{ order.status|title }}
+                            </span>
+                        </td>
+                        <td class="px-5 py-3 text-gray-400 dark:text-gray-500 text-xs">{{ order.created_at|date:"d M Y, H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="px-5 py-8 text-center text-gray-400 dark:text-gray-500 text-sm">No orders yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Transactions -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 dark:border-zinc-800">
+            <h3 class="font-bold text-gray-900 dark:text-white text-sm">Wallet Transactions</h3>
+        </div>
+        {% if transactions %}
+        <div class="divide-y divide-gray-50 dark:divide-zinc-800 max-h-72 overflow-y-auto">
+            {% for txn in transactions %}
+            <div class="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition">
+                <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0
+                            {% if txn.type == 'CREDIT' %}bg-green-100 dark:bg-green-900/40{% else %}bg-red-100 dark:bg-red-900/40{% endif %}">
+                    {% if txn.type == 'CREDIT' %}
+                    <svg class="w-3.5 h-3.5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                    </svg>
+                    {% else %}
+                    <svg class="w-3.5 h-3.5 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                    </svg>
+                    {% endif %}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-semibold text-gray-900 dark:text-white truncate">{{ txn.description|truncatechars:40 }}</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">{{ txn.created_at|date:"d M, H:i" }}</p>
+                </div>
+                <p class="text-sm font-bold flex-shrink-0 {% if txn.type == 'CREDIT' %}text-green-600 dark:text-green-400{% else %}text-red-500 dark:text-red-400{% endif %}">
+                    {% if txn.type == 'CREDIT' %}+{% else %}-{% endif %}₦{{ txn.amount|floatformat:0 }}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="px-5 py-8 text-center text-gray-400 dark:text-gray-500 text-sm">No transactions yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Support Tickets -->
+    {% if tickets %}
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 dark:border-zinc-800">
+            <h3 class="font-bold text-gray-900 dark:text-white text-sm">Support Tickets</h3>
+        </div>
+        <div class="divide-y divide-gray-50 dark:divide-zinc-800">
+            {% for t in tickets %}
+            <a href="/manage/tickets/{{ t.pk }}/"
+               class="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ t.subject }}</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">{{ t.get_category_display }} · {{ t.updated_at|date:"d M Y" }}</p>
+                </div>
+                <span class="text-xs px-2.5 py-1 rounded-full font-semibold flex-shrink-0
+                    {% if t.status == 'OPEN' %}bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300
+                    {% elif t.status == 'IN_PROGRESS' %}bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-300
+                    {% elif t.status == 'RESOLVED' %}bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300
+                    {% else %}bg-gray-100 dark:bg-zinc-800 text-gray-500{% endif %}">
+                    {{ t.get_status_display }}
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

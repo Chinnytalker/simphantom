@@ -1,0 +1,161 @@
+﻿{% extends 'manage/base.html' %}
+{% block title %}Transactions SimPhantom Admin{% endblock %}
+{% block page_title %}Transactions{% endblock %}
+
+{% block content %}
+
+<!-- Summary cards -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+        <p class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Total Credits</p>
+        <p class="text-2xl font-extrabold text-green-600 dark:text-green-400">₦{{ total_credits|floatformat:0 }}</p>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">All wallet top-ups</p>
+    </div>
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+        <p class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Total Debits</p>
+        <p class="text-2xl font-extrabold text-red-500 dark:text-red-400">₦{{ total_debits|floatformat:0 }}</p>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">All service charges</p>
+    </div>
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+        <p class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Net Flow</p>
+        <p class="text-2xl font-extrabold text-blue-600 dark:text-blue-400">₦{{ net_flow|floatformat:0 }}</p>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Credits minus debits</p>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-4 shadow-sm mb-5">
+    <form method="get" class="flex flex-wrap gap-3">
+        <div class="relative flex-1 min-w-[200px]">
+            <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                 fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" name="q" value="{{ query }}" placeholder="User, email or reference..."
+                   class="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-zinc-700 rounded-xl
+                          bg-white dark:bg-zinc-800 text-gray-900 dark:text-white text-sm
+                          focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+        </div>
+        <div class="flex gap-2">
+            <a href="/manage/transactions/{% if query %}?q={{ query }}{% endif %}"
+               class="px-4 py-2.5 rounded-xl text-sm font-semibold transition
+                      {% if not type_filter %}bg-blue-600 text-white{% else %}border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800{% endif %}">
+                All
+            </a>
+            <a href="/manage/transactions/?type=CREDIT{% if query %}&q={{ query }}{% endif %}"
+               class="px-4 py-2.5 rounded-xl text-sm font-semibold transition
+                      {% if type_filter == 'CREDIT' %}bg-green-600 text-white{% else %}border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800{% endif %}">
+                Credits
+            </a>
+            <a href="/manage/transactions/?type=DEBIT{% if query %}&q={{ query }}{% endif %}"
+               class="px-4 py-2.5 rounded-xl text-sm font-semibold transition
+                      {% if type_filter == 'DEBIT' %}bg-red-600 text-white{% else %}border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800{% endif %}">
+                Debits
+            </a>
+        </div>
+        <button type="submit"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl transition text-sm">
+            Search
+        </button>
+        {% if query %}
+        <a href="/manage/transactions/{% if type_filter %}?type={{ type_filter }}{% endif %}"
+           class="border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-400
+                  px-4 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition text-sm">
+            Clear
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Table -->
+<div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden">
+    {% if page_obj %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide border-b border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/50">
+                <tr>
+                    <th class="px-5 py-3.5 text-left font-medium">User</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Type</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Amount</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Description</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Reference</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Date</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50 dark:divide-zinc-800">
+                {% for txn in page_obj %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition">
+                    <td class="px-5 py-3.5">
+                        <a href="/manage/users/{{ txn.user.pk }}/"
+                           class="flex items-center gap-2.5 group">
+                            <div class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600
+                                        flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                                {{ txn.user.username|first|upper }}
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">{{ txn.user.username }}</p>
+                                <p class="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[120px]">{{ txn.user.email }}</p>
+                            </div>
+                        </a>
+                    </td>
+                    <td class="px-5 py-3.5">
+                        <span class="text-xs px-2.5 py-1 rounded-full font-semibold
+                            {% if txn.type == 'CREDIT' %}bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300
+                            {% else %}bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300{% endif %}">
+                            {{ txn.get_type_display }}
+                        </span>
+                    </td>
+                    <td class="px-5 py-3.5 font-semibold whitespace-nowrap
+                               {% if txn.type == 'CREDIT' %}text-green-600 dark:text-green-400{% else %}text-red-500 dark:text-red-400{% endif %}">
+                        {% if txn.type == 'CREDIT' %}+{% else %}−{% endif %}₦{{ txn.amount|floatformat:2 }}
+                    </td>
+                    <td class="px-5 py-3.5 text-gray-500 dark:text-gray-400 text-xs max-w-[200px]">
+                        <span class="truncate block">{{ txn.description|default:"—"|truncatechars:60 }}</span>
+                    </td>
+                    <td class="px-5 py-3.5 text-gray-400 dark:text-gray-500 text-xs font-mono max-w-[160px]">
+                        <span class="truncate block">{{ txn.reference|truncatechars:24 }}</span>
+                    </td>
+                    <td class="px-5 py-3.5 text-gray-400 dark:text-gray-500 text-xs whitespace-nowrap">
+                        {{ txn.created_at|date:"d M Y, H:i" }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex items-center justify-between px-5 py-3.5 border-t border-gray-100 dark:border-zinc-800">
+        <p class="text-xs text-gray-400 dark:text-gray-500">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            ({{ page_obj.paginator.count }} transactions)
+        </p>
+        <div class="flex gap-2">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}"
+               class="text-xs px-3 py-1.5 border border-gray-200 dark:border-zinc-700 rounded-lg
+                      hover:bg-gray-50 dark:hover:bg-zinc-800 transition">← Prev</a>
+            {% endif %}
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}"
+               class="text-xs px-3 py-1.5 border border-gray-200 dark:border-zinc-700 rounded-lg
+                      hover:bg-gray-50 dark:hover:bg-zinc-800 transition">Next →</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="py-16 text-center">
+        <div class="w-14 h-14 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-4">
+            <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+            </svg>
+        </div>
+        <p class="text-gray-500 dark:text-gray-400 font-semibold">No transactions found</p>
+        {% if query %}<p class="text-gray-400 dark:text-gray-500 text-sm mt-1">Try a different search.</p>{% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

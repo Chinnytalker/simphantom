@@ -1,0 +1,174 @@
+﻿{% extends 'manage/base.html' %}
+{% block title %}Orders SimPhantom Admin{% endblock %}
+{% block page_title %}Orders{% endblock %}
+
+{% block content %}
+
+<!-- Summary bar -->
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+    <a href="/manage/orders/"
+       class="bg-white dark:bg-zinc-900 border {% if not status_filter %}border-blue-400 dark:border-blue-500{% else %}border-gray-100 dark:border-zinc-800{% endif %}
+              rounded-xl p-3 shadow-sm text-center hover:border-blue-400 dark:hover:border-blue-500 transition">
+        <p class="text-lg font-extrabold text-gray-900 dark:text-white">{{ total_count }}</p>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">All</p>
+    </a>
+    {% for code, label, count in status_counts %}
+    <a href="/manage/orders/?status={{ code }}{% if service_filter %}&service={{ service_filter }}{% endif %}{% if query %}&q={{ query }}{% endif %}"
+       class="bg-white dark:bg-zinc-900 border {% if status_filter == code %}border-blue-400 dark:border-blue-500{% else %}border-gray-100 dark:border-zinc-800{% endif %}
+              rounded-xl p-3 shadow-sm text-center hover:border-blue-400 dark:hover:border-blue-500 transition">
+        <p class="text-lg font-extrabold
+            {% if code == 'FINISHED' or code == 'RECEIVED' %}text-green-600 dark:text-green-400
+            {% elif code == 'PENDING' %}text-orange-500 dark:text-orange-400
+            {% elif code == 'CANCELED' or code == 'EXPIRED' %}text-red-500 dark:text-red-400
+            {% else %}text-gray-700 dark:text-gray-300{% endif %}">
+            {{ count }}
+        </p>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ label }}</p>
+    </a>
+    {% endfor %}
+</div>
+
+<!-- Filters -->
+<div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-4 shadow-sm mb-5">
+    <form method="get" class="flex flex-wrap gap-3">
+        <div class="relative flex-1 min-w-[200px]">
+            <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                 fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" name="q" value="{{ query }}" placeholder="User, email or product..."
+                   class="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-zinc-700 rounded-xl
+                          bg-white dark:bg-zinc-800 text-gray-900 dark:text-white text-sm
+                          focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+        </div>
+        <select name="service"
+                class="border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5
+                       bg-white dark:bg-zinc-800 text-gray-900 dark:text-white text-sm
+                       focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">All services</option>
+            {% for code, label in service_types %}
+            <option value="{{ code }}" {% if service_filter == code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select name="status"
+                class="border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5
+                       bg-white dark:bg-zinc-800 text-gray-900 dark:text-white text-sm
+                       focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">All statuses</option>
+            {% for code, label in status_choices %}
+            <option value="{{ code }}" {% if status_filter == code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl transition text-sm">
+            Filter
+        </button>
+        {% if query or service_filter or status_filter %}
+        <a href="/manage/orders/"
+           class="border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-400
+                  px-4 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition text-sm">
+            Clear
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Table -->
+<div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden">
+    {% if page_obj %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide border-b border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/50">
+                <tr>
+                    <th class="px-5 py-3.5 text-left font-medium">User</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Service</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Product</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Amount</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Status</th>
+                    <th class="px-5 py-3.5 text-left font-medium">Date</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50 dark:divide-zinc-800">
+                {% for order in page_obj %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition">
+                    <td class="px-5 py-3.5">
+                        <a href="/manage/users/{{ order.user.pk }}/"
+                           class="flex items-center gap-2.5 group">
+                            <div class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600
+                                        flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                                {{ order.user.username|first|upper }}
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">{{ order.user.username }}</p>
+                                <p class="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[120px]">{{ order.user.email }}</p>
+                            </div>
+                        </a>
+                    </td>
+                    <td class="px-5 py-3.5">
+                        <span class="text-xs bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 px-2.5 py-1 rounded-lg font-medium whitespace-nowrap">
+                            {{ order.get_service_type_display }}
+                        </span>
+                    </td>
+                    <td class="px-5 py-3.5 text-gray-600 dark:text-gray-400 text-xs max-w-[160px]">
+                        <span class="truncate block">{{ order.product|default:"—" }}</span>
+                        {% if order.country %}<span class="text-gray-400 dark:text-gray-500">{{ order.country }}</span>{% endif %}
+                    </td>
+                    <td class="px-5 py-3.5 font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                        ₦{{ order.amount_charged|floatformat:2 }}
+                    </td>
+                    <td class="px-5 py-3.5">
+                        <span class="text-xs px-2.5 py-1 rounded-full font-semibold whitespace-nowrap
+                            {% if order.status == 'FINISHED' or order.status == 'RECEIVED' %}bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300
+                            {% elif order.status == 'PENDING' %}bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-300
+                            {% elif order.status == 'CANCELED' %}bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300
+                            {% elif order.status == 'EXPIRED' %}bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400
+                            {% else %}bg-gray-100 dark:bg-zinc-800 text-gray-500{% endif %}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="px-5 py-3.5 text-gray-400 dark:text-gray-500 text-xs whitespace-nowrap">
+                        {{ order.created_at|date:"d M Y, H:i" }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex items-center justify-between px-5 py-3.5 border-t border-gray-100 dark:border-zinc-800">
+        <p class="text-xs text-gray-400 dark:text-gray-500">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            ({{ page_obj.paginator.count }} orders)
+        </p>
+        <div class="flex gap-2">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if service_filter %}&service={{ service_filter }}{% endif %}"
+               class="text-xs px-3 py-1.5 border border-gray-200 dark:border-zinc-700 rounded-lg
+                      hover:bg-gray-50 dark:hover:bg-zinc-800 transition">← Prev</a>
+            {% endif %}
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if service_filter %}&service={{ service_filter }}{% endif %}"
+               class="text-xs px-3 py-1.5 border border-gray-200 dark:border-zinc-700 rounded-lg
+                      hover:bg-gray-50 dark:hover:bg-zinc-800 transition">Next →</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="py-16 text-center">
+        <div class="w-14 h-14 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-4">
+            <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+        </div>
+        <p class="text-gray-500 dark:text-gray-400 font-semibold mb-1">No orders found</p>
+        {% if query or status_filter or service_filter %}
+        <p class="text-gray-400 dark:text-gray-500 text-sm">Try adjusting your filters.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

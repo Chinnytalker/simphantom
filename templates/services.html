@@ -1,0 +1,336 @@
+﻿{% extends 'base.html' %}
+{% block title %}Services — SimPhantom{% endblock %}
+
+{% block content %}
+
+<!-- Page header -->
+<div class="mb-10">
+    <p class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2">Everything in one place</p>
+    <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white mb-3">Our Services</h1>
+    <p class="text-gray-500 dark:text-gray-400 text-base max-w-xl">
+        Virtual numbers, VPN, eSIMs, proxies, OTPs and more all billed in Naira with no FX stress.
+    </p>
+</div>
+
+<!-- Services grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
+
+    <!-- Virtual Numbers -->
+    <div class="group bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800
+                transition flex flex-col">
+        <div class="flex items-start justify-between mb-5">
+            <div class="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center
+                        group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition">
+                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                </svg>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-semibold">Popular</span>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Virtual Numbers</h3>
+        <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-5 flex-1">
+            Instant phone numbers from 190+ countries for SMS verification, WhatsApp, Telegram, and more.
+        </p>
+        <ul class="space-y-1.5 mb-6">
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                190+ countries
+            </li>
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                SMS delivered in seconds
+            </li>
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                Affordable Naira pricing
+            </li>
+        </ul>
+        <a href="/services/virtual-numbers/"
+           class="w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold
+                  py-2.5 rounded-xl text-sm transition">
+            Browse Numbers
+        </a>
+    </div>
+
+    <!-- OTP Verification -->
+    <div class="group bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-800
+                transition flex flex-col">
+        <div class="flex items-start justify-between mb-5">
+            <div class="w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center
+                        group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 transition">
+                <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-semibold">Popular</span>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">OTP Verification</h3>
+        <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-5 flex-1">
+            One-time passwords for account verification and 2FA across all major platforms, reliably delivered.
+        </p>
+        <ul class="space-y-1.5 mb-6">
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                All major platforms
+            </li>
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                Fast, reliable delivery
+            </li>
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                2FA support
+            </li>
+        </ul>
+        <a href="/services/otp-verification/"
+           class="w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold
+                  py-2.5 rounded-xl text-sm transition">
+            Get OTP
+        </a>
+    </div>
+
+    <!-- VPN Subscription -->
+    <div class="group bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                rounded-2xl p-6 shadow-sm transition flex flex-col opacity-75">
+        <div class="flex items-start justify-between mb-5">
+            <div class="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center transition">
+                <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 font-semibold">Coming Soon</span>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">VPN Subscription</h3>
+        <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-5 flex-1">
+            Enterprise grade encryption for private, anonymous browsing from 50+ server locations worldwide.
+        </p>
+        <ul class="space-y-1.5 mb-6">
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-gray-300 dark:text-zinc-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/></svg>
+                50+ countries
+            </li>
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-gray-300 dark:text-zinc-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/></svg>
+                Military-grade encryption
+            </li>
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-gray-300 dark:text-zinc-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/></svg>
+                Strict no-logs policy
+            </li>
+        </ul>
+        <a href="/services/vpn-subscription/"
+           class="w-full text-center bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 font-semibold
+                  py-2.5 rounded-xl text-sm cursor-not-allowed">
+            Coming Soon
+        </a>
+    </div>
+
+    <!-- eSIM Packages -->
+    <div class="group bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-violet-200 dark:hover:border-violet-800
+                transition flex flex-col">
+        <div class="flex items-start justify-between mb-5">
+            <div class="w-11 h-11 rounded-xl bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center
+                        group-hover:bg-violet-100 dark:group-hover:bg-violet-900/50 transition">
+                <svg class="w-5 h-5 text-violet-600 dark:text-violet-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 font-semibold">Soon</span>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">eSIM Packages</h3>
+        <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-5 flex-1">
+            Digital SIMs for global data access. Travel anywhere without swapping physical cards.
+        </p>
+        <ul class="space-y-1.5 mb-6">
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                Global coverage
+            </li>
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                Instant QR activation
+            </li>
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                Multiple flexible plans
+            </li>
+        </ul>
+        <a href="/services/esim-packages/"
+           class="w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold
+                  py-2.5 rounded-xl text-sm transition">
+            View Plans
+        </a>
+    </div>
+
+    <!-- Residential Proxies -->
+    <div class="group bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-orange-200 dark:hover:border-orange-800
+                transition flex flex-col">
+        <div class="flex items-start justify-between mb-5">
+            <div class="w-11 h-11 rounded-xl bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center
+                        group-hover:bg-orange-100 dark:group-hover:bg-orange-900/50 transition">
+                <svg class="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-semibold">Popular</span>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Residential Proxies</h3>
+        <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-5 flex-1">
+            Real residential IPs for scraping, automation, and bypassing geo-restrictions with zero detection risk.
+        </p>
+        <ul class="space-y-1.5 mb-6">
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                Real residential IPs
+            </li>
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                99.9% uptime SLA
+            </li>
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                195+ countries
+            </li>
+        </ul>
+        <a href="/services/residential-proxies/"
+           class="w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold
+                  py-2.5 rounded-xl text-sm transition">
+            Get Proxy
+        </a>
+    </div>
+
+    <!-- Temporary Email -->
+    <div class="group bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-teal-200 dark:hover:border-teal-800
+                transition flex flex-col">
+        <div class="flex items-start justify-between mb-5">
+            <div class="w-11 h-11 rounded-xl bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center
+                        group-hover:bg-teal-100 dark:group-hover:bg-teal-900/50 transition">
+                <svg class="w-5 h-5 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-semibold">New</span>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Temporary Email</h3>
+        <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-5 flex-1">
+            Disposable addresses that expire automatically. Keep your real inbox clean and your identity private.
+        </p>
+        <ul class="space-y-1.5 mb-6">
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                Instant generation
+            </li>
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                Auto-expiring
+            </li>
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                Up to 5 inboxes
+            </li>
+        </ul>
+        <a href="/services/temporary-email/"
+           class="w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold
+                  py-2.5 rounded-xl text-sm transition">
+            Get Email
+        </a>
+    </div>
+
+    <!-- Bulk SMS -->
+    <div class="group bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-sky-200 dark:hover:border-sky-800
+                transition flex flex-col">
+        <div class="flex items-start justify-between mb-5">
+            <div class="w-11 h-11 rounded-xl bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center
+                        group-hover:bg-sky-100 dark:group-hover:bg-sky-900/50 transition">
+                <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                </svg>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-semibold">New</span>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Bulk SMS</h3>
+        <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-5 flex-1">
+            Send thousands of messages instantly. Perfect for marketing campaigns, alerts, and notifications.
+        </p>
+        <ul class="space-y-1.5 mb-6">
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                Send to thousands
+            </li>
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                Instant delivery
+            </li>
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                Campaign tracking
+            </li>
+        </ul>
+        <a href="/services/bulk-sms/"
+           class="w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold
+                  py-2.5 rounded-xl text-sm transition">
+            Start Sending
+        </a>
+    </div>
+
+    <!-- Phone Number Lookup -->
+    <div class="group bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-rose-200 dark:hover:border-rose-800
+                transition flex flex-col">
+        <div class="flex items-start justify-between mb-5">
+            <div class="w-11 h-11 rounded-xl bg-rose-50 dark:bg-rose-900/30 flex items-center justify-center
+                        group-hover:bg-rose-100 dark:group-hover:bg-rose-900/50 transition">
+                <svg class="w-5 h-5 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-semibold">New</span>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Phone Number Lookup</h3>
+        <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-5 flex-1">
+            Instant number intelligence carrier info, location data, and fraud risk score in seconds.
+        </p>
+        <ul class="space-y-1.5 mb-6">
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                Instant verification
+            </li>
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                Carrier & location data
+            </li>
+            <li class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                Line type detection
+            </li>
+        </ul>
+        <a href="/services/phone-number-lookup/"
+           class="w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold
+                  py-2.5 rounded-xl text-sm transition">
+            Lookup Number
+        </a>
+    </div>
+
+</div>
+
+<!-- Coming soon -->
+<div class="bg-zinc-950 rounded-2xl p-8 flex flex-col md:flex-row items-start md:items-center gap-6">
+    <div class="flex-1">
+        <p class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-2">On the roadmap</p>
+        <h2 class="text-xl font-extrabold text-white mb-2">More services coming soon</h2>
+        <p class="text-zinc-400 text-sm">We're constantly expanding. Next up: Virtual Credit Cards, SOCKS5 Proxies, Datacenter Proxies, Anti-Detect Browser, and Private Email.</p>
+    </div>
+    <a href="/support/new/"
+       class="flex-shrink-0 bg-white/10 hover:bg-white/20 border border-white/20 text-white
+              font-semibold px-5 py-2.5 rounded-xl text-sm transition">
+        Request a service
+    </a>
+</div>
+
+{% endblock %}

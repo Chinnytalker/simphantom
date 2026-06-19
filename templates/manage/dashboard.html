@@ -1,0 +1,406 @@
+﻿{% extends 'manage/base.html' %}
+{% block title %}Dashboard — SimPhantom Admin{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Welcome strip -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+    <div>
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+            Welcome back, {{ user.first_name|default:user.username }}
+        </h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Here's your platform overview for today.</p>
+    </div>
+    <div class="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        {% now "l, d F Y" %}
+    </div>
+</div>
+
+<!-- Stats cards -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+
+    <!-- Total Users -->
+    <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-5 text-white shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <span class="text-blue-200 text-xs font-semibold uppercase tracking-wider">Users</span>
+            <div class="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+            </div>
+        </div>
+        <p class="text-3xl font-extrabold">{{ total_users }}</p>
+        <div class="flex items-center justify-between mt-2">
+            <p class="text-blue-200 text-xs">
+                {% if today_users %}
+                <span class="font-semibold text-white">+{{ today_users }}</span> today
+                {% else %}registered{% endif %}
+            </p>
+            <a href="/manage/users/" class="text-blue-200 hover:text-white text-xs transition">View all →</a>
+        </div>
+    </div>
+
+    <!-- Revenue -->
+    <div class="bg-gradient-to-br from-purple-600 to-violet-700 rounded-2xl p-5 text-white shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <span class="text-purple-200 text-xs font-semibold uppercase tracking-wider">Revenue</span>
+            <div class="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+        </div>
+        <p class="text-3xl font-extrabold">₦{{ total_revenue|floatformat:0 }}</p>
+        <div class="flex items-center justify-between mt-2">
+            <p class="text-purple-200 text-xs">
+                {% if today_revenue %}
+                <span class="font-semibold text-white">+₦{{ today_revenue|floatformat:0 }}</span> today
+                {% else %}all-time top-ups{% endif %}
+            </p>
+            <a href="/manage/transactions/" class="text-purple-200 hover:text-white text-xs transition">View →</a>
+        </div>
+    </div>
+
+    <!-- Orders -->
+    <div class="bg-gradient-to-br from-green-600 to-emerald-700 rounded-2xl p-5 text-white shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <span class="text-green-200 text-xs font-semibold uppercase tracking-wider">Orders</span>
+            <div class="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+            </div>
+        </div>
+        <p class="text-3xl font-extrabold">{{ total_orders }}</p>
+        <div class="flex items-center justify-between mt-2">
+            <p class="text-green-200 text-xs">
+                {% if pending_orders %}
+                <span class="font-semibold text-white">{{ pending_orders }}</span> pending
+                {% elif today_orders %}
+                <span class="font-semibold text-white">+{{ today_orders }}</span> today
+                {% else %}all time{% endif %}
+            </p>
+            <a href="/manage/orders/" class="text-green-200 hover:text-white text-xs transition">View →</a>
+        </div>
+    </div>
+
+    <!-- Open Tickets -->
+    <div class="bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl p-5 text-white shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <span class="text-orange-100 text-xs font-semibold uppercase tracking-wider">Tickets</span>
+            <div class="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                </svg>
+            </div>
+        </div>
+        <p class="text-3xl font-extrabold">{{ open_tickets }}</p>
+        <div class="flex items-center justify-between mt-2">
+            <p class="text-orange-100 text-xs">
+                open / in-progress
+                {% if new_tickets %}
+                · <span class="font-semibold text-white">{{ new_tickets|length }} unread</span>
+                {% endif %}
+            </p>
+            <a href="/manage/tickets/?status=OPEN" class="text-orange-100 hover:text-white text-xs transition">View →</a>
+        </div>
+    </div>
+</div>
+
+<!-- Platform health strip -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+    <a href="/manage/users/"
+       class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl
+              p-4 flex items-center gap-3 hover:border-blue-300 dark:hover:border-blue-700
+              hover:shadow-sm transition group">
+        <div class="w-9 h-9 bg-blue-100 dark:bg-blue-900/40 rounded-xl flex items-center justify-center flex-shrink-0
+                    group-hover:bg-blue-200 dark:group-hover:bg-blue-900/60 transition">
+            <svg class="w-4.5 h-4.5 text-blue-600 dark:text-blue-400" style="width:18px;height:18px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+        </div>
+        <div class="min-w-0">
+            <p class="text-xs font-semibold text-gray-900 dark:text-white truncate">Users</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500">Manage accounts</p>
+        </div>
+    </a>
+    <a href="/manage/orders/"
+       class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl
+              p-4 flex items-center gap-3 hover:border-green-300 dark:hover:border-green-700
+              hover:shadow-sm transition group">
+        <div class="w-9 h-9 bg-green-100 dark:bg-green-900/40 rounded-xl flex items-center justify-center flex-shrink-0
+                    group-hover:bg-green-200 dark:group-hover:bg-green-900/60 transition">
+            <svg class="w-4.5 h-4.5 text-green-600 dark:text-green-400" style="width:18px;height:18px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+        </div>
+        <div class="min-w-0">
+            <p class="text-xs font-semibold text-gray-900 dark:text-white truncate">Orders</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500">{{ pending_orders }} pending</p>
+        </div>
+    </a>
+    <a href="/manage/transactions/"
+       class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl
+              p-4 flex items-center gap-3 hover:border-purple-300 dark:hover:border-purple-700
+              hover:shadow-sm transition group">
+        <div class="w-9 h-9 bg-purple-100 dark:bg-purple-900/40 rounded-xl flex items-center justify-center flex-shrink-0
+                    group-hover:bg-purple-200 dark:group-hover:bg-purple-900/60 transition">
+            <svg class="w-4.5 h-4.5 text-purple-600 dark:text-purple-400" style="width:18px;height:18px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+            </svg>
+        </div>
+        <div class="min-w-0">
+            <p class="text-xs font-semibold text-gray-900 dark:text-white truncate">Transactions</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500">₦{{ total_wallet_balance|floatformat:0 }} in wallets</p>
+        </div>
+    </a>
+    <a href="/manage/tickets/"
+       class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl
+              p-4 flex items-center gap-3 hover:border-orange-300 dark:hover:border-orange-700
+              hover:shadow-sm transition group relative">
+        <div class="w-9 h-9 bg-orange-100 dark:bg-orange-900/40 rounded-xl flex items-center justify-center flex-shrink-0
+                    group-hover:bg-orange-200 dark:group-hover:bg-orange-900/60 transition">
+            <svg class="w-4.5 h-4.5 text-orange-500 dark:text-orange-400" style="width:18px;height:18px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+            </svg>
+        </div>
+        <div class="min-w-0">
+            <p class="text-xs font-semibold text-gray-900 dark:text-white truncate">Support</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500">
+                {% if new_tickets %}{{ new_tickets|length }} unread{% else %}All caught up{% endif %}
+            </p>
+        </div>
+        {% if new_tickets %}
+        <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+        {% endif %}
+    </a>
+</div>
+
+<!-- Unread tickets banner (if any) -->
+{% if new_tickets %}
+<div class="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/40
+            rounded-2xl overflow-hidden mb-5">
+    <div class="flex items-center justify-between px-5 py-3 border-b border-orange-100 dark:border-orange-900/30">
+        <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+            <h3 class="text-sm font-bold text-orange-900 dark:text-orange-200">Needs Your Attention</h3>
+            <span class="text-xs bg-orange-200 dark:bg-orange-900/60 text-orange-800 dark:text-orange-300
+                         px-2 py-0.5 rounded-full font-bold">{{ new_tickets|length }} unread</span>
+        </div>
+        <a href="/manage/tickets/" class="text-xs text-orange-600 dark:text-orange-400 hover:underline font-medium">
+            View all tickets
+        </a>
+    </div>
+    <div class="divide-y divide-orange-100 dark:divide-orange-900/20">
+        {% for t in new_tickets %}
+        <a href="/manage/tickets/{{ t.pk }}/"
+           class="flex items-center gap-4 px-5 py-3.5 hover:bg-orange-100/50 dark:hover:bg-orange-900/10 transition">
+            <div class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center
+                        bg-gradient-to-br from-orange-400 to-pink-500 text-white font-bold text-xs">
+                {{ t.user.username|first|upper }}
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ t.subject }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ t.user.username }} · {{ t.get_category_display }} · {{ t.updated_at|timesince }} ago
+                </p>
+            </div>
+            <span class="flex-shrink-0 text-xs px-2.5 py-1 rounded-full font-semibold
+                {% if t.status == 'OPEN' %}bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300
+                {% elif t.status == 'IN_PROGRESS' %}bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-300
+                {% else %}bg-gray-100 dark:bg-zinc-800 text-gray-500{% endif %}">
+                {{ t.get_status_display }}
+            </span>
+            <svg class="w-4 h-4 text-gray-300 dark:text-zinc-700 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+            </svg>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Main grid -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+
+    <!-- Recent Orders (2/3) -->
+    <div class="xl:col-span-2 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                rounded-2xl shadow-sm overflow-hidden">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-zinc-800">
+            <div class="flex items-center gap-2.5">
+                <h2 class="font-bold text-gray-900 dark:text-white text-sm">Recent Orders</h2>
+                {% if today_orders %}
+                <span class="text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300
+                             px-2 py-0.5 rounded-full font-semibold">+{{ today_orders }} today</span>
+                {% endif %}
+            </div>
+            <a href="/manage/orders/" class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium">View all</a>
+        </div>
+        {% if recent_orders %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-left text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide
+                               border-b border-gray-100 dark:border-zinc-800">
+                        <th class="px-5 py-3 font-medium">User</th>
+                        <th class="px-5 py-3 font-medium">Service</th>
+                        <th class="px-5 py-3 font-medium">Amount</th>
+                        <th class="px-5 py-3 font-medium">Status</th>
+                        <th class="px-5 py-3 font-medium">Date</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 dark:divide-zinc-800">
+                    {% for order in recent_orders %}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition">
+                        <td class="px-5 py-3">
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center
+                                            text-white font-bold text-[10px] flex-shrink-0">
+                                    {{ order.user.username|first|upper }}
+                                </div>
+                                <a href="/manage/users/{{ order.user.pk }}/"
+                                   class="font-semibold text-gray-900 dark:text-white hover:text-blue-600
+                                          dark:hover:text-blue-400 transition text-xs">
+                                    {{ order.user.username }}
+                                </a>
+                            </div>
+                        </td>
+                        <td class="px-5 py-3">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ order.get_service_type_display }}</span>
+                                <span class="text-[11px] text-gray-400 dark:text-gray-500 truncate max-w-[120px]">
+                                    {% if order.phone %}{{ order.phone }}{% elif order.email %}{{ order.email }}{% else %}{{ order.product|truncatechars:18 }}{% endif %}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-5 py-3 font-semibold text-gray-900 dark:text-white text-xs whitespace-nowrap">
+                            ₦{{ order.amount_charged|floatformat:2 }}
+                        </td>
+                        <td class="px-5 py-3">
+                            <span class="text-xs px-2.5 py-1 rounded-full font-semibold whitespace-nowrap
+                                {% if order.status == 'FINISHED' or order.status == 'RECEIVED' %}bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300
+                                {% elif order.status == 'PENDING' %}bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-300
+                                {% elif order.status == 'CANCELED' %}bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300
+                                {% elif order.status == 'EXPIRED' %}bg-gray-100 dark:bg-zinc-800 text-gray-500
+                                {% else %}bg-gray-100 dark:bg-zinc-800 text-gray-500{% endif %}">
+                                {{ order.status|title }}
+                            </span>
+                        </td>
+                        <td class="px-5 py-3 text-gray-400 dark:text-gray-500 text-xs whitespace-nowrap">
+                            {{ order.created_at|date:"d M, H:i" }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="px-5 py-12 text-center">
+            <div class="w-12 h-12 bg-gray-50 dark:bg-zinc-800 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6 text-gray-300 dark:text-zinc-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+            </div>
+            <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">No orders yet</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Right sidebar (1/3) -->
+    <div class="space-y-5">
+
+        <!-- No unread banner (only if nothing to show) -->
+        {% if not new_tickets %}
+        <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                    rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center gap-2 mb-1">
+                <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
+                    <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <h3 class="font-bold text-gray-900 dark:text-white text-sm">All caught up</h3>
+            </div>
+            <p class="text-xs text-gray-400 dark:text-gray-500 ml-10">No unread support tickets.</p>
+            <a href="/manage/tickets/" class="text-xs text-blue-600 dark:text-blue-400 hover:underline ml-10 mt-1 inline-block">View all tickets →</a>
+        </div>
+        {% endif %}
+
+        <!-- Recent Signups -->
+        <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                    rounded-2xl shadow-sm overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-zinc-800">
+                <div class="flex items-center gap-2">
+                    <h2 class="font-bold text-gray-900 dark:text-white text-sm">Recent Signups</h2>
+                    {% if today_users %}
+                    <span class="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300
+                                 px-2 py-0.5 rounded-full font-semibold">+{{ today_users }} today</span>
+                    {% endif %}
+                </div>
+                <a href="/manage/users/" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">View all</a>
+            </div>
+            {% if recent_users %}
+            <div class="divide-y divide-gray-50 dark:divide-zinc-800">
+                {% for u in recent_users %}
+                <a href="/manage/users/{{ u.pk }}/"
+                   class="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center
+                                text-white font-bold text-xs flex-shrink-0"
+                         style="background: hsl({{ u.pk|add:'200' }}, 65%, 45%)">
+                        {{ u.username|first|upper }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ u.username }}</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 truncate">{{ u.email }}</p>
+                    </div>
+                    <div class="text-right flex-shrink-0">
+                        <p class="text-xs font-semibold text-gray-900 dark:text-white">₦{{ u.wallet_balance|floatformat:0 }}</p>
+                        <p class="text-[10px] text-gray-400 dark:text-gray-500">{{ u.date_joined|date:"d M" }}</p>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="px-5 py-8 text-center text-gray-400 dark:text-gray-500 text-sm">No users yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Platform snapshot -->
+        <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+            <h3 class="font-bold text-gray-900 dark:text-white text-sm mb-4">Platform Snapshot</h3>
+            <dl class="space-y-3">
+                <div class="flex items-center justify-between gap-2 text-sm">
+                    <dt class="text-gray-400 dark:text-gray-500 text-xs">Total users</dt>
+                    <dd class="font-semibold text-gray-900 dark:text-white text-xs">{{ total_users }}</dd>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                    <dt class="text-gray-400 dark:text-gray-500 text-xs">Total orders</dt>
+                    <dd class="font-semibold text-gray-900 dark:text-white text-xs">{{ total_orders }}</dd>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                    <dt class="text-gray-400 dark:text-gray-500 text-xs">Pending orders</dt>
+                    <dd class="font-semibold {% if pending_orders %}text-orange-500{% else %}text-gray-900 dark:text-white{% endif %} text-xs">{{ pending_orders }}</dd>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                    <dt class="text-gray-400 dark:text-gray-500 text-xs">All-time revenue</dt>
+                    <dd class="font-semibold text-gray-900 dark:text-white text-xs">₦{{ total_revenue|floatformat:0 }}</dd>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                    <dt class="text-gray-400 dark:text-gray-500 text-xs">Wallet balances</dt>
+                    <dd class="font-semibold text-gray-900 dark:text-white text-xs">₦{{ total_wallet_balance|floatformat:0 }}</dd>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                    <dt class="text-gray-400 dark:text-gray-500 text-xs">Open tickets</dt>
+                    <dd class="font-semibold {% if open_tickets %}text-orange-500{% else %}text-gray-900 dark:text-white{% endif %} text-xs">{{ open_tickets }}</dd>
+                </div>
+            </dl>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

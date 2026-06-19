@@ -1,0 +1,13 @@
+{
+  "name": "SimPhantom",
+  "short_name": "SimPhantom",
+  "description": "Virtual numbers, OTP, VPN, eSIM, proxies and more.",
+  "icons": [
+    { "src": "/static/img/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/static/img/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/static/img/favicon.png",                "sizes": "512x512", "type": "image/png" }
+  ],
+  "theme_color": "#1e1b4b",
+  "background_color": "#0a0a18",
+  "display": "standalone"
+}

@@ -1,0 +1,140 @@
+﻿{% extends 'base.html' %}
+{% block title %}Cookie Policy — SimPhantom{% endblock %}
+
+{% block content %}
+
+<!-- Hero Header -->
+<div class="-mx-4 -mt-8 relative overflow-hidden bg-zinc-950 mb-12">
+    <div class="absolute inset-0 pointer-events-none"
+         style="background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:48px 48px"></div>
+    <div class="absolute top-0 left-1/2 w-80 h-80 bg-emerald-600/15 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="relative max-w-3xl mx-auto px-6 pt-14 pb-12">
+        <div class="flex items-center gap-2 text-sm text-zinc-400 mb-4">
+            <a href="/" class="hover:text-white transition">Home</a>
+            <span>/</span>
+            <span class="text-white">Cookie Policy</span>
+        </div>
+        <div class="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-white text-xs font-semibold px-3 py-1.5 rounded-full mb-5">
+            <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+            Legal Document
+        </div>
+        <h1 class="text-4xl font-extrabold text-white mb-3">Cookie Policy</h1>
+        <p class="text-zinc-400">Last updated: June 2026</p>
+    </div>
+</div>
+
+<div class="max-w-3xl mx-auto space-y-6 text-sm">
+
+    <!-- Intro -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">This Cookie Policy explains what cookies are, how SimPhantom uses them, and the choices you have. By continuing to use our platform, you consent to our use of cookies as described here.</p>
+    </div>
+
+    <!-- What are cookies -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-gray-900 dark:text-white font-bold text-lg mb-3">What Are Cookies?</h2>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Cookies are small text files stored on your device by your web browser when you visit a website. They allow the site to remember information about your visit like staying logged in between page loads so you don't have to re-enter it each time.</p>
+    </div>
+
+    <!-- Cookies we use -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-gray-900 dark:text-white font-bold text-lg mb-2">Cookies We Use</h2>
+        <p class="text-gray-600 dark:text-gray-300 mb-4">We keep our cookie use minimal. Here is every cookie we set:</p>
+        <div class="overflow-hidden rounded-xl border border-gray-100 dark:border-zinc-800">
+            <div class="bg-gray-50 dark:bg-zinc-800/60 border-b border-gray-100 dark:border-zinc-700 grid grid-cols-3 px-4 py-3">
+                <span class="text-gray-700 dark:text-gray-200 font-semibold text-xs uppercase">Cookie</span>
+                <span class="text-gray-700 dark:text-gray-200 font-semibold text-xs uppercase">Purpose</span>
+                <span class="text-gray-700 dark:text-gray-200 font-semibold text-xs uppercase">Duration</span>
+            </div>
+            <div class="divide-y divide-gray-100 dark:divide-zinc-800">
+                <div class="grid grid-cols-3 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-zinc-800/40 transition">
+                    <span class="text-blue-600 dark:text-blue-400 font-mono text-xs font-semibold">sessionid</span>
+                    <span class="text-gray-700 dark:text-gray-300">Keeps you logged in across pages</span>
+                    <span class="text-gray-500 dark:text-gray-400">Session / 2 weeks</span>
+                </div>
+                <div class="grid grid-cols-3 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-zinc-800/40 transition">
+                    <span class="text-blue-600 dark:text-blue-400 font-mono text-xs font-semibold">csrftoken</span>
+                    <span class="text-gray-700 dark:text-gray-300">Security prevents forgery attacks</span>
+                    <span class="text-gray-500 dark:text-gray-400">1 year</span>
+                </div>
+                <div class="grid grid-cols-3 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-zinc-800/40 transition">
+                    <span class="text-blue-600 dark:text-blue-400 font-mono text-xs font-semibold">darkmode</span>
+                    <span class="text-gray-700 dark:text-gray-300">Remembers theme preference</span>
+                    <span class="text-gray-500 dark:text-gray-400">1 year</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- What we don't use -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-gray-900 dark:text-white font-bold text-lg mb-4">What We Do NOT Use</h2>
+        <div class="space-y-3">
+            <div class="flex gap-3 p-3 bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-100 dark:border-red-900/30">
+                <span class="text-red-500 font-bold text-base flex-shrink-0">✗</span>
+                <p class="text-gray-700 dark:text-gray-300">We do <strong class="text-gray-900 dark:text-white">not</strong> use tracking cookies or third-party ad networks.</p>
+            </div>
+            <div class="flex gap-3 p-3 bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-100 dark:border-red-900/30">
+                <span class="text-red-500 font-bold text-base flex-shrink-0">✗</span>
+                <p class="text-gray-700 dark:text-gray-300">We do <strong class="text-gray-900 dark:text-white">not</strong> use Google Analytics or similar cross-site tracking services.</p>
+            </div>
+            <div class="flex gap-3 p-3 bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-100 dark:border-red-900/30">
+                <span class="text-red-500 font-bold text-base flex-shrink-0">✗</span>
+                <p class="text-gray-700 dark:text-gray-300">We do <strong class="text-gray-900 dark:text-white">not</strong> share cookie data with advertisers.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Essential + Managing -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-6 shadow-sm space-y-6">
+        <div>
+            <h2 class="text-gray-900 dark:text-white font-bold text-lg mb-3">Essential Cookies</h2>
+            <p class="text-gray-600 dark:text-gray-300 leading-relaxed">The <code class="bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-blue-600 dark:text-blue-400 font-mono text-xs">sessionid</code> and <code class="bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-blue-600 dark:text-blue-400 font-mono text-xs">csrftoken</code> cookies are <strong class="text-gray-900 dark:text-white">essential</strong> for the platform to function. Without them, you cannot log in or make secure requests. These cannot be disabled without breaking core functionality.</p>
+        </div>
+
+        <div class="border-t border-gray-100 dark:border-zinc-800 pt-6">
+            <h2 class="text-gray-900 dark:text-white font-bold text-lg mb-3">Managing Cookies</h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">You can control cookies through your browser settings:</p>
+            <div class="overflow-hidden rounded-xl border border-gray-100 dark:border-zinc-800">
+                <div class="divide-y divide-gray-100 dark:divide-zinc-800">
+                    <div class="flex justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-zinc-800/40 transition">
+                        <span class="text-gray-900 dark:text-white font-medium">Chrome</span>
+                        <span class="text-gray-500 dark:text-gray-400">Settings → Privacy and Security → Cookies</span>
+                    </div>
+                    <div class="flex justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-zinc-800/40 transition">
+                        <span class="text-gray-900 dark:text-white font-medium">Firefox</span>
+                        <span class="text-gray-500 dark:text-gray-400">Settings → Privacy & Security → Cookies</span>
+                    </div>
+                    <div class="flex justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-zinc-800/40 transition">
+                        <span class="text-gray-900 dark:text-white font-medium">Safari</span>
+                        <span class="text-gray-500 dark:text-gray-400">Preferences → Privacy → Cookies</span>
+                    </div>
+                    <div class="flex justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-zinc-800/40 transition">
+                        <span class="text-gray-900 dark:text-white font-medium">Edge</span>
+                        <span class="text-gray-500 dark:text-gray-400">Settings → Privacy → Cookies and site permissions</span>
+                    </div>
+                </div>
+            </div>
+            <p class="mt-3 text-gray-500 dark:text-gray-400">Note: disabling the essential session cookie will prevent you from logging into SimPhantom.</p>
+        </div>
+
+        <div class="border-t border-gray-100 dark:border-zinc-800 pt-6">
+            <h2 class="text-gray-900 dark:text-white font-bold text-lg mb-3">Changes to This Policy</h2>
+            <p class="text-gray-600 dark:text-gray-300 leading-relaxed">If we ever add new cookies for example, if we add analytics in the future we will update this policy and notify you through the platform before those cookies are set.</p>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="bg-emerald-600 rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+            <h2 class="text-white font-bold text-lg mb-1">Questions about cookies?</h2>
+            <p class="text-emerald-100 text-sm">Contact our support team for any clarifications.</p>
+        </div>
+        <a href="/contact/" class="flex-shrink-0 bg-white text-emerald-600 font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-emerald-50 transition flex items-center gap-2">
+            Contact Us
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        </a>
+    </div>
+
+</div>
+{% endblock %}

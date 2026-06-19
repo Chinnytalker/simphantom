@@ -1,0 +1,762 @@
+﻿{% extends 'base.html' %}
+{% block title %}Virtual Numbers — SimPhantom{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="mb-6 text-sm">
+    <a href="/" class="text-blue-600 dark:text-blue-400 hover:underline">Home</a>
+    <span class="text-gray-400 mx-1">/</span>
+    <a href="/services/" class="text-blue-600 dark:text-blue-400 hover:underline">Services</a>
+    <span class="text-gray-400 mx-1">/</span>
+    <span class="text-gray-600 dark:text-gray-400">Virtual Numbers</span>
+</div>
+
+<!-- Hero -->
+<div class="bg-zinc-950 rounded-2xl p-8 mb-8 text-white">
+    <div class="flex items-center gap-4 mb-6">
+        <div class="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center flex-shrink-0">
+            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+            </svg>
+        </div>
+        <div>
+            <h1 class="text-3xl font-extrabold">Virtual Numbers</h1>
+            <p class="text-zinc-400 mt-1 text-sm">Instant numbers from 190+ countries  paid in Naira, no FX stress</p>
+        </div>
+    </div>
+
+    <!-- Country search -->
+    <div class="relative max-w-xl">
+        <label class="block text-sm font-medium text-zinc-400 mb-2">
+            Search a country to see available services and prices
+        </label>
+        <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
+                 fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input id="country-search" type="text"
+                   placeholder="e.g. Nigeria, Russia, United States…"
+                   autocomplete="off"
+                   class="w-full pl-10 pr-4 py-3 rounded-xl text-gray-900 bg-white focus:outline-none
+                          focus:ring-2 focus:ring-blue-300 text-sm placeholder-gray-400"/>
+        </div>
+        <div id="country-dropdown"
+             class="hidden absolute z-30 w-full mt-1 bg-white dark:bg-zinc-800 border border-gray-200
+                    dark:border-zinc-700 rounded-xl shadow-xl max-h-56 overflow-y-auto">
+        </div>
+    </div>
+</div>
+
+<!-- Main grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <!-- Product area -->
+    <div class="lg:col-span-2">
+
+        <!-- Default: popular country grid -->
+        <div id="state-pick-country">
+            <div class="flex items-center justify-between mb-4">
+                <p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Popular Countries</p>
+                <p id="country-count-status" class="text-xs text-gray-400 dark:text-gray-500"></p>
+            </div>
+            <div id="popular-countries-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+                <!-- Skeleton placeholders -->
+                <div class="h-14 rounded-xl bg-gray-100 dark:bg-zinc-800 animate-pulse"></div>
+                <div class="h-14 rounded-xl bg-gray-100 dark:bg-zinc-800 animate-pulse"></div>
+                <div class="h-14 rounded-xl bg-gray-100 dark:bg-zinc-800 animate-pulse"></div>
+                <div class="h-14 rounded-xl bg-gray-100 dark:bg-zinc-800 animate-pulse"></div>
+                <div class="h-14 rounded-xl bg-gray-100 dark:bg-zinc-800 animate-pulse"></div>
+                <div class="h-14 rounded-xl bg-gray-100 dark:bg-zinc-800 animate-pulse"></div>
+            </div>
+        </div>
+
+        <!-- Loading state -->
+        <div id="state-loading"
+             class="hidden bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-14 text-center">
+            <div class="flex justify-center mb-4">
+                <svg class="animate-spin w-10 h-10 text-blue-600" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                </svg>
+            </div>
+            <p class="text-gray-500 dark:text-gray-400 text-sm">Loading services…</p>
+        </div>
+
+        <!-- Error state -->
+        <div id="state-error"
+             class="hidden bg-red-50 dark:bg-red-950/30 rounded-2xl border border-red-200 dark:border-red-800 p-10 text-center">
+            <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+            </div>
+            <p id="error-message" class="text-red-700 dark:text-red-300 text-sm"></p>
+            <button onclick="resetToCountryPicker()"
+                    class="mt-4 text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                &larr; Back to countries
+            </button>
+        </div>
+
+        <!-- Results state -->
+        <div id="state-results" class="hidden space-y-5">
+
+            <!-- Header row with back button -->
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <button onclick="resetToCountryPicker()"
+                            class="text-gray-400 hover:text-gray-600 dark:hover:text-white transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                    </button>
+                    <div>
+                        <h2 id="results-title" class="text-lg font-bold text-gray-900 dark:text-white"></h2>
+                        <p id="results-count" class="text-xs text-gray-400 dark:text-gray-500"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product search -->
+            <div class="bg-white dark:bg-zinc-900 border border-blue-200 dark:border-blue-800 rounded-2xl p-5">
+                <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                    Which service do you need a number for?
+                </p>
+                <div class="relative">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+                         fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input id="product-search" type="text"
+                           placeholder="e.g. WhatsApp, Facebook, Telegram, Google…"
+                           autocomplete="off"
+                           class="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 dark:border-zinc-700
+                                  bg-white dark:bg-zinc-800 text-gray-900 dark:text-white rounded-xl
+                                  focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400"/>
+                    <div id="product-dropdown"
+                         class="hidden absolute z-20 w-full mt-1 bg-white dark:bg-zinc-800 border border-gray-200
+                                dark:border-zinc-700 rounded-xl shadow-xl max-h-60 overflow-y-auto">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selected product card -->
+            <div id="selected-card"
+                 class="hidden bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-900/30
+                        border border-blue-200 dark:border-blue-800 rounded-2xl p-6">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <p class="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-1">Selected Service</p>
+                        <h3 id="sel-name" class="text-2xl font-bold text-gray-900 dark:text-white"></h3>
+                        <p id="sel-country" class="text-sm text-gray-500 dark:text-gray-400 mt-0.5"></p>
+                    </div>
+                    <button onclick="clearSelection()"
+                            class="text-xs text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition mt-1">
+                        &times; Clear
+                    </button>
+                </div>
+                <div class="flex items-end justify-between">
+                    <div>
+                        <p class="text-4xl font-bold text-blue-600 dark:text-blue-400" id="sel-price"></p>
+                        <p id="sel-qty" class="text-sm mt-1"></p>
+                    </div>
+                    <div id="sel-action"></div>
+                </div>
+            </div>
+
+            <!-- Browse all divider -->
+            <div class="flex items-center gap-3 pt-2">
+                <div class="flex-1 h-px bg-gray-200 dark:bg-zinc-700"></div>
+                <span class="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">or browse all services</span>
+                <div class="flex-1 h-px bg-gray-200 dark:bg-zinc-700"></div>
+            </div>
+
+            <!-- Filter + grid -->
+            <div>
+                <div class="flex justify-end mb-3">
+                    <input id="service-filter" type="text" placeholder="Filter services…"
+                           class="px-3 py-2 text-sm border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900
+                                  text-gray-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 w-44"/>
+                </div>
+                <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+                <div id="no-filter-results"
+                     class="hidden text-center py-8 text-gray-500 dark:text-gray-400 text-sm">
+                    No services match your filter.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-6">
+
+        <!-- Stats -->
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-6">
+            <h3 class="font-bold text-gray-900 dark:text-white mb-4 text-sm">Quick Stats</h3>
+            <div class="divide-y divide-gray-100 dark:divide-zinc-800 text-sm">
+                <div class="flex justify-between py-2.5">
+                    <span class="text-gray-500 dark:text-gray-400">Countries</span>
+                    <span class="font-bold text-gray-900 dark:text-white" id="stat-countries">190+</span>
+                </div>
+                <div class="flex justify-between py-2.5">
+                    <span class="text-gray-500 dark:text-gray-400">Services per country</span>
+                    <span class="font-bold text-gray-900 dark:text-white">500+</span>
+                </div>
+                <div class="flex justify-between py-2.5">
+                    <span class="text-gray-500 dark:text-gray-400">Avg. SMS delivery</span>
+                    <span class="font-bold text-gray-900 dark:text-white">~5 sec</span>
+                </div>
+                <div class="flex justify-between py-2.5">
+                    <span class="text-gray-500 dark:text-gray-400">Currency</span>
+                    <span class="font-bold text-green-600 dark:text-green-400">&#x20A6; Naira</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- How it works -->
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-6">
+            <h3 class="font-bold text-gray-900 dark:text-white mb-4 text-sm">How It Works</h3>
+            <ol class="space-y-4">
+                <li class="flex gap-3">
+                    <div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center">1</div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">Pick a Country</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Choose from the grid or search above</p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center">2</div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">Pick a Service</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">WhatsApp, Google, Telegram & more</p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center">3</div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">Buy with Your Wallet</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Deducted instantly in &#x20A6;</p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center">4</div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">Get the SMS Code</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Check order status from your dashboard</p>
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <!-- Why SimPhantom -->
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-6">
+            <h3 class="font-bold text-gray-900 dark:text-white mb-4 text-sm">Why SimPhantom?</h3>
+            <ul class="space-y-3">
+                <li class="flex gap-2 items-start text-sm">
+                    <svg class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    <span class="text-gray-600 dark:text-gray-400">Instant activation</span>
+                </li>
+                <li class="flex gap-2 items-start text-sm">
+                    <svg class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    <span class="text-gray-600 dark:text-gray-400">Pay in Naira — no FX fees</span>
+                </li>
+                <li class="flex gap-2 items-start text-sm">
+                    <svg class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    <span class="text-gray-600 dark:text-gray-400">Auto refund on cancel</span>
+                </li>
+                <li class="flex gap-2 items-start text-sm">
+                    <svg class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    <span class="text-gray-600 dark:text-gray-400">All major apps supported</span>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+</div>
+
+<!-- Buy confirmation modal -->
+<div id="buy-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeBuyModal()"></div>
+    <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-sm p-6
+                border border-gray-100 dark:border-zinc-800">
+        <button onclick="closeBuyModal()"
+                class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition text-xl leading-none">&times;</button>
+
+        <div class="text-center mb-5">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/40 mb-3">
+                <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                </svg>
+            </div>
+            <h3 id="modal-service-name" class="text-xl font-bold text-gray-900 dark:text-white"></h3>
+            <p id="modal-country-name" class="text-sm text-gray-500 dark:text-gray-400 mt-1"></p>
+        </div>
+
+        <div class="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 mb-5 space-y-2 text-sm">
+            <div class="flex justify-between items-center">
+                <span class="text-gray-500 dark:text-gray-400">Amount</span>
+                <span class="font-bold text-gray-900 dark:text-white text-lg" id="modal-price"></span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-500 dark:text-gray-400">Paid from</span>
+                <span class="text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                    </svg>
+                    Wallet
+                </span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-500 dark:text-gray-400">Operator</span>
+                <span class="text-gray-700 dark:text-gray-300">Best available</span>
+            </div>
+        </div>
+
+        <div class="flex gap-3">
+            <button onclick="closeBuyModal()"
+                    class="flex-1 py-2.5 border border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-gray-300
+                           rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition text-sm font-medium">
+                Cancel
+            </button>
+            <button id="modal-confirm-btn" onclick="confirmBuy()"
+                    class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition
+                           text-sm font-semibold shadow">
+                Confirm Purchase
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+    'use strict';
+
+    const IS_AUTH = {% if user.is_authenticated %}true{% else %}false{% endif %};
+    const CSRF = '{{ csrf_token }}';
+
+    // ── Popular countries (5sim codes + display names) ────────────────────
+    const POPULAR_COUNTRIES = [
+        { code: 'russia',       name: 'Russia' },
+        { code: 'ukraine',      name: 'Ukraine' },
+        { code: 'kazakhstan',   name: 'Kazakhstan' },
+        { code: 'indonesia',    name: 'Indonesia' },
+        { code: 'india',        name: 'India' },
+        { code: 'philippines',  name: 'Philippines' },
+        { code: 'usa',          name: 'United States' },
+        { code: 'england',      name: 'United Kingdom' },
+        { code: 'vietnam',      name: 'Vietnam' },
+        { code: 'bangladesh',   name: 'Bangladesh' },
+        { code: 'brazil',       name: 'Brazil' },
+        { code: 'mexico',       name: 'Mexico' },
+        { code: 'nigeria',      name: 'Nigeria' },
+        { code: 'ghana',        name: 'Ghana' },
+        { code: 'pakistan',     name: 'Pakistan' },
+        { code: 'colombia',     name: 'Colombia' },
+    ];
+
+    const ALIASES = {
+        'usa':                  ['united states', 'united states of america', 'america', 'us'],
+        'england':              ['uk', 'united kingdom', 'britain', 'great britain'],
+        'uae':                  ['united arab emirates', 'emirates', 'dubai', 'abu dhabi'],
+        'hongkong':             ['hong kong'],
+        'southkorea':           ['south korea', 'korea'],
+        'saudiarabia':          ['saudi arabia', 'ksa'],
+        'southafrica':          ['south africa'],
+        'newzealand':           ['new zealand'],
+        'costarica':            ['costa rica'],
+        'dominicanrepublic':    ['dominican republic'],
+        'elsalvador':           ['el salvador'],
+        'papuanewguinea':       ['papua new guinea'],
+        'sierraleone':          ['sierra leone'],
+        'trinidadandtobago':    ['trinidad and tobago', 'trinidad'],
+        'northmacedonia':       ['north macedonia', 'macedonia'],
+        'czechrepublic':        ['czech republic', 'czechia'],
+        'congodrc':             ['congo', 'democratic republic of congo'],
+        'bosniaandherzegovina': ['bosnia', 'herzegovina'],
+        'antiguaandbarbuda':    ['antigua', 'barbuda'],
+    };
+
+    let allCountries = {};
+    let currentCountryCode = '';
+    let currentCountryName = '';
+    let currentProducts = {};
+    let pendingBuy = null;
+
+    // ── Load full country list ────────────────────────────────────────────
+    async function loadCountries() {
+        try {
+            const res = await fetch('/api/services/countries/');
+            allCountries = await res.json();
+            const count = Object.keys(allCountries).length;
+            const statusEl = document.getElementById('country-count-status');
+            if (statusEl && count > 0) statusEl.textContent = count + ' countries available';
+            const statEl = document.getElementById('stat-countries');
+            if (statEl && count > 0) statEl.textContent = count + '+';
+        } catch (e) {
+            // silently ignore — popular grid still works
+        }
+        renderPopularGrid(document.getElementById('country-search').value.trim());
+    }
+
+    // ── Render popular countries grid ─────────────────────────────────────
+    function renderPopularGrid(filterText) {
+        const grid = document.getElementById('popular-countries-grid');
+        const q = (filterText || '').toLowerCase();
+
+        let items;
+        if (q) {
+            // When searching: show matching popular countries + full list matches
+            const popularMatches = POPULAR_COUNTRIES.filter(c =>
+                c.name.toLowerCase().includes(q) || c.code.includes(q) ||
+                (ALIASES[c.code] || []).some(a => a.includes(q))
+            );
+            const popularCodes = new Set(POPULAR_COUNTRIES.map(c => c.code));
+            const extras = Object.entries(allCountries)
+                .filter(([code, v]) => !popularCodes.has(code) && countryMatches(code, v, q))
+                .sort(([, a], [, b]) => (a.text_en || '').localeCompare(b.text_en || ''))
+                .slice(0, 12)
+                .map(([code, v]) => ({ code, name: v.text_en || capitalize(code) }));
+            items = [...popularMatches, ...extras].slice(0, 24);
+        } else {
+            items = POPULAR_COUNTRIES;
+        }
+
+        grid.innerHTML = '';
+
+        if (items.length === 0) {
+            grid.innerHTML = '<p class="col-span-3 text-center text-gray-400 dark:text-gray-500 text-sm py-8">No countries match "' + filterText + '".</p>';
+            return;
+        }
+
+        items.forEach(function (c) {
+            const btn = document.createElement('button');
+            btn.className = 'group flex items-center gap-3 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-3.5 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-sm transition text-left w-full';
+            btn.innerHTML =
+                '<div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">' +
+                    '<svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">' +
+                        '<path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>' +
+                    '</svg>' +
+                '</div>' +
+                '<span class="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition truncate">' +
+                c.name + '</span>';
+            btn.addEventListener('click', function () {
+                document.getElementById('country-search').value = c.name;
+                loadProducts(c.code, c.name);
+            });
+            grid.appendChild(btn);
+        });
+    }
+
+    // ── State management ──────────────────────────────────────────────────
+    function setState(s) {
+        ['pick-country', 'loading', 'error', 'results'].forEach(function (id) {
+            document.getElementById('state-' + id).classList.toggle('hidden', id !== s);
+        });
+    }
+
+    function resetToCountryPicker() {
+        currentCountryCode = '';
+        currentCountryName = '';
+        currentProducts = {};
+        document.getElementById('country-search').value = '';
+        document.getElementById('product-search').value = '';
+        document.getElementById('service-filter').value = '';
+        clearSelection();
+        renderPopularGrid('');
+        setState('pick-country');
+    }
+
+    // ── Country search / dropdown ─────────────────────────────────────────
+    const countryInput = document.getElementById('country-search');
+    const countryDropdown = document.getElementById('country-dropdown');
+
+    function countryMatches(code, info, q) {
+        if (info.text_en && info.text_en.toLowerCase().includes(q)) return true;
+        if (code.toLowerCase().includes(q)) return true;
+        return (ALIASES[code] || []).some(a => a.includes(q));
+    }
+
+    countryInput.addEventListener('input', function () {
+        const q = this.value.trim().toLowerCase();
+        // Also update the popular grid if we're in the picker state
+        if (!document.getElementById('state-results').classList.contains('hidden') === false) {
+            renderPopularGrid(this.value.trim());
+        } else {
+            renderPopularGrid(this.value.trim());
+        }
+
+        if (!q) { countryDropdown.classList.add('hidden'); return; }
+
+        const matches = Object.entries(allCountries)
+            .filter(([code, v]) => countryMatches(code, v, q))
+            .sort(([, a], [, b]) => (a.text_en || '').localeCompare(b.text_en || ''))
+            .slice(0, 20);
+
+        if (!matches.length) { countryDropdown.classList.add('hidden'); return; }
+
+        countryDropdown.innerHTML = matches.map(function (entry) {
+            const code = entry[0], v = entry[1];
+            const label = v.text_en || capitalize(code);
+            return '<button type="button" data-code="' + code + '" data-name="' + label + '" ' +
+                'class="w-full text-left px-4 py-2.5 text-sm text-gray-800 dark:text-gray-200 ' +
+                'hover:bg-blue-50 dark:hover:bg-zinc-700 transition border-b border-gray-100 ' +
+                'dark:border-zinc-700 last:border-0">' + label + '</button>';
+        }).join('');
+        countryDropdown.classList.remove('hidden');
+    });
+
+    countryDropdown.addEventListener('click', function (e) {
+        const btn = e.target.closest('button[data-code]');
+        if (!btn) return;
+        countryInput.value = btn.dataset.name;
+        countryDropdown.classList.add('hidden');
+        loadProducts(btn.dataset.code, btn.dataset.name);
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!countryInput.contains(e.target) && !countryDropdown.contains(e.target)) {
+            countryDropdown.classList.add('hidden');
+        }
+    });
+
+    // ── Load products for selected country ────────────────────────────────
+    async function loadProducts(countryCode, countryName) {
+        currentCountryCode = countryCode;
+        currentCountryName = countryName;
+        clearSelection();
+        document.getElementById('product-search').value = '';
+        setState('loading');
+
+        try {
+            const res = await fetch('/api/services/products/' + countryCode + '/');
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            currentProducts = data;
+            renderGrid(data, countryName);
+            setState('results');
+        } catch (e) {
+            document.getElementById('error-message').textContent =
+                e.message || 'Failed to load services for this country.';
+            setState('error');
+        }
+    }
+
+    // ── Render the browse-all grid ────────────────────────────────────────
+    function renderGrid(products, countryName) {
+        const grid = document.getElementById('products-grid');
+        const entries = Object.entries(products)
+            .filter(function (e) { return e[1].naira_price && (e[1].Qty || 0) > 0; })
+            .sort(function (a, b) { return a[1].naira_price - b[1].naira_price; });
+
+        document.getElementById('results-title').textContent = countryName;
+        document.getElementById('results-count').textContent =
+            entries.length + ' service' + (entries.length !== 1 ? 's' : '') + ' available';
+        document.getElementById('service-filter').value = '';
+        document.getElementById('no-filter-results').classList.add('hidden');
+
+        if (!entries.length) {
+            grid.innerHTML = '<div class="col-span-2 text-center py-12 text-gray-500 dark:text-gray-400 text-sm">No services are currently available for this country.</div>';
+            return;
+        }
+        grid.innerHTML = entries.map(function (e) { return makeCard(e[0], e[1]); }).join('');
+    }
+
+    function makeCard(name, d) {
+        const label = name.replace(/[_-]/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+        const price = fmtPrice(d.naira_price);
+        const qty = d.Qty || 0;
+        const qtyColor = qty < 10 ? 'text-orange-500 dark:text-orange-400' : 'text-gray-400 dark:text-gray-500';
+        const action = IS_AUTH
+            ? '<button onclick="buyNumber(\'' + name + '\', ' + d.naira_price + ', \'' + currentCountryCode + '\')" ' +
+              'class="w-full mt-auto bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2.5 rounded-xl transition">' +
+              'Buy &mdash; &#x20A6;' + price + '</button>'
+            : '<a href="/login/" class="block w-full mt-auto text-center bg-blue-600 hover:bg-blue-700 ' +
+              'text-white text-sm font-medium py-2.5 rounded-xl transition">Sign in to Buy</a>';
+        return '<div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 ' +
+            'flex flex-col gap-3 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 transition ' +
+            'cursor-pointer" data-service="' + name + '" onclick="selectProduct(\'' + name + '\')">' +
+            '<div class="flex items-start justify-between gap-2">' +
+                '<h4 class="font-semibold text-gray-900 dark:text-white text-sm leading-snug">' + label + '</h4>' +
+                '<span class="text-xs ' + qtyColor + ' whitespace-nowrap pt-0.5">' + qty + ' left</span>' +
+            '</div>' +
+            '<p class="text-2xl font-bold text-blue-600 dark:text-blue-400">&#x20A6;' + price + '</p>' +
+            action +
+            '</div>';
+    }
+
+    // ── Product search dropdown ───────────────────────────────────────────
+    const productInput = document.getElementById('product-search');
+    const productDropdown = document.getElementById('product-dropdown');
+
+    productInput.addEventListener('input', function () {
+        const q = this.value.trim().toLowerCase();
+        if (!q) { productDropdown.classList.add('hidden'); return; }
+
+        const matches = Object.entries(currentProducts)
+            .filter(function (e) {
+                return e[1].naira_price && (e[1].Qty || 0) > 0 &&
+                    e[0].replace(/[_-]/g, ' ').toLowerCase().includes(q);
+            })
+            .sort(function (a, b) { return a[0].localeCompare(b[0]); })
+            .slice(0, 15);
+
+        if (!matches.length) { productDropdown.classList.add('hidden'); return; }
+
+        productDropdown.innerHTML = matches.map(function (e) {
+            const name = e[0], d = e[1];
+            const label = name.replace(/[_-]/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+            return '<button type="button" data-name="' + name + '" ' +
+                'class="w-full flex items-center justify-between px-4 py-3 text-sm hover:bg-blue-50 ' +
+                'dark:hover:bg-zinc-700 transition border-b border-gray-100 dark:border-zinc-700 last:border-0">' +
+                '<span class="font-medium text-gray-800 dark:text-gray-200">' + label + '</span>' +
+                '<span class="text-blue-600 dark:text-blue-400 font-bold ml-4 whitespace-nowrap">&#x20A6;' + fmtPrice(d.naira_price) + '</span>' +
+                '</button>';
+        }).join('');
+        productDropdown.classList.remove('hidden');
+    });
+
+    productDropdown.addEventListener('click', function (e) {
+        const btn = e.target.closest('button[data-name]');
+        if (!btn) return;
+        const name = btn.dataset.name;
+        productInput.value = name.replace(/[_-]/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+        productDropdown.classList.add('hidden');
+        selectProduct(name);
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!productInput.contains(e.target) && !productDropdown.contains(e.target)) {
+            productDropdown.classList.add('hidden');
+        }
+    });
+
+    // ── Selected product card ─────────────────────────────────────────────
+    function selectProduct(name) {
+        const d = currentProducts[name];
+        if (!d) return;
+
+        const label = name.replace(/[_-]/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+        const qty = d.Qty || 0;
+        const price = fmtPrice(d.naira_price);
+        const qtyColor = qty < 10 ? 'text-orange-500 dark:text-orange-400' : 'text-green-600 dark:text-green-400';
+
+        document.getElementById('sel-name').textContent = label;
+        document.getElementById('sel-country').textContent = currentCountryName;
+        document.getElementById('sel-price').textContent = '₦' + price;
+        document.getElementById('sel-qty').innerHTML =
+            '<span class="' + qtyColor + ' font-medium">' + qty + ' number' + (qty !== 1 ? 's' : '') + ' available</span>';
+
+        document.getElementById('sel-action').innerHTML = IS_AUTH
+            ? '<button onclick="buyNumber(\'' + name + '\', ' + d.naira_price + ', \'' + currentCountryCode + '\')" ' +
+              'class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition text-sm shadow">' +
+              'Buy Now &mdash; &#x20A6;' + price + '</button>'
+            : '<a href="/login/" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold ' +
+              'px-6 py-3 rounded-xl transition text-sm shadow">Sign in to Buy</a>';
+
+        document.getElementById('selected-card').classList.remove('hidden');
+        document.getElementById('selected-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        document.querySelectorAll('#products-grid [data-service]').forEach(function (card) {
+            card.classList.toggle('ring-2', card.dataset.service === name);
+            card.classList.toggle('ring-blue-500', card.dataset.service === name);
+        });
+    }
+
+    function clearSelection() {
+        document.getElementById('selected-card').classList.add('hidden');
+        document.querySelectorAll('#products-grid [data-service]').forEach(function (card) {
+            card.classList.remove('ring-2', 'ring-blue-500');
+        });
+    }
+
+    // ── Filter grid ───────────────────────────────────────────────────────
+    document.getElementById('service-filter').addEventListener('input', function () {
+        const q = this.value.trim().toLowerCase();
+        const cards = document.querySelectorAll('#products-grid [data-service]');
+        let visible = 0;
+        cards.forEach(function (card) {
+            const match = !q || card.dataset.service.toLowerCase().includes(q);
+            card.style.display = match ? '' : 'none';
+            if (match) visible++;
+        });
+        document.getElementById('no-filter-results').classList.toggle('hidden', visible > 0);
+    });
+
+    // ── Buy modal ─────────────────────────────────────────────────────────
+    window.buyNumber = function (product, price, country) {
+        const label = product.replace(/[_-]/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+        pendingBuy = { product: product, price: price, country: country, label: label };
+
+        document.getElementById('modal-service-name').textContent = label;
+        document.getElementById('modal-country-name').textContent = currentCountryName;
+        document.getElementById('modal-price').textContent = '₦' + fmtPrice(price);
+
+        const btn = document.getElementById('modal-confirm-btn');
+        btn.disabled = false;
+        btn.textContent = 'Confirm Purchase';
+
+        document.getElementById('buy-modal').classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    };
+
+    window.closeBuyModal = function () {
+        document.getElementById('buy-modal').classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+        pendingBuy = null;
+    };
+
+    window.confirmBuy = async function () {
+        if (!pendingBuy) return;
+        const { product, price, country, label } = pendingBuy;
+
+        const btn = document.getElementById('modal-confirm-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<svg class="animate-spin w-4 h-4 inline mr-2" fill="none" viewBox="0 0 24 24">' +
+            '<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>' +
+            '<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>Processing…';
+
+        try {
+            const res = await fetch('/api/orders/buy/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+                body: JSON.stringify({ country: country, product: product, price: price, operator: 'any' }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Purchase failed');
+
+            closeBuyModal();
+            showToast(
+                label + ' number purchased! Your number: <strong>' + data.phone + '</strong> &nbsp;&middot;&nbsp; Order #' + data.id + '. Redirecting…',
+                'success', 7000
+            );
+            setTimeout(function () { window.location.href = '/dashboard/'; }, 2500);
+        } catch (e) {
+            closeBuyModal();
+            showToast(e.message || 'Purchase failed. Please try again.', 'error');
+        }
+    };
+
+    // ── Utilities ─────────────────────────────────────────────────────────
+    function fmtPrice(n) {
+        return n.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    // Expose for HTML onclick
+    window.selectProduct = selectProduct;
+    window.clearSelection = clearSelection;
+    window.resetToCountryPicker = resetToCountryPicker;
+
+    // ── Init ──────────────────────────────────────────────────────────────
+    setState('pick-country');
+    renderPopularGrid('');
+    loadCountries();
+})();
+</script>
+{% endblock %}

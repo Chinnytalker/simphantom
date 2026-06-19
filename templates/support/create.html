@@ -1,0 +1,290 @@
+﻿{% extends 'base.html' %}
+{% block title %}New Support Ticket — SimPhantom{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+
+    <!-- Back nav -->
+    <a href="/support/" class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400
+                               hover:text-blue-600 dark:hover:text-blue-400 transition mb-5">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Back to tickets
+    </a>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Form (2/3) -->
+        <div class="lg:col-span-2">
+            <div class="mb-5">
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Open a Support Ticket</h1>
+                <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Describe your issue and we'll get back to you shortly.</p>
+            </div>
+
+            <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+
+                {% if error %}
+                <div class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800
+                            text-red-700 dark:text-red-300 px-4 py-3 rounded-xl text-sm mb-5 flex items-center gap-2">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    {{ error }}
+                </div>
+                {% endif %}
+
+                <form method="post" class="space-y-5" id="ticket-form">
+                    {% csrf_token %}
+
+                    <!-- Subject -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                            Subject <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="subject"
+                               value="{{ form_data.subject|default:'' }}"
+                               placeholder="Brief description of your issue"
+                               maxlength="200"
+                               class="w-full border border-gray-200 dark:border-zinc-700 rounded-xl px-4 py-3
+                                      bg-white dark:bg-zinc-800 text-gray-900 dark:text-white
+                                      focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm
+                                      placeholder:text-gray-400 dark:placeholder:text-zinc-500"
+                               required/>
+                    </div>
+
+                    <!-- Category -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Category</label>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {% with cats=form_data.category|default:'OTHER' %}
+                            <label class="category-option">
+                                <input type="radio" name="category" value="PAYMENT" class="sr-only"
+                                       {% if cats == 'PAYMENT' %}checked{% endif %}>
+                                <span class="flex flex-col items-center gap-1.5 cursor-pointer border border-gray-200 dark:border-zinc-700
+                                             rounded-xl px-3 py-3 text-center hover:border-blue-400 dark:hover:border-blue-600
+                                             transition group peer-checked:border-blue-500">
+                                    <span class="text-xl">💳</span>
+                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Payment</span>
+                                </span>
+                            </label>
+                            <label class="category-option">
+                                <input type="radio" name="category" value="ORDER" class="sr-only"
+                                       {% if cats == 'ORDER' %}checked{% endif %}>
+                                <span class="flex flex-col items-center gap-1.5 cursor-pointer border border-gray-200 dark:border-zinc-700
+                                             rounded-xl px-3 py-3 text-center hover:border-blue-400 dark:hover:border-blue-600 transition">
+                                    <span class="text-xl">📦</span>
+                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Order</span>
+                                </span>
+                            </label>
+                            <label class="category-option">
+                                <input type="radio" name="category" value="ACCOUNT" class="sr-only"
+                                       {% if cats == 'ACCOUNT' %}checked{% endif %}>
+                                <span class="flex flex-col items-center gap-1.5 cursor-pointer border border-gray-200 dark:border-zinc-700
+                                             rounded-xl px-3 py-3 text-center hover:border-blue-400 dark:hover:border-blue-600 transition">
+                                    <span class="text-xl">👤</span>
+                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Account</span>
+                                </span>
+                            </label>
+                            <label class="category-option">
+                                <input type="radio" name="category" value="TECHNICAL" class="sr-only"
+                                       {% if cats == 'TECHNICAL' %}checked{% endif %}>
+                                <span class="flex flex-col items-center gap-1.5 cursor-pointer border border-gray-200 dark:border-zinc-700
+                                             rounded-xl px-3 py-3 text-center hover:border-blue-400 dark:hover:border-blue-600 transition">
+                                    <span class="text-xl">⚙️</span>
+                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Technical</span>
+                                </span>
+                            </label>
+                            <label class="category-option">
+                                <input type="radio" name="category" value="OTHER" class="sr-only"
+                                       {% if cats == 'OTHER' or not form_data.category %}checked{% endif %}>
+                                <span class="flex flex-col items-center gap-1.5 cursor-pointer border border-gray-200 dark:border-zinc-700
+                                             rounded-xl px-3 py-3 text-center hover:border-blue-400 dark:hover:border-blue-600 transition">
+                                    <span class="text-xl">💬</span>
+                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Other</span>
+                                </span>
+                            </label>
+                            {% endwith %}
+                        </div>
+                    </div>
+
+                    <!-- Message -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                            Message <span class="text-red-500">*</span>
+                        </label>
+                        <textarea name="message" rows="7" id="msg-body"
+                                  placeholder="Describe your issue in detail. Include any order IDs, error messages, or screenshots if relevant."
+                                  class="w-full border border-gray-200 dark:border-zinc-700 rounded-xl px-4 py-3
+                                         bg-white dark:bg-zinc-800 text-gray-900 dark:text-white
+                                         focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none
+                                         placeholder:text-gray-400 dark:placeholder:text-zinc-500"
+                                  required>{{ form_data.message|default:'' }}</textarea>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1.5" id="char-count">0 / 3000 characters</p>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex gap-3 pt-1">
+                        <a href="/support/"
+                           class="flex-1 text-center border border-gray-200 dark:border-zinc-700 text-gray-600
+                                  dark:text-gray-400 font-semibold py-3 rounded-xl hover:bg-gray-50
+                                  dark:hover:bg-zinc-800 transition text-sm">
+                            Cancel
+                        </a>
+                        <button type="submit" id="submit-btn"
+                                class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white
+                                       font-bold py-3 rounded-xl transition text-sm shadow-sm
+                                       flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                            </svg>
+                            Submit Ticket
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sidebar tips (1/3) -->
+        <div class="space-y-4">
+
+            <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+                <h3 class="font-bold text-gray-900 dark:text-white text-sm mb-4 flex items-center gap-2">
+                    <div class="w-7 h-7 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center">
+                        <svg class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    Tips for faster help
+                </h3>
+                <ul class="space-y-3">
+                    <li class="flex items-start gap-2.5">
+                        <span class="flex-shrink-0 w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400
+                                     text-xs font-bold flex items-center justify-center mt-0.5">1</span>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                            Include your <strong class="text-gray-900 dark:text-white">order ID</strong> if the issue relates to a purchase.
+                        </p>
+                    </li>
+                    <li class="flex items-start gap-2.5">
+                        <span class="flex-shrink-0 w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400
+                                     text-xs font-bold flex items-center justify-center mt-0.5">2</span>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                            Paste any <strong class="text-gray-900 dark:text-white">error messages</strong> exactly as they appear.
+                        </p>
+                    </li>
+                    <li class="flex items-start gap-2.5">
+                        <span class="flex-shrink-0 w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400
+                                     text-xs font-bold flex items-center justify-center mt-0.5">3</span>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                            Add <strong class="text-gray-900 dark:text-white">URGENT</strong> to your subject for time-sensitive issues.
+                        </p>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+                <h3 class="font-bold text-gray-900 dark:text-white text-sm mb-3 flex items-center gap-2">
+                    <div class="w-7 h-7 bg-green-100 dark:bg-green-900/40 rounded-lg flex items-center justify-center">
+                        <svg class="w-3.5 h-3.5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    Response time
+                </h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                    We typically reply within <strong class="text-gray-900 dark:text-white">1–4 hours</strong> during business hours (Mon–Sat, 8am–8pm WAT).
+                </p>
+                <div class="mt-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <span class="text-xs text-green-600 dark:text-green-400 font-medium">Support is online</span>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+                <h3 class="font-bold text-gray-900 dark:text-white text-sm mb-3">Common issues</h3>
+                <ul class="space-y-2">
+                    <li>
+                        <button type="button" onclick="fillSubject('Wallet not credited after payment')"
+                                class="text-xs text-blue-600 dark:text-blue-400 hover:underline text-left">
+                            Wallet not credited after payment
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" onclick="fillSubject('Virtual number not receiving SMS')"
+                                class="text-xs text-blue-600 dark:text-blue-400 hover:underline text-left">
+                            Virtual number not receiving SMS
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" onclick="fillSubject('OTP code not arriving')"
+                                class="text-xs text-blue-600 dark:text-blue-400 hover:underline text-left">
+                            OTP code not arriving
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" onclick="fillSubject('Refund request for cancelled order')"
+                                class="text-xs text-blue-600 dark:text-blue-400 hover:underline text-left">
+                            Refund request for cancelled order
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" onclick="fillSubject('Account access issue')"
+                                class="text-xs text-blue-600 dark:text-blue-400 hover:underline text-left">
+                            Account access issue
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<style>
+.category-option input[type="radio"]:checked + span {
+    border-color: #2563eb;
+    background-color: rgb(239 246 255);
+    color: #1d4ed8;
+}
+.dark .category-option input[type="radio"]:checked + span {
+    border-color: #3b82f6;
+    background-color: rgba(59, 130, 246, 0.15);
+}
+.category-option input[type="radio"]:checked + span span:last-child {
+    color: #1d4ed8;
+    font-weight: 700;
+}
+.dark .category-option input[type="radio"]:checked + span span:last-child {
+    color: #93c5fd;
+}
+</style>
+<script>
+function fillSubject(text) {
+    var inp = document.querySelector('input[name="subject"]');
+    if (inp) { inp.value = text; inp.focus(); }
+}
+
+// Character counter
+var msgBody = document.getElementById('msg-body');
+var charCount = document.getElementById('char-count');
+if (msgBody && charCount) {
+    function updateCount() {
+        var n = msgBody.value.length;
+        charCount.textContent = n + ' / 3000 characters';
+        charCount.classList.toggle('text-red-500', n > 2900);
+        charCount.classList.toggle('text-gray-400', n <= 2900);
+    }
+    msgBody.addEventListener('input', updateCount);
+    updateCount();
+}
+
+// Prevent double-submit
+document.getElementById('ticket-form').addEventListener('submit', function () {
+    var btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<svg class="animate-spin w-4 h-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg><span>Submitting…</span>';
+});
+</script>
+{% endblock %}

@@ -1,0 +1,1109 @@
+﻿{% extends 'base.html' %}
+{% block title %}Dashboard — SimPhantom{% endblock %}
+
+{% block content %}
+<!-- ══════════════════════════════════════════════════════
+     PAGE HEADER
+═══════════════════════════════════════════════════════ -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+            Welcome back, <span class="text-blue-600 dark:text-blue-400">{{ user.username }}</span>
+        </h1>
+        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Here's what's happening with your account.</p>
+    </div>
+    <button onclick="openTopUp()"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl
+                   transition flex items-center gap-2 text-sm shadow-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        Top Up Wallet
+    </button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     STATS CARDS
+═══════════════════════════════════════════════════════ -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+    <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-5 text-white shadow">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-blue-200 text-xs font-medium uppercase tracking-wider">Wallet Balance</span>
+            <svg class="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+            </svg>
+        </div>
+        <p class="text-3xl font-extrabold"
+           id="wallet-balance-display"
+           data-balance="{{ user.wallet_balance }}">₦{{ user.wallet_balance|floatformat:2 }}</p>
+        <button onclick="openTopUp()" class="mt-3 text-xs text-blue-200 hover:text-white transition">+ Add funds →</button>
+    </div>
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-gray-400 dark:text-gray-500 text-xs font-medium uppercase tracking-wider">Active Orders</span>
+            <div class="w-8 h-8 bg-orange-100 dark:bg-orange-900/40 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+        </div>
+        <p class="text-3xl font-extrabold text-gray-900 dark:text-white">{{ active_orders }}</p>
+        <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">Pending numbers</p>
+    </div>
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-gray-400 dark:text-gray-500 text-xs font-medium uppercase tracking-wider">Total Spent</span>
+            <div class="w-8 h-8 bg-green-100 dark:bg-green-900/40 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+            </div>
+        </div>
+        <p class="text-3xl font-extrabold text-gray-900 dark:text-white">₦{{ total_spent|floatformat:2 }}</p>
+        <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">Across all orders</p>
+    </div>
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-gray-400 dark:text-gray-500 text-xs font-medium uppercase tracking-wider">Quick Buy</span>
+            <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+            </div>
+        </div>
+        <p class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Need a virtual number?</p>
+        <a href="/services/virtual-numbers/"
+           class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition inline-block">
+            Browse Numbers →
+        </a>
+    </div>
+</div>
+
+{% if user.is_staff or user.is_superuser %}
+<!-- ══════════════════════════════════════════════════════
+     OWNER: API BALANCE MONITOR
+═══════════════════════════════════════════════════════ -->
+<div class="mb-8">
+    <p class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">
+        Owner Panel — API Balances
+    </p>
+    <!-- Mobile: horizontal scroll row  |  sm+: 3-col grid -->
+    <div class="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0 sm:mx-0 sm:px-0">
+
+        <!-- 5sim -->
+        <div class="flex-shrink-0 w-64 sm:w-auto bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-gray-400 dark:text-gray-500 text-xs font-medium uppercase tracking-wider">5sim Balance</span>
+                <div class="w-8 h-8 bg-violet-100 dark:bg-violet-900/40 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-violet-600 dark:text-violet-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+            </div>
+            {% if fivesim_balance is not None %}
+                {% if fivesim_balance < 5 %}
+                    <p class="text-3xl font-extrabold text-red-500">${{ fivesim_balance|floatformat:2 }}</p>
+                    <p class="mt-1 text-xs text-red-400 font-semibold">⚠ Low top up now</p>
+                {% elif fivesim_balance < 20 %}
+                    <p class="text-3xl font-extrabold text-amber-500">${{ fivesim_balance|floatformat:2 }}</p>
+                    <p class="mt-1 text-xs text-amber-400">Getting low</p>
+                {% else %}
+                    <p class="text-3xl font-extrabold text-gray-900 dark:text-white">${{ fivesim_balance|floatformat:2 }}</p>
+                    <p class="mt-1 text-xs text-green-500">✓ Healthy</p>
+                {% endif %}
+            {% else %}
+                <p class="text-3xl font-extrabold text-gray-400">—</p>
+                <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">Could not fetch</p>
+            {% endif %}
+            <a href="https://5sim.net" target="_blank"
+               class="mt-3 text-xs text-blue-600 dark:text-blue-400 hover:underline inline-block">
+                Top up on 5sim.net →
+            </a>
+        </div>
+
+        <!-- SMS Credits -->
+        <div class="flex-shrink-0 w-64 sm:w-auto bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm opacity-60">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-gray-400 dark:text-gray-500 text-xs font-medium uppercase tracking-wider">SMS Credits</span>
+                <div class="w-8 h-8 bg-teal-100 dark:bg-teal-900/40 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-3xl font-extrabold text-gray-400">—</p>
+            <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">Check on provider dashboard</p>
+        </div>
+
+        <!-- Proxy Account -->
+        <div class="flex-shrink-0 w-64 sm:w-auto bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm opacity-60">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-gray-400 dark:text-gray-500 text-xs font-medium uppercase tracking-wider">Proxy Account</span>
+                <div class="w-8 h-8 bg-orange-100 dark:bg-orange-900/40 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-3xl font-extrabold text-gray-400">—</p>
+            <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">Check on provider dashboard</p>
+        </div>
+
+    </div>
+</div>
+{% endif %}
+
+<!-- ══════════════════════════════════════════════════════
+     MAIN CONTENT GRID
+═══════════════════════════════════════════════════════ -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Recent Orders (2/3 width) -->
+    <div class="lg:col-span-2 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                rounded-2xl shadow-sm overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800">
+            <h2 class="font-bold text-gray-900 dark:text-white">Recent Orders</h2>
+            <span class="text-xs text-gray-400 dark:text-gray-500">Last 10</span>
+        </div>
+        {% if recent_orders %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-left text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide
+                               border-b border-gray-100 dark:border-zinc-800">
+                        <th class="px-6 py-3 font-medium">Service</th>
+                        <th class="px-6 py-3 font-medium">Number</th>
+                        <th class="px-6 py-3 font-medium">SMS Code</th>
+                        <th class="px-6 py-3 font-medium">Amount</th>
+                        <th class="px-6 py-3 font-medium">Status</th>
+                        <th class="px-6 py-3 font-medium">Date</th>
+                        <th class="px-6 py-3 font-medium">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 dark:divide-zinc-800">
+                    {% for order in recent_orders %}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition" id="row-{{ order.id }}">
+                        <td class="px-6 py-3 text-gray-900 dark:text-white font-medium text-sm">
+                            {{ order.product|default:"—" }}
+                        </td>
+                        <td class="px-6 py-3 text-gray-500 dark:text-gray-400 font-mono text-xs whitespace-nowrap">
+                            {{ order.phone|default:"—" }}
+                        </td>
+                        <!-- SMS Code cell -->
+                        <td class="px-6 py-3" id="sms-{{ order.id }}">
+                            {% if order.sms_code %}
+                            <div class="flex items-center gap-1.5">
+                                <span class="font-mono text-xs font-bold text-green-600 dark:text-green-400">
+                                    {{ order.sms_code }}
+                                </span>
+                                <button onclick="copySms('{{ order.sms_code }}')"
+                                        class="text-gray-300 hover:text-blue-500 dark:text-zinc-600 dark:hover:text-blue-400 transition"
+                                        title="Copy code">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            {% else %}
+                            <span class="text-xs text-gray-300 dark:text-zinc-700">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-3 text-gray-900 dark:text-white text-sm">
+                            ₦{{ order.amount_charged|floatformat:2 }}
+                        </td>
+                        <!-- Status cell (updatable by JS) -->
+                        <td class="px-6 py-3" id="status-{{ order.id }}">
+                            <span class="inline-block text-xs px-2.5 py-1 rounded-full font-semibold
+                                {% if order.status == 'FINISHED' or order.status == 'RECEIVED' %}
+                                    bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300
+                                {% elif order.status == 'PENDING' %}
+                                    bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-300
+                                {% elif order.status == 'CANCELED' %}
+                                    bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300
+                                {% else %}
+                                    bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400
+                                {% endif %}">
+                                {{ order.status|title }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-3 text-gray-400 dark:text-gray-500 text-xs whitespace-nowrap">
+                            {{ order.created_at|date:"d M Y, H:i" }}
+                        </td>
+                        <!-- Action buttons -->
+                        <td class="px-6 py-3">
+                            {% if order.fivesim_order_id %}
+                                {% if order.status == 'PENDING' or order.status == 'RECEIVED' %}
+                                <div class="flex gap-1.5 flex-wrap" id="actions-{{ order.id }}">
+                                    <button onclick="checkSms({{ order.id }})"
+                                            class="text-xs bg-blue-600 hover:bg-blue-700 text-white
+                                                   px-2.5 py-1.5 rounded-lg transition font-medium
+                                                   disabled:opacity-50 whitespace-nowrap">
+                                        Check SMS
+                                    </button>
+                                    {% if order.status == 'PENDING' %}
+                                    <button onclick="cancelOrder({{ order.id }}, '{{ order.amount_charged }}')"
+                                            class="text-xs bg-red-50 dark:bg-red-950/30 hover:bg-red-100
+                                                   text-red-600 dark:text-red-400 border border-red-200
+                                                   dark:border-red-800 px-2.5 py-1.5 rounded-lg transition
+                                                   font-medium whitespace-nowrap">
+                                        Cancel
+                                    </button>
+                                    {% endif %}
+                                </div>
+                                {% else %}
+                                <span class="text-xs text-gray-300 dark:text-zinc-700">—</span>
+                                {% endif %}
+                            {% else %}
+                            <span class="text-xs text-gray-300 dark:text-zinc-700">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="px-6 py-16 text-center">
+            <div class="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mx-auto mb-4">
+                <svg class="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                </svg>
+            </div>
+            <p class="text-gray-900 dark:text-white font-semibold mb-1">No orders yet</p>
+            <p class="text-gray-400 dark:text-gray-500 text-sm mb-5">Your order history will appear here.</p>
+            <a href="/services/virtual-numbers/"
+               class="bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl
+                      hover:bg-blue-700 transition inline-block">Buy your first number</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Transaction History (1/3 width) -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                rounded-2xl shadow-sm overflow-hidden">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-zinc-800">
+            <h2 class="font-bold text-gray-900 dark:text-white">Wallet History</h2>
+            <span class="text-xs text-gray-400 dark:text-gray-500">Last 20</span>
+        </div>
+        {% if transactions %}
+        <div class="divide-y divide-gray-50 dark:divide-zinc-800 max-h-96 overflow-y-auto">
+            {% for txn in transactions %}
+            <div class="flex items-start gap-3 px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition">
+                <div class="mt-0.5 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center
+                            {% if txn.type == 'CREDIT' %}bg-green-100 dark:bg-green-900/40{% else %}bg-red-100 dark:bg-red-900/40{% endif %}">
+                    {% if txn.type == 'CREDIT' %}
+                    <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                    </svg>
+                    {% else %}
+                    <svg class="w-4 h-4 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                    </svg>
+                    {% endif %}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-semibold text-gray-900 dark:text-white truncate">{{ txn.description|truncatechars:35 }}</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ txn.created_at|date:"d M, H:i" }}</p>
+                </div>
+                <p class="text-sm font-bold flex-shrink-0 {% if txn.type == 'CREDIT' %}text-green-600 dark:text-green-400{% else %}text-red-500 dark:text-red-400{% endif %}">
+                    {% if txn.type == 'CREDIT' %}+{% else %}-{% endif %}₦{{ txn.amount|floatformat:0 }}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="px-5 py-12 text-center">
+            <div class="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6 text-gray-300 dark:text-zinc-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                </svg>
+            </div>
+            <p class="text-gray-900 dark:text-white font-semibold text-sm mb-1">No transactions yet</p>
+            <p class="text-gray-400 dark:text-gray-500 text-xs">Top up your wallet to get started.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TEMPORARY EMAIL INBOXES
+═══════════════════════════════════════════════════════ -->
+<div class="mt-6">
+{% if temp_emails %}
+<div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-teal-100 dark:bg-teal-900/40 rounded-xl flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+            </div>
+            <h2 class="font-bold text-gray-900 dark:text-white">Temporary Inboxes</h2>
+            <span class="text-xs bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300 px-2.5 py-0.5 rounded-full font-semibold">{{ temp_emails|length }} active</span>
+        </div>
+        <a href="/services/temporary-email/"
+           class="text-xs text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium transition">
+            + Create new
+        </a>
+    </div>
+    <div class="divide-y divide-gray-50 dark:divide-zinc-800">
+        {% for inbox in temp_emails %}
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 px-6 py-4 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition"
+             id="inbox-row-{{ inbox.id }}">
+            <div class="flex-shrink-0 w-9 h-9 bg-teal-50 dark:bg-teal-900/30 rounded-xl flex items-center justify-center">
+                <svg class="w-4 h-4 text-teal-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
+                </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <p class="text-sm font-mono font-semibold text-gray-900 dark:text-white truncate">{{ inbox.email }}</p>
+                    <button onclick="copyInboxEmail('{{ inbox.email }}')"
+                            class="flex-shrink-0 text-gray-300 hover:text-teal-500 dark:text-zinc-600 dark:hover:text-teal-400 transition"
+                            title="Copy address">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Created {{ inbox.created_at|timesince }} ago &middot; FREE</p>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <button data-id="{{ inbox.id }}" data-email="{{ inbox.email }}"
+                        onclick="openDashInbox(parseInt(this.dataset.id), this.dataset.email)"
+                        class="text-xs bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-lg transition font-medium whitespace-nowrap">
+                    Check Inbox
+                </button>
+                <button data-id="{{ inbox.id }}"
+                        onclick="deleteDashInbox(parseInt(this.dataset.id), false)"
+                        class="text-xs border border-red-200 dark:border-red-800 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 px-3 py-1.5 rounded-lg transition font-medium">
+                    Delete
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<div class="bg-teal-50 dark:bg-teal-950/20 border border-teal-200 dark:border-teal-900/40 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+    <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-teal-100 dark:bg-teal-900/40 rounded-xl flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+        </div>
+        <div>
+            <p class="text-sm font-semibold text-teal-900 dark:text-teal-200">Try Temporary Email — it's free</p>
+            <p class="text-xs text-teal-600 dark:text-teal-400 mt-0.5">Get a disposable inbox instantly. No charge, no signup required.</p>
+        </div>
+    </div>
+    <a href="/services/temporary-email/"
+       class="text-xs bg-teal-600 hover:bg-teal-700 text-white font-semibold px-4 py-2 rounded-xl transition whitespace-nowrap flex-shrink-0">
+        Get free inbox &rarr;
+    </a>
+</div>
+{% endif %}
+</div>
+
+<!-- INLINE INBOX MODAL -->
+<div id="dash-inbox-overlay"
+     class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
+         style="max-height:85vh;display:flex;flex-direction:column;"
+         onclick="event.stopPropagation()">
+
+        <!-- Modal header -->
+        <div class="flex items-center gap-3 px-5 py-4 border-b border-gray-100 dark:border-zinc-800 flex-shrink-0">
+            <div class="w-8 h-8 bg-teal-100 dark:bg-teal-900/40 rounded-xl flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-xs text-gray-400 dark:text-gray-500">Inbox</p>
+                <p class="text-sm font-mono font-semibold text-gray-900 dark:text-white truncate" id="dash-inbox-email-label">—</p>
+            </div>
+            <div class="flex items-center gap-1 flex-shrink-0">
+                <button onclick="copyInboxEmail(currentInboxEmail)"
+                        class="p-1.5 text-gray-400 hover:text-teal-500 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition" title="Copy email">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                </button>
+                <button onclick="deleteDashInbox(currentInboxId, true)"
+                        class="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition" title="Delete inbox">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                </button>
+                <button onclick="closeDashInbox()"
+                        class="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Refresh bar (list view only) -->
+        <div id="dash-inbox-refresh-bar"
+             class="px-5 py-2 bg-gray-50 dark:bg-zinc-800/50 flex items-center justify-between flex-shrink-0 border-b border-gray-100 dark:border-zinc-800">
+            <span class="text-xs text-gray-400 dark:text-gray-500" id="dash-inbox-countdown">Refreshing in 30s</span>
+            <button onclick="loadDashMessages(currentInboxId)"
+                    class="text-xs text-teal-600 dark:text-teal-400 font-medium hover:underline">Refresh now</button>
+        </div>
+
+        <!-- Scrollable body -->
+        <div style="overflow-y:auto;flex:1;min-height:0;">
+
+            <!-- LIST VIEW -->
+            <div id="dash-inbox-list">
+                <div id="dash-inbox-loading" class="px-5 py-10 text-center">
+                    <div class="inline-block w-6 h-6 border-2 border-teal-400 border-t-transparent rounded-full animate-spin mb-2"></div>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">Loading inbox…</p>
+                </div>
+                <div id="dash-inbox-messages" class="hidden"></div>
+                <div id="dash-inbox-empty" class="px-5 py-12 text-center hidden">
+                    <div class="w-12 h-12 bg-teal-50 dark:bg-teal-900/30 rounded-xl flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-6 h-6 text-teal-300 dark:text-teal-700" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white mb-1">No messages yet</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">Messages appear here automatically.</p>
+                </div>
+            </div>
+
+            <!-- MESSAGE DETAIL VIEW -->
+            <div id="dash-inbox-msg" class="hidden">
+                <div class="px-5 py-3 border-b border-gray-100 dark:border-zinc-800 flex items-center gap-3">
+                    <button onclick="backToDashList()"
+                            class="text-gray-400 hover:text-gray-700 dark:hover:text-white transition flex-shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                    </button>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white truncate" id="dash-msg-subject">—</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 truncate" id="dash-msg-from">—</p>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div id="dash-msg-loading" class="text-center py-8">
+                        <div class="inline-block w-5 h-5 border-2 border-teal-400 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                    <div id="dash-msg-body" class="hidden"></div>
+                </div>
+            </div>
+
+        </div><!-- /scrollable body -->
+    </div>
+</div>
+
+<!-- Account Info strip -->
+<div class="mt-6 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+            rounded-2xl shadow-sm px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+    <div class="flex items-center gap-4">
+        <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
+            {{ user.username|first|upper }}
+        </div>
+        <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ user.username }}</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500">{{ user.email }}</p>
+        </div>
+    </div>
+    <span class="inline-flex items-center gap-1.5 text-xs bg-green-100 dark:bg-green-900/40
+                 text-green-700 dark:text-green-300 px-3 py-1.5 rounded-full font-semibold">
+        <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>
+        Active Account
+    </span>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TOP-UP MODAL
+═══════════════════════════════════════════════════════ -->
+<div id="topup-overlay"
+     class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-md"
+         onclick="event.stopPropagation()">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Top Up Wallet</h3>
+            <button onclick="closeTopUp()" class="text-gray-400 hover:text-gray-700 dark:hover:text-white transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Currency Tabs -->
+        <div class="flex border-b border-gray-100 dark:border-zinc-800">
+            <button onclick="setTab('ngn')" id="tab-ngn"
+                    class="tab-btn flex-1 py-3 text-sm font-semibold border-b-2 transition
+                           border-blue-600 text-blue-600 dark:text-blue-400">
+                🇳🇬 Naira
+            </button>
+            <button onclick="setTab('usd')" id="tab-usd"
+                    class="tab-btn flex-1 py-3 text-sm font-semibold border-b-2 transition
+                           border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-white">
+                🇺🇸 Dollar
+            </button>
+            <button onclick="setTab('crypto')" id="tab-crypto"
+                    class="tab-btn flex-1 py-3 text-sm font-semibold border-b-2 transition
+                           border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-white">
+                ₿ Crypto
+            </button>
+        </div>
+
+        <!-- NGN Panel -->
+        <div id="panel-ngn" class="p-6">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Amount (₦)</label>
+            <input id="ngn-amount" type="number" min="500" step="100" placeholder="e.g. 2000"
+                   class="w-full border border-gray-200 dark:border-zinc-700 rounded-xl px-4 py-3
+                          bg-white dark:bg-zinc-800 text-gray-900 dark:text-white
+                          focus:outline-none focus:ring-2 focus:ring-blue-500 text-base mb-3"/>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button onclick="setNGN(1000)"
+                        class="text-xs border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-1.5
+                               hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-400
+                               text-gray-600 dark:text-gray-400 transition">₦1,000</button>
+                <button onclick="setNGN(2000)"
+                        class="text-xs border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-1.5
+                               hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-400
+                               text-gray-600 dark:text-gray-400 transition">₦2,000</button>
+                <button onclick="setNGN(5000)"
+                        class="text-xs border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-1.5
+                               hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-400
+                               text-gray-600 dark:text-gray-400 transition">₦5,000</button>
+                <button onclick="setNGN(10000)"
+                        class="text-xs border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-1.5
+                               hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-400
+                               text-gray-600 dark:text-gray-400 transition">₦10,000</button>
+            </div>
+            <p class="text-xs text-gray-400 dark:text-gray-500 mb-5">Minimum: ₦500 · Processed instantly via Paystack</p>
+            <button onclick="initiatePayment('NGN')" id="ngn-btn"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl
+                           transition flex items-center justify-center gap-2 disabled:opacity-60">
+                <span>Pay with Paystack</span>
+            </button>
+        </div>
+
+        <!-- USD Panel -->
+        <div id="panel-usd" class="p-6 hidden">
+            <div class="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800
+                        rounded-xl px-4 py-3 mb-4 text-sm text-blue-700 dark:text-blue-300">
+                Exchange rate: <strong>$1 = ₦1,650</strong> · Converted and credited to your Naira wallet.
+            </div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Amount (USD)</label>
+            <div class="relative mb-3">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold select-none">$</span>
+                <input id="usd-amount" type="number" min="1" step="1" placeholder="e.g. 5"
+                       class="w-full pl-8 border border-gray-200 dark:border-zinc-700 rounded-xl px-4 py-3
+                              bg-white dark:bg-zinc-800 text-gray-900 dark:text-white
+                              focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"/>
+            </div>
+            <p class="text-xs text-blue-600 dark:text-blue-400 mb-3 font-medium" id="usd-equiv">Equivalent: ₦0</p>
+            <div class="flex flex-wrap gap-2 mb-5">
+                <button onclick="setUSD(1)"  class="text-xs border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-400 text-gray-600 dark:text-gray-400 transition">$1</button>
+                <button onclick="setUSD(5)"  class="text-xs border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-400 text-gray-600 dark:text-gray-400 transition">$5</button>
+                <button onclick="setUSD(10)" class="text-xs border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-400 text-gray-600 dark:text-gray-400 transition">$10</button>
+                <button onclick="setUSD(20)" class="text-xs border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-400 text-gray-600 dark:text-gray-400 transition">$20</button>
+            </div>
+            <button onclick="initiatePayment('USD')" id="usd-btn"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl
+                           transition flex items-center justify-center gap-2 disabled:opacity-60">
+                <span>Pay with Paystack (USD)</span>
+            </button>
+        </div>
+
+        <!-- Crypto Panel -->
+        <div id="panel-crypto" class="p-6 hidden">
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">
+                Send crypto to one of the addresses below. After network confirmation (≈30 min),
+                contact support with your transaction hash to get credited.
+            </p>
+            <div class="space-y-4">
+                <div class="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xl">₿</span>
+                        <span class="font-bold text-gray-900 dark:text-white text-sm">Bitcoin (BTC)</span>
+                    </div>
+                    <p class="font-mono text-xs text-gray-600 dark:text-gray-400 break-all
+                               bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-gray-200
+                               dark:border-zinc-700 select-all">coming-soon-btc-address</p>
+                </div>
+                <div class="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xl">⟠</span>
+                        <span class="font-bold text-gray-900 dark:text-white text-sm">Ethereum (ETH)</span>
+                    </div>
+                    <p class="font-mono text-xs text-gray-600 dark:text-gray-400 break-all
+                               bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-gray-200
+                               dark:border-zinc-700 select-all">coming-soon-eth-address</p>
+                </div>
+                <div class="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xl">💵</span>
+                        <span class="font-bold text-gray-900 dark:text-white text-sm">USDT (TRC-20)</span>
+                    </div>
+                    <p class="font-mono text-xs text-gray-600 dark:text-gray-400 break-all
+                               bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-gray-200
+                               dark:border-zinc-700 select-all">coming-soon-usdt-address</p>
+                </div>
+            </div>
+            <div class="mt-5 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800
+                        rounded-xl px-4 py-3 text-xs text-yellow-700 dark:text-yellow-300">
+                ⚠️ Always double check the address before sending. Contact support after your transaction is confirmed.
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script>
+var USD_TO_NGN = 1650;
+
+// ── Modal open / close ─────────────────────────────────────────────────────
+function openTopUp() {
+    document.getElementById('topup-overlay').classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+}
+function closeTopUp() {
+    document.getElementById('topup-overlay').classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+}
+document.getElementById('topup-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeTopUp();
+});
+
+// ── Currency tabs ──────────────────────────────────────────────────────────
+function setTab(name) {
+    ['ngn', 'usd', 'crypto'].forEach(function(t) {
+        var btn   = document.getElementById('tab-' + t);
+        var panel = document.getElementById('panel-' + t);
+        if (t === name) {
+            btn.classList.remove('border-transparent', 'text-gray-400');
+            btn.classList.add('border-blue-600', 'text-blue-600', 'dark:text-blue-400');
+            panel.classList.remove('hidden');
+        } else {
+            btn.classList.remove('border-blue-600', 'text-blue-600', 'dark:text-blue-400');
+            btn.classList.add('border-transparent', 'text-gray-400');
+            panel.classList.add('hidden');
+        }
+    });
+}
+
+// ── Quick-fill buttons ─────────────────────────────────────────────────────
+function setNGN(v) { document.getElementById('ngn-amount').value = v; }
+function setUSD(v) {
+    document.getElementById('usd-amount').value = v;
+    updateUSDEquiv();
+}
+function updateUSDEquiv() {
+    var v = parseFloat(document.getElementById('usd-amount').value) || 0;
+    document.getElementById('usd-equiv').textContent =
+        'Equivalent: ₦' + (v * USD_TO_NGN).toLocaleString();
+}
+document.getElementById('usd-amount').addEventListener('input', updateUSDEquiv);
+
+// ── Spinner helper ─────────────────────────────────────────────────────────
+function setLoading(btnId, loading, label) {
+    var btn = document.getElementById(btnId);
+    btn.disabled = loading;
+    btn.innerHTML = loading
+        ? '<svg class="animate-spin w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg><span>Processing…</span>'
+        : '<span>' + label + '</span>';
+}
+
+// ── CSRF helper ────────────────────────────────────────────────────────────
+function getCookie(name) {
+    var v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+    return v ? v[2] : '';
+}
+
+// ── Paystack payment ───────────────────────────────────────────────────────
+function initiatePayment(currency) {
+    var isusd  = currency === 'USD';
+    var btnId  = isusd ? 'usd-btn' : 'ngn-btn';
+    var label  = isusd ? 'Pay with Paystack (USD)' : 'Pay with Paystack';
+    var amount = parseFloat(
+        document.getElementById(isusd ? 'usd-amount' : 'ngn-amount').value
+    );
+
+    if (!amount || amount <= 0) {
+        showToast('Please enter a valid amount.', 'error');
+        return;
+    }
+    if (!isusd && amount < 500) {
+        showToast('Minimum top-up is ₦500.', 'error');
+        return;
+    }
+    if (isusd && amount < 1) {
+        showToast('Minimum top-up is $1.', 'error');
+        return;
+    }
+
+    setLoading(btnId, true, label);
+
+    fetch('/api/payments/initialize/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({ amount: amount, currency: currency }),
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        setLoading(btnId, false, label);
+        if (data.reference) {
+            closeTopUp();
+            var handler = PaystackPop.setup({
+                key:      data.paystack_public_key,
+                email:    data.email,
+                amount:   data.amount,
+                ref:      data.reference,
+                currency: 'NGN',
+                callback: function() {
+                    showToast('Payment successful! Your wallet will be credited shortly.', 'success', 6000);
+                    setTimeout(function() { location.reload(); }, 3000);
+                },
+                onClose: function() {
+                    showToast('Payment window closed.', 'info');
+                }
+            });
+            handler.openIframe();
+        } else {
+            showToast(data.detail || 'Failed to initialise payment. Please log in.', 'error');
+        }
+    })
+    .catch(function() {
+        setLoading(btnId, false, label);
+        showToast('Network error. Please check your connection.', 'error');
+    });
+}
+
+// ── Virtual number order actions ───────────────────────────────────────────
+
+function updateStatusBadge(orderId, status) {
+    var cell = document.getElementById('status-' + orderId);
+    if (!cell) return;
+    var colors = {
+        'PENDING':  'bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-300',
+        'RECEIVED': 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
+        'FINISHED': 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
+        'CANCELED': 'bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300',
+        'TIMEOUT':  'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400',
+    };
+    var label = status.charAt(0) + status.slice(1).toLowerCase();
+    cell.innerHTML = '<span class="inline-block text-xs px-2.5 py-1 rounded-full font-semibold ' +
+        (colors[status] || colors['TIMEOUT']) + '">' + label + '</span>';
+}
+
+function showSmsCode(orderId, code) {
+    var cell = document.getElementById('sms-' + orderId);
+    if (!cell) return;
+    cell.innerHTML =
+        '<div class="flex items-center gap-1.5">' +
+          '<span class="font-mono text-xs font-bold text-green-600 dark:text-green-400">' + code + '</span>' +
+          '<button onclick="copySms(\'' + code + '\')" ' +
+                  'class="text-gray-300 hover:text-blue-500 dark:text-zinc-600 dark:hover:text-blue-400 transition" ' +
+                  'title="Copy code">' +
+            '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">' +
+              '<path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>' +
+            '</svg>' +
+          '</button>' +
+        '</div>';
+}
+
+function copySms(code) {
+    navigator.clipboard.writeText(code).then(function() {
+        showToast('SMS code copied!', 'success', 2000);
+    }).catch(function() {
+        showToast('Code: ' + code, 'info', 4000);
+    });
+}
+
+function checkSms(orderId) {
+    var actionsDiv = document.getElementById('actions-' + orderId);
+    var btns = actionsDiv ? actionsDiv.querySelectorAll('button') : [];
+    btns.forEach(function(b) { b.disabled = true; });
+
+    fetch('/api/orders/check/' + orderId + '/', {
+        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        btns.forEach(function(b) { b.disabled = false; });
+        if (data.error) {
+            showToast(data.error, 'error');
+            return;
+        }
+        updateStatusBadge(orderId, data.status);
+        if (data.sms_code) {
+            showSmsCode(orderId, data.sms_code);
+            showToast('SMS code received: ' + data.sms_code, 'success', 6000);
+            // Hide Check SMS button once code received; cancel no longer relevant
+            if (actionsDiv) actionsDiv.innerHTML =
+                '<span class="text-xs text-gray-400 dark:text-gray-500">Code received</span>';
+        } else {
+            showToast('No SMS yet — try again in a moment.', 'info');
+        }
+    })
+    .catch(function() {
+        btns.forEach(function(b) { b.disabled = false; });
+        showToast('Network error. Please try again.', 'error');
+    });
+}
+
+function cancelOrder(orderId, amount) {
+    if (!confirm('Cancel this order? ₦' + parseFloat(amount).toLocaleString('en-NG', {minimumFractionDigits: 2}) + ' will be refunded to your wallet.')) return;
+
+    var actionsDiv = document.getElementById('actions-' + orderId);
+    var btns = actionsDiv ? actionsDiv.querySelectorAll('button') : [];
+    btns.forEach(function(b) { b.disabled = true; });
+
+    fetch('/api/orders/cancel/' + orderId + '/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.error) {
+            btns.forEach(function(b) { b.disabled = false; });
+            showToast(data.error, 'error');
+            return;
+        }
+        // Update status badge
+        updateStatusBadge(orderId, 'CANCELED');
+        // Remove action buttons
+        if (actionsDiv) actionsDiv.innerHTML =
+            '<span class="text-xs text-gray-400 dark:text-gray-500">Cancelled</span>';
+        // Update wallet balance display
+        var balEl = document.getElementById('wallet-balance-display');
+        if (balEl && data.new_balance !== undefined) {
+            var nb = parseFloat(data.new_balance);
+            balEl.textContent = '₦' + nb.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            balEl.dataset.balance = data.new_balance;
+        }
+        showToast('Order cancelled. ₦' + parseFloat(amount).toLocaleString('en-NG', {minimumFractionDigits: 2}) + ' refunded.', 'success', 5000);
+    })
+    .catch(function() {
+        btns.forEach(function(b) { b.disabled = false; });
+        showToast('Network error. Please try again.', 'error');
+    });
+}
+
+// ── OTP / order success flash from redirect ────────────────────────────────
+(function() {
+    var p = new URLSearchParams(window.location.search);
+    if (p.get('otp_success') === '1') {
+        var phone = p.get('phone') || '';
+        showToast('OTP number purchased' + (phone ? ': ' + phone : '') + ' — check SMS from your dashboard.', 'success', 8000);
+        // Clean URL
+        history.replaceState({}, '', window.location.pathname);
+    }
+})();
+
+// ── Temporary Email Inbox (Dashboard) ──────────────────────────────────────
+var currentInboxId = null;
+var currentInboxEmail = '';
+var dashInboxTimer = null;
+var dashCountdown = 30;
+
+function escapeHtml(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function fmtMsgTime(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (isNaN(d)) return '';
+    var now = new Date();
+    if (d.toDateString() === now.toDateString()) {
+        return d.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+    }
+    return d.toLocaleDateString([], {month: 'short', day: 'numeric'});
+}
+
+function copyInboxEmail(email) {
+    navigator.clipboard.writeText(email).then(function() {
+        showToast('Email copied!', 'success', 2000);
+    }).catch(function() {
+        showToast(email, 'info', 4000);
+    });
+}
+
+function openDashInbox(orderId, email) {
+    currentInboxId = orderId;
+    currentInboxEmail = email;
+    document.getElementById('dash-inbox-email-label').textContent = email;
+    document.getElementById('dash-inbox-overlay').classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+    showDashListView();
+    loadDashMessages(orderId);
+    startDashCountdown();
+}
+
+function closeDashInbox() {
+    document.getElementById('dash-inbox-overlay').classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+    stopDashCountdown();
+}
+
+function showDashListView() {
+    document.getElementById('dash-inbox-list').classList.remove('hidden');
+    document.getElementById('dash-inbox-msg').classList.add('hidden');
+    document.getElementById('dash-inbox-refresh-bar').classList.remove('hidden');
+}
+
+function showDashMsgView() {
+    document.getElementById('dash-inbox-list').classList.add('hidden');
+    document.getElementById('dash-inbox-msg').classList.remove('hidden');
+    document.getElementById('dash-inbox-refresh-bar').classList.add('hidden');
+}
+
+function backToDashList() {
+    showDashListView();
+    startDashCountdown();
+}
+
+function startDashCountdown() {
+    stopDashCountdown();
+    dashCountdown = 30;
+    updateDashCountdown();
+    dashInboxTimer = setInterval(function() {
+        dashCountdown--;
+        if (dashCountdown <= 0) {
+            dashCountdown = 30;
+            if (currentInboxId) loadDashMessages(currentInboxId);
+        }
+        updateDashCountdown();
+    }, 1000);
+}
+
+function stopDashCountdown() {
+    if (dashInboxTimer) { clearInterval(dashInboxTimer); dashInboxTimer = null; }
+}
+
+function updateDashCountdown() {
+    var el = document.getElementById('dash-inbox-countdown');
+    if (el) el.textContent = 'Refreshing in ' + dashCountdown + 's';
+}
+
+function loadDashMessages(orderId) {
+    var loading = document.getElementById('dash-inbox-loading');
+    var list    = document.getElementById('dash-inbox-messages');
+    var empty   = document.getElementById('dash-inbox-empty');
+    loading.classList.remove('hidden');
+    list.classList.add('hidden');
+    empty.classList.add('hidden');
+
+    fetch('/api/services/email/' + orderId + '/inbox/', {
+        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        loading.classList.add('hidden');
+        if (!Array.isArray(data) || data.length === 0) {
+            empty.classList.remove('hidden');
+            return;
+        }
+        list.innerHTML = data.map(function(m) {
+            var dot = m.seen
+                ? '<span class="mt-1.5 w-2 h-2 flex-shrink-0 inline-block"></span>'
+                : '<span class="mt-1.5 w-2 h-2 rounded-full bg-teal-500 flex-shrink-0 inline-block"></span>';
+            var safeFrom  = escapeHtml(m.from_name || m.from || 'Unknown');
+            var safeSubj  = escapeHtml(m.subject || '(No subject)');
+            var safeIntro = m.intro ? '<p class="text-xs text-gray-400 dark:text-gray-500 truncate mt-0.5">' + escapeHtml(m.intro) + '</p>' : '';
+            var timeStr   = fmtMsgTime(m.created_at);
+            var fromJs    = (m.from || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            var subjJs    = (m.subject || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            return '<div class="px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition cursor-pointer border-b border-gray-50 dark:border-zinc-800 last:border-0"' +
+                       ' onclick="openDashMessage(' + orderId + ',\'' + m.id + '\',\'' + fromJs + '\',\'' + subjJs + '\')">' +
+                   '<div class="flex items-start gap-3">' +
+                       dot +
+                       '<div class="flex-1 min-w-0">' +
+                           '<div class="flex items-baseline justify-between gap-2">' +
+                               '<p class="text-xs font-semibold text-gray-900 dark:text-white truncate">' + safeFrom + '</p>' +
+                               '<span class="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0 whitespace-nowrap">' + timeStr + '</span>' +
+                           '</div>' +
+                           '<p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">' + safeSubj + '</p>' +
+                           safeIntro +
+                       '</div>' +
+                   '</div>' +
+               '</div>';
+        }).join('');
+        list.classList.remove('hidden');
+    })
+    .catch(function() {
+        loading.classList.add('hidden');
+        empty.classList.remove('hidden');
+    });
+}
+
+function openDashMessage(orderId, msgId, fromStr, subject) {
+    showDashMsgView();
+    stopDashCountdown();
+    document.getElementById('dash-msg-subject').textContent = subject || '(No subject)';
+    document.getElementById('dash-msg-from').textContent    = 'From: ' + (fromStr || 'Unknown');
+    var loading = document.getElementById('dash-msg-loading');
+    var body    = document.getElementById('dash-msg-body');
+    loading.classList.remove('hidden');
+    body.classList.add('hidden');
+    body.innerHTML = '';
+
+    fetch('/api/services/email/' + orderId + '/message/' + msgId + '/', {
+        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(msg) {
+        loading.classList.add('hidden');
+        if (msg.html) {
+            body.innerHTML = '<iframe sandbox="allow-same-origin" id="dash-msg-iframe"' +
+                ' style="width:100%;min-height:300px;border:none;border-radius:8px;background:#fff;display:block;"></iframe>';
+            document.getElementById('dash-msg-iframe').srcdoc = msg.html;
+        } else {
+            body.innerHTML = '<pre class="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words font-mono bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 text-left">' +
+                escapeHtml(msg.text || '(Empty message)') + '</pre>';
+        }
+        body.classList.remove('hidden');
+    })
+    .catch(function() {
+        loading.classList.add('hidden');
+        body.innerHTML = '<p class="text-sm text-red-500 text-center py-4">Failed to load message.</p>';
+        body.classList.remove('hidden');
+    });
+}
+
+function deleteDashInbox(orderId, fromModal) {
+    if (!confirm('Permanently delete this temporary inbox? All messages will be lost.')) return;
+    fetch('/api/services/email/' + orderId + '/delete/', {
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.success) {
+            showToast('Inbox deleted.', 'success', 3000);
+            if (fromModal) closeDashInbox();
+            var row = document.getElementById('inbox-row-' + orderId);
+            if (row) row.remove();
+            // No rows left — reload to show the empty/CTA state
+            if (!document.querySelector('[id^="inbox-row-"]')) location.reload();
+        } else {
+            showToast('Failed to delete inbox.', 'error');
+        }
+    })
+    .catch(function() { showToast('Network error.', 'error'); });
+}
+
+document.getElementById('dash-inbox-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeDashInbox();
+});
+</script>
+{% endblock %}

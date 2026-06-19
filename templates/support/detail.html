@@ -1,0 +1,293 @@
+﻿{% extends 'base.html' %}
+{% block title %}Ticket #{{ ticket.pk }} — SimPhantom{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+
+    <!-- Chat header -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                rounded-2xl px-5 py-4 shadow-sm mb-3 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3 min-w-0">
+            <a href="/support/"
+               class="flex-shrink-0 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+            </a>
+            <!-- Support avatar -->
+            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600
+                        flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                S
+            </div>
+            <div class="min-w-0">
+                <h1 class="font-bold text-gray-900 dark:text-white text-sm leading-tight truncate">
+                    {{ ticket.subject }}
+                </h1>
+                <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                    #{{ ticket.pk }} · {{ ticket.get_category_display }}
+                </p>
+            </div>
+        </div>
+        <span id="status-badge" class="flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-semibold
+            {% if ticket.status == 'OPEN' %}bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300
+            {% elif ticket.status == 'IN_PROGRESS' %}bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-300
+            {% elif ticket.status == 'RESOLVED' %}bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300
+            {% else %}bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400{% endif %}">
+            {{ ticket.get_status_display }}
+        </span>
+    </div>
+
+    <!-- Chat box -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                rounded-2xl shadow-sm overflow-hidden flex flex-col" style="min-height:60vh">
+
+        <!-- Messages -->
+        <div id="chat-scroll" class="flex-1 overflow-y-auto p-5 space-y-4" style="max-height:60vh">
+            {% for msg in ticket_messages %}
+            <div class="flex {% if not msg.is_staff_reply %}justify-end{% else %}justify-start{% endif %} items-end gap-2"
+                 data-msg-id="{{ msg.id }}">
+                {% if msg.is_staff_reply %}
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600
+                            flex items-center justify-center text-white font-bold text-xs flex-shrink-0">S</div>
+                {% endif %}
+                <div class="max-w-[78%]">
+                    {% if msg.is_staff_reply %}
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mb-1 ml-1 font-medium">Support Team</p>
+                    {% else %}
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mb-1 mr-1 text-right font-medium">You</p>
+                    {% endif %}
+                    <div class="rounded-2xl px-4 py-3 text-sm leading-relaxed
+                        {% if msg.is_staff_reply %}
+                            bg-gray-100 dark:bg-zinc-800 text-gray-900 dark:text-white rounded-tl-none
+                        {% else %}
+                            bg-blue-600 text-white rounded-tr-none
+                        {% endif %}">
+                        {{ msg.message|linebreaksbr }}
+                    </div>
+                    <p class="text-xs text-gray-300 dark:text-zinc-600 mt-1 {% if not msg.is_staff_reply %}text-right mr-1{% else %}ml-1{% endif %}">
+                        {{ msg.created_at|date:"d M, H:i" }}
+                    </p>
+                </div>
+                {% if not msg.is_staff_reply %}
+                <div class="w-8 h-8 rounded-full bg-blue-600
+                            flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                    {{ request.user.username|first|upper }}
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div id="empty-placeholder" class="flex flex-col items-center justify-center py-12 text-center">
+                <div class="w-14 h-14 rounded-full bg-blue-50 dark:bg-blue-900/20
+                            flex items-center justify-center mb-4">
+                    <svg class="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                    </svg>
+                </div>
+                <p class="text-gray-500 dark:text-gray-400 font-medium text-sm">Your ticket has been received</p>
+                <p class="text-gray-400 dark:text-gray-500 text-xs mt-1">Our team will reply shortly.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Input area -->
+        <div id="input-area" class="border-t border-gray-100 dark:border-zinc-800">
+            {% if ticket.status != 'RESOLVED' and ticket.status != 'CLOSED' %}
+            <form id="reply-form" method="post" action="/support/ticket/{{ ticket.pk }}/"
+                  class="flex items-end gap-3 p-4">
+                {% csrf_token %}
+                <textarea id="msg-input" name="message" rows="1"
+                          placeholder="Type a message… (Enter to send, Shift+Enter for new line)"
+                          class="flex-1 border border-gray-200 dark:border-zinc-700 rounded-xl
+                                 bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white text-sm
+                                 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500
+                                 resize-none overflow-hidden leading-relaxed"
+                          style="min-height:42px;max-height:120px"></textarea>
+                <button id="send-btn" type="submit"
+                        class="flex-shrink-0 bg-blue-600 hover:bg-blue-700 disabled:opacity-50
+                               text-white p-2.5 rounded-xl transition flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                    </svg>
+                </button>
+            </form>
+            {% else %}
+            <div class="p-4 text-center text-sm text-gray-400 dark:text-gray-500">
+                This ticket is <strong class="text-gray-600 dark:text-gray-300">{{ ticket.get_status_display }}</strong>.
+                <a href="/support/new/" class="text-blue-600 dark:text-blue-400 hover:underline ml-1">Open a new ticket</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+    const POLL_URL  = '/support/ticket/{{ ticket.pk }}/poll/';
+    const SEND_URL  = '/support/ticket/{{ ticket.pk }}/send/';
+    const CSRF      = '{{ csrf_token }}';
+    const USER_INIT = '{{ request.user.username|first|upper }}';
+
+    const chatScroll = document.getElementById('chat-scroll');
+    const msgInput   = document.getElementById('msg-input');
+    const sendBtn    = document.getElementById('send-btn');
+    const replyForm  = document.getElementById('reply-form');
+    const statusBadge = document.getElementById('status-badge');
+    const inputArea  = document.getElementById('input-area');
+
+    // Determine last known msg id from rendered messages
+    let lastId = 0;
+    document.querySelectorAll('[data-msg-id]').forEach(function (el) {
+        lastId = Math.max(lastId, parseInt(el.dataset.msgId, 10) || 0);
+    });
+
+    let ticketClosed = {% if ticket.status == 'RESOLVED' or ticket.status == 'CLOSED' %}true{% else %}false{% endif %};
+
+    function scrollToBottom() {
+        chatScroll.scrollTop = chatScroll.scrollHeight;
+    }
+
+    function isNearBottom() {
+        return chatScroll.scrollHeight - chatScroll.scrollTop - chatScroll.clientHeight < 80;
+    }
+
+    scrollToBottom();
+
+    // Auto-resize textarea
+    if (msgInput) {
+        msgInput.addEventListener('input', function () {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+    }
+
+    function escapeHtml(s) {
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+    }
+
+    function renderMsg(m) {
+        // Remove empty placeholder
+        var empty = document.getElementById('empty-placeholder');
+        if (empty) empty.remove();
+
+        var isUser = !m.is_staff_reply;
+        var wrap = document.createElement('div');
+        wrap.className = 'flex ' + (isUser ? 'justify-end' : 'justify-start') + ' items-end gap-2 opacity-0 transition-opacity duration-300';
+        wrap.dataset.msgId = m.id;
+
+        var escaped = escapeHtml(m.message);
+
+        if (isUser) {
+            wrap.innerHTML =
+                '<div class="max-w-[78%]">' +
+                  '<p class="text-xs text-gray-400 dark:text-gray-500 mb-1 mr-1 text-right font-medium">You</p>' +
+                  '<div class="rounded-2xl rounded-tr-none px-4 py-3 text-sm leading-relaxed bg-blue-600 text-white">' + escaped + '</div>' +
+                  '<p class="text-xs text-gray-300 dark:text-zinc-600 mt-1 text-right mr-1">' + m.created_at + '</p>' +
+                '</div>' +
+                '<div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">' + USER_INIT + '</div>';
+        } else {
+            wrap.innerHTML =
+                '<div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">S</div>' +
+                '<div class="max-w-[78%]">' +
+                  '<p class="text-xs text-gray-400 dark:text-gray-500 mb-1 ml-1 font-medium">Support Team</p>' +
+                  '<div class="rounded-2xl rounded-tl-none px-4 py-3 text-sm leading-relaxed bg-gray-100 dark:bg-zinc-800 text-gray-900 dark:text-white">' + escaped + '</div>' +
+                  '<p class="text-xs text-gray-300 dark:text-zinc-600 mt-1 ml-1">' + m.created_at + '</p>' +
+                '</div>';
+        }
+
+        chatScroll.appendChild(wrap);
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () { wrap.style.opacity = '1'; });
+        });
+        lastId = Math.max(lastId, m.id);
+    }
+
+    // Status badge color mapping
+    var statusColors = {
+        'OPEN':        'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
+        'IN_PROGRESS': 'bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-300',
+        'RESOLVED':    'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
+        'CLOSED':      'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400',
+    };
+
+    function updateStatus(status, statusDisplay) {
+        if (statusBadge) {
+            statusBadge.textContent = statusDisplay;
+            statusBadge.className = 'flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-semibold ' + (statusColors[status] || statusColors['CLOSED']);
+        }
+        if ((status === 'RESOLVED' || status === 'CLOSED') && !ticketClosed) {
+            ticketClosed = true;
+            if (inputArea) {
+                inputArea.innerHTML = '<div class="p-4 text-center text-sm text-gray-400 dark:text-gray-500">' +
+                    'This ticket is now <strong class="text-gray-600 dark:text-gray-300">' + statusDisplay + '</strong>. ' +
+                    '<a href="/support/new/" class="text-blue-600 dark:text-blue-400 hover:underline ml-1">Open a new ticket</a></div>';
+            }
+        }
+    }
+
+    async function poll() {
+        if (ticketClosed) return;
+        try {
+            var r = await fetch(POLL_URL + '?since=' + lastId);
+            if (!r.ok) return;
+            var data = await r.json();
+            var near = isNearBottom();
+            if (data.messages && data.messages.length > 0) {
+                data.messages.forEach(renderMsg);
+                if (near) scrollToBottom();
+            }
+            updateStatus(data.status, data.status_display);
+        } catch (e) {}
+    }
+
+    setInterval(poll, 3000);
+
+    async function sendMessage() {
+        if (!msgInput || ticketClosed) return;
+        var text = msgInput.value.trim();
+        if (!text) return;
+
+        sendBtn.disabled = true;
+        msgInput.disabled = true;
+
+        try {
+            var r = await fetch(SEND_URL, {
+                method:  'POST',
+                headers: {'X-CSRFToken': CSRF, 'Content-Type': 'application/json'},
+                body:    JSON.stringify({message: text})
+            });
+            var data = await r.json();
+            if (data.ok) {
+                msgInput.value = '';
+                msgInput.style.height = 'auto';
+                renderMsg(data.message);
+                scrollToBottom();
+            } else if (data.error === 'Ticket is closed') {
+                updateStatus('CLOSED', 'Closed');
+            }
+        } catch (e) {}
+
+        sendBtn.disabled = false;
+        msgInput.disabled = false;
+        msgInput.focus();
+    }
+
+    if (replyForm) {
+        replyForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            sendMessage();
+        });
+    }
+
+    if (msgInput) {
+        msgInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,262 @@
+﻿{% extends 'manage/base.html' %}
+{% block title %}Team / Agents SimPhantom Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+
+    <!-- Page header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-xl font-extrabold text-gray-900 dark:text-white">Team &amp; Agents</h1>
+            <p class="text-sm text-gray-400 dark:text-gray-500 mt-0.5">
+                Agents can reply to support tickets but cannot change wallet balances or suspend accounts.
+            </p>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800
+                text-red-700 dark:text-red-300 rounded-2xl px-5 py-3 text-sm font-medium">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- ── Create agent form ── -->
+        <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                    rounded-2xl p-6 shadow-sm">
+            <h2 class="font-bold text-gray-900 dark:text-white text-sm mb-4 flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                </svg>
+                Add New Agent
+            </h2>
+            <form method="post" class="space-y-3">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="create"/>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">First Name</label>
+                        <input type="text" name="first_name" placeholder="Ada"
+                               class="w-full border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5
+                                      bg-white dark:bg-zinc-800 text-gray-900 dark:text-white text-sm
+                                      focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Last Name</label>
+                        <input type="text" name="last_name" placeholder="Okafor"
+                               class="w-full border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5
+                                      bg-white dark:bg-zinc-800 text-gray-900 dark:text-white text-sm
+                                      focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Username <span class="text-red-400">*</span></label>
+                    <input type="text" name="username" placeholder="ada_support" required
+                           class="w-full border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5
+                                  bg-white dark:bg-zinc-800 text-gray-900 dark:text-white text-sm
+                                  focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Email <span class="text-red-400">*</span></label>
+                    <input type="email" name="email" placeholder="ada@example.com" required
+                           class="w-full border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5
+                                  bg-white dark:bg-zinc-800 text-gray-900 dark:text-white text-sm
+                                  focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Password <span class="text-red-400">*</span></label>
+                    <input type="password" name="password" placeholder="Strong password" required
+                           class="w-full border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5
+                                  bg-white dark:bg-zinc-800 text-gray-900 dark:text-white text-sm
+                                  focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Confirm Password <span class="text-red-400">*</span></label>
+                    <input type="password" name="password2" placeholder="Repeat password" required
+                           class="w-full border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5
+                                  bg-white dark:bg-zinc-800 text-gray-900 dark:text-white text-sm
+                                  focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                </div>
+
+                <button type="submit"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold
+                               py-2.5 rounded-xl transition text-sm mt-1">
+                    Create Agent Account
+                </button>
+            </form>
+        </div>
+
+        <!-- ── Agent list ── -->
+        <div class="lg:col-span-2 space-y-3">
+            <h2 class="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Active Agents ({{ agents|length }})
+            </h2>
+
+            {% if agents %}
+            {% for agent in agents %}
+            <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                        rounded-2xl p-4 shadow-sm flex items-center gap-4"
+                 id="agent-row-{{ agent.id }}">
+
+                <!-- Avatar -->
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600
+                            flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                    {{ agent.username|first|upper }}
+                </div>
+
+                <!-- Info -->
+                <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-gray-900 dark:text-white text-sm truncate">
+                        {{ agent.get_full_name|default:agent.username }}
+                        <span class="text-xs font-normal text-gray-400 dark:text-gray-500 ml-1">@{{ agent.username }}</span>
+                    </p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 truncate">{{ agent.email }}</p>
+                    <p class="text-xs text-gray-300 dark:text-zinc-600 mt-0.5">
+                        Joined {{ agent.date_joined|date:"d M Y" }}
+                        &nbsp;·&nbsp;
+                        {% if agent.last_login %}
+                            Last login {{ agent.last_login|date:"d M Y, H:i" }}
+                        {% else %}
+                            Never logged in
+                        {% endif %}
+                    </p>
+                </div>
+
+                <!-- Status badge -->
+                <span class="text-xs px-2.5 py-1 rounded-full font-semibold flex-shrink-0
+                    {% if agent.is_active %}bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300
+                    {% else %}bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400{% endif %}">
+                    {% if agent.is_active %}Active{% else %}Suspended{% endif %}
+                </span>
+
+                <!-- Actions dropdown -->
+                <div class="relative flex-shrink-0" id="menu-wrap-{{ agent.id }}">
+                    <button onclick="toggleMenu({{ agent.id }})"
+                            class="text-gray-400 hover:text-gray-600 dark:hover:text-white p-1.5 rounded-lg
+                                   hover:bg-gray-100 dark:hover:bg-zinc-800 transition">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>
+                        </svg>
+                    </button>
+                    <div id="menu-{{ agent.id }}"
+                         class="hidden absolute right-0 top-8 w-52 bg-white dark:bg-zinc-800
+                                border border-gray-100 dark:border-zinc-700 rounded-xl shadow-xl z-10 py-1">
+
+                        <!-- Reset password -->
+                        <button onclick="showResetForm({{ agent.id }})"
+                                class="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200
+                                       hover:bg-gray-50 dark:hover:bg-zinc-700 flex items-center gap-2">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                            </svg>
+                            Reset Password
+                        </button>
+
+                        <!-- Revoke agent role -->
+                        <form method="post" class="m-0">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="revoke"/>
+                            <input type="hidden" name="agent_id" value="{{ agent.id }}"/>
+                            <button type="submit"
+                                    onclick="return confirm('Remove agent access for {{ agent.username }}?')"
+                                    class="w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400
+                                           hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zm7-4l4 4m0-4l-4 4"/>
+                                </svg>
+                                Revoke Agent Access
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reset password inline form (hidden by default) -->
+            <div id="reset-form-{{ agent.id }}"
+                 class="hidden bg-white dark:bg-zinc-900 border border-blue-200 dark:border-blue-800
+                        rounded-2xl p-4 shadow-sm -mt-1">
+                <p class="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                    Reset password for <span class="text-blue-600 dark:text-blue-400">@{{ agent.username }}</span>
+                </p>
+                <form method="post" class="flex gap-2 flex-wrap">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="reset_password"/>
+                    <input type="hidden" name="agent_id" value="{{ agent.id }}"/>
+                    <input type="password" name="new_password" placeholder="New password" required
+                           class="flex-1 min-w-0 border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2
+                                  bg-white dark:bg-zinc-800 text-gray-900 dark:text-white text-sm
+                                  focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                    <input type="password" name="new_password2" placeholder="Confirm" required
+                           class="flex-1 min-w-0 border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2
+                                  bg-white dark:bg-zinc-800 text-gray-900 dark:text-white text-sm
+                                  focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                    <button type="submit"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-xl text-sm transition">
+                        Save
+                    </button>
+                    <button type="button" onclick="hideResetForm({{ agent.id }})"
+                            class="text-gray-400 hover:text-gray-600 dark:hover:text-white px-3 py-2 text-sm transition">
+                        Cancel
+                    </button>
+                </form>
+            </div>
+            {% endfor %}
+
+            {% else %}
+            <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800
+                        rounded-2xl p-10 shadow-sm text-center">
+                <div class="w-12 h-12 rounded-full bg-violet-50 dark:bg-violet-900/20
+                            flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-6 h-6 text-violet-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                    </svg>
+                </div>
+                <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">No agents yet</p>
+                <p class="text-gray-400 dark:text-gray-500 text-xs mt-1">Create the first agent using the form on the left.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function toggleMenu(id) {
+    var m = document.getElementById('menu-' + id);
+    m.classList.toggle('hidden');
+    // Close others
+    document.querySelectorAll('[id^="menu-"]').forEach(function(el) {
+        if (el.id !== 'menu-' + id) el.classList.add('hidden');
+    });
+}
+
+document.addEventListener('click', function(e) {
+    var inside = e.target.closest('[id^="menu-wrap-"]');
+    if (!inside) {
+        document.querySelectorAll('[id^="menu-"]').forEach(function(el) {
+            el.classList.add('hidden');
+        });
+    }
+});
+
+function showResetForm(id) {
+    document.getElementById('reset-form-' + id).classList.remove('hidden');
+    document.getElementById('menu-' + id).classList.add('hidden');
+}
+
+function hideResetForm(id) {
+    document.getElementById('reset-form-' + id).classList.add('hidden');
+}
+</script>
+{% endblock %}
