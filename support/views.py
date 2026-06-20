@@ -604,3 +604,71 @@ def manage_agents(request):
 
     agents = User.objects.filter(is_agent=True).order_by('-date_joined')
     return render(request, 'manage/agents.html', {'agents': agents, 'error': error})
+
+
+@login_required(login_url='login')
+@admin_required
+def manage_broadcast(request):
+    EMAIL_TYPES = [
+        ('newsletter',     'Newsletter'),
+        ('service_update', 'Service Update'),
+        ('new_feature',    'New Feature'),
+        ('promotion',      'Promotion'),
+        ('holiday',        'Holiday Notice'),
+        ('maintenance',    'Maintenance'),
+    ]
+    sent = False
+    error = ''
+    preview_html = ''
+    form_data = {}
+
+    if request.method == 'POST':
+        action     = request.POST.get('action')
+        subject    = request.POST.get('subject', '').strip()
+        message    = request.POST.get('message', '').strip()
+        email_type = request.POST.get('email_type', 'newsletter')
+        audience   = request.POST.get('audience', 'all')
+        cta_text   = request.POST.get('cta_text', '').strip()
+        cta_url    = request.POST.get('cta_url', '').strip()
+
+        form_data = {
+            'subject': subject, 'message': message, 'email_type': email_type,
+            'audience': audience, 'cta_text': cta_text, 'cta_url': cta_url,
+        }
+
+        if not subject or not message:
+            error = 'Subject and message are required.'
+        else:
+            qs = User.objects.filter(is_active=True, is_staff=False, is_superuser=False)
+            if audience == 'agents_excluded':
+                qs = qs.filter(is_agent=False)
+
+            if action == 'preview':
+                from main.notifications import TYPE_BADGE, _wrap, _btn
+                color, label = TYPE_BADGE.get(email_type, ('#7c3aed', 'Announcement'))
+                paragraphs = ''.join(
+                    f'<p style="margin:0 0 14px;font-size:15px;color:#52525b;line-height:1.7;">{p.strip()}</p>'
+                    for p in message.split('\n') if p.strip()
+                )
+                cta_block = _btn(cta_text, cta_url) if cta_text and cta_url else ''
+                badge = (f'<span style="display:inline-block;background:{color};color:#fff;'
+                         f'font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;'
+                         f'padding:3px 10px;border-radius:20px;margin-bottom:16px;">{label}</span>')
+                inner = f'{badge}<h2 style="margin:0 0 16px;font-size:22px;font-weight:800;color:#18181b;">{subject}</h2>{paragraphs}{cta_block}'
+                preview_html = _wrap(inner, preheader=subject)
+
+            elif action == 'send':
+                users = list(qs)
+                from main.notifications import send_broadcast_email
+                send_broadcast_email(users, subject, message, email_type, cta_text, cta_url)
+                sent = True
+
+    total_users = User.objects.filter(is_active=True, is_staff=False, is_superuser=False).count()
+    return render(request, 'manage/broadcast.html', {
+        'email_types': EMAIL_TYPES,
+        'sent': sent,
+        'error': error,
+        'preview_html': preview_html,
+        'form_data': form_data,
+        'total_users': total_users,
+    })

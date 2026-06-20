@@ -308,3 +308,69 @@ def send_agent_credentials_email(agent, plain_password):
     _send(subject, text, _wrap(inner, preheader=preheader,
           footer_note=f'You received this email because an admin added you as a support agent on {BRAND}.'),
           [agent.email])
+
+
+# ── Broadcast / announcement emails ──────────────────────────────────────────
+
+TYPE_BADGE = {
+    'newsletter':      ('#7c3aed', 'Newsletter'),
+    'service_update':  ('#2563eb', 'Service Update'),
+    'new_feature':     ('#059669', 'New Feature'),
+    'promotion':       ('#dc2626', 'Promotion'),
+    'holiday':         ('#d97706', 'Holiday Notice'),
+    'maintenance':     ('#71717a', 'Maintenance'),
+}
+
+
+def send_broadcast_email(users, subject, message, email_type='newsletter', cta_text='', cta_url=''):
+    """
+    Send a broadcast/announcement email to a list of users.
+    Runs each send in a single background thread — does not block the request.
+    users: iterable of User objects (evaluated before the thread starts).
+    message: plain-text body; newlines become paragraphs.
+    """
+    color, label = TYPE_BADGE.get(email_type, ('#7c3aed', 'Announcement'))
+    paragraphs = ''.join(
+        f'<p style="margin:0 0 14px;font-size:15px;color:#52525b;line-height:1.7;">{p.strip()}</p>'
+        for p in message.strip().split('\n') if p.strip()
+    )
+    cta_block = _btn(cta_text, cta_url) if cta_text and cta_url else ''
+
+    badge = (f'<span style="display:inline-block;background:{color};color:#fff;'
+             f'font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;'
+             f'padding:3px 10px;border-radius:20px;margin-bottom:16px;">{label}</span>')
+
+    inner = f'''
+    {badge}
+    <h2 style="margin:0 0 16px;font-size:22px;font-weight:800;color:#18181b;">{subject}</h2>
+    {paragraphs}
+    {cta_block}'''
+
+    preheader = subject
+    text_body = f'{label}: {subject}\n\n{message}'
+    footer = f'You are receiving this because you have an account with {BRAND}.'
+
+    recipient_list = [(u.email, u.first_name or u.username) for u in users if u.email]
+
+    def _bulk_worker():
+        import socket
+        old = socket.getdefaulttimeout()
+        socket.setdefaulttimeout(20)
+        sent = failed = 0
+        for email, name in recipient_list:
+            personalised = inner.replace('{{name}}', name)
+            try:
+                from django.core.mail import EmailMultiAlternatives
+                msg = EmailMultiAlternatives(subject, text_body, _from(), [email])
+                msg.attach_alternative(_wrap(personalised, preheader=preheader, footer_note=footer), 'text/html')
+                msg.send(fail_silently=False)
+                sent += 1
+            except Exception as exc:
+                logger.error('[%s] Broadcast failed to %s: %s', BRAND, email, exc)
+                failed += 1
+        socket.setdefaulttimeout(old)
+        logger.info('[%s] Broadcast "%s" complete — sent:%d failed:%d', BRAND, subject, sent, failed)
+
+    import threading
+    threading.Thread(target=_bulk_worker, daemon=True).start()
+    logger.info('[%s] Broadcast "%s" queued for %d recipients', BRAND, subject, len(recipient_list))

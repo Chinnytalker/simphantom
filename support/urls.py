@@ -22,4 +22,5 @@ urlpatterns = [
     path('manage/tickets/<int:pk>/poll/',         views.manage_ticket_poll,     name='manage-ticket-poll'),
     path('manage/tickets/<int:pk>/send/',         views.manage_ticket_send,     name='manage-ticket-send'),
     path('manage/agents/',                        views.manage_agents,          name='manage-agents'),
+    path('manage/broadcast/',                     views.manage_broadcast,       name='manage-broadcast'),
 ]
