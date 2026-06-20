@@ -107,7 +107,7 @@ def register_page(request):
         user = get_user_model().objects.create_user(username=username, email=email, password=password)
         from main.notifications import send_welcome_email
         send_welcome_email(user)
-        login(request, user)
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         return redirect('dashboard')
 
     return render(request, 'register.html')
