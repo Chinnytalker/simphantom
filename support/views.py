@@ -609,6 +609,7 @@ def manage_agents(request):
 @login_required(login_url='login')
 @admin_required
 def manage_broadcast(request):
+    User = get_user_model()
     EMAIL_TYPES = [
         ('newsletter',     'Newsletter'),
         ('service_update', 'Service Update'),
