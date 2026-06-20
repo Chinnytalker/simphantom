@@ -1257,5 +1257,98 @@
             }
         });
     </script>
+
+    {% if user.is_authenticated %}
+    <!-- ══ SESSION TIMEOUT ══ -->
+
+    <!-- Warning modal -->
+    <div id="session-timeout-modal"
+         class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        <div class="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-sm p-6
+                    border border-gray-100 dark:border-zinc-800 text-center">
+            <div class="w-14 h-14 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center
+                        justify-center mx-auto mb-4">
+                <svg class="w-7 h-7 text-amber-500" fill="none" stroke="currentColor"
+                     stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Still there?</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                You've been inactive for a while.
+            </p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                You'll be signed out in
+                <span id="session-countdown"
+                      class="font-bold text-red-500">60</span> seconds.
+            </p>
+            <div class="flex gap-3">
+                <button onclick="window.__keepSession()"
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold
+                               py-2.5 rounded-xl text-sm transition">
+                    Stay signed in
+                </button>
+                <button onclick="window.__doSessionLogout()"
+                        class="flex-1 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200
+                               dark:hover:bg-zinc-700 text-gray-700 dark:text-white
+                               font-semibold py-2.5 rounded-xl text-sm transition">
+                    Sign out now
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden logout form (POST required) -->
+    <form id="session-logout-form" method="post" action="{% url 'logout' %}" class="hidden">
+        {% csrf_token %}
+    </form>
+
+    <script>
+    (function () {
+        var IDLE_MS    = 20 * 60 * 1000;   // 20 min inactivity → show warning
+        var WARNING_MS = 60;                // 60 s countdown then logout
+
+        var modal      = document.getElementById('session-timeout-modal');
+        var countEl    = document.getElementById('session-countdown');
+        var idleTimer, countInterval, countVal;
+
+        function resetIdle() {
+            clearTimeout(idleTimer);
+            clearInterval(countInterval);
+            if (modal) modal.classList.add('hidden');
+            idleTimer = setTimeout(showWarning, IDLE_MS);
+        }
+
+        function showWarning() {
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            countVal = WARNING_MS;
+            if (countEl) countEl.textContent = countVal;
+            countInterval = setInterval(function () {
+                countVal -= 1;
+                if (countEl) countEl.textContent = countVal;
+                if (countVal <= 0) {
+                    clearInterval(countInterval);
+                    window.__doSessionLogout();
+                }
+            }, 1000);
+        }
+
+        window.__keepSession = function () { resetIdle(); };
+        window.__doSessionLogout = function () {
+            document.getElementById('session-logout-form').submit();
+        };
+
+        ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'].forEach(function (e) {
+            document.addEventListener(e, resetIdle, true);
+        });
+
+        resetIdle();
+    })();
+    </script>
+    <!-- ══ END SESSION TIMEOUT ══ -->
+    {% endif %}
 </body>
 </html>

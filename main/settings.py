@@ -191,6 +191,10 @@ ESIMCARD_API_TOKEN  = config('ESIMCARD_API_TOKEN', default='')
 
 CLOUDFLARE_TURNSTILE_SECRET_KEY = config('CLOUDFLARE_TURNSTILE_SECRET_KEY', default='')
 
+# ── Session timeout ───────────────────────────────────────────────────────────
+SESSION_COOKIE_AGE      = 1800   # 30 min max lifetime (server enforced)
+SESSION_SAVE_EVERY_REQUEST = True  # reset expiry on every request
+
 AUTH_USER_MODEL = 'accounts.User'
 
 # ── Google OAuth (django-allauth) ─────────────────────────────────────────────
