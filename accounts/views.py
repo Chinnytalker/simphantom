@@ -20,6 +20,12 @@ logger = logging.getLogger(__name__)
 class ThreadedPasswordResetForm(PasswordResetForm):
     """Override send_mail so the SMTP call happens in a background thread."""
 
+    def get_users(self, email):
+        users = list(super().get_users(email))
+        if not users:
+            logger.warning('Password reset requested for %s but no eligible user found (account may use Google login)', email)
+        return users
+
     def send_mail(self, subject_template_name, email_template_name, context,
                   from_email, to_email, html_email_template_name=None):
         protocol = context.get('protocol', 'https')
@@ -29,7 +35,7 @@ class ThreadedPasswordResetForm(PasswordResetForm):
 
         reset_url = f"{protocol}://{domain}{reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token})}"
 
-        logger.info('Password reset email sending to %s, url=%s', to_email, reset_url)
+        logger.info('Password reset email sending to %s', to_email)
         from main.notifications import send_password_reset_email
         send_password_reset_email(context['user'], reset_url)
 
