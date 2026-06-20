@@ -11,6 +11,7 @@ sitemaps = {
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('accounts/', include('allauth.urls')),
     path('', include('accounts.urls')),
     path('', include('support.urls')),
     path('api/services/', include('services.urls')),

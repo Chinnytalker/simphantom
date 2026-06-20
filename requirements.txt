@@ -1,3 +1,4 @@
+django-allauth
 asgiref==3.11.1
 certifi==2026.5.20
 charset-normalizer==3.4.7

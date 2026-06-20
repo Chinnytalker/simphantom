@@ -23,6 +23,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sitemaps',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     'accounts',
     'orders',
     'payments',
@@ -43,6 +48,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'main.urls'
@@ -184,6 +190,35 @@ TWILIO_FROM_NUMBER  = config('TWILIO_FROM_NUMBER', default='')
 ESIMCARD_API_TOKEN  = config('ESIMCARD_API_TOKEN', default='')
 
 AUTH_USER_MODEL = 'accounts.User'
+
+# ── Google OAuth (django-allauth) ─────────────────────────────────────────────
+SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+ACCOUNT_EMAIL_REQUIRED       = True
+ACCOUNT_USERNAME_REQUIRED    = False
+ACCOUNT_EMAIL_VERIFICATION   = 'none'
+LOGIN_REDIRECT_URL           = '/dashboard/'
+ACCOUNT_LOGOUT_REDIRECT_URL  = '/'
+SOCIALACCOUNT_AUTO_SIGNUP    = True
+SOCIALACCOUNT_LOGIN_ON_GET   = True
+SOCIALACCOUNT_ADAPTER        = 'accounts.adapters.SocialAccountAdapter'
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': config('GOOGLE_CLIENT_ID', default=''),
+            'secret':    config('GOOGLE_CLIENT_SECRET', default=''),
+        },
+        'SCOPE':           ['profile', 'email'],
+        'AUTH_PARAMS':     {'access_type': 'online'},
+        'OAUTH_PKCE_ENABLED': True,
+    }
+}
 
 # ── Email (Brevo SMTP relay) ──────────────────────────────────────────────────
 EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
