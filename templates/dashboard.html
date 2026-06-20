@@ -924,9 +924,12 @@ function cancelOrder(orderId, amount) {
     if (p.get('otp_success') === '1') {
         var phone = p.get('phone') || '';
         showToast('OTP number purchased' + (phone ? ': ' + phone : '') + ' — check SMS from your dashboard.', 'success', 8000);
-        // Clean URL
         history.replaceState({}, '', window.location.pathname);
     }
+    {% if payment_credited %}
+    showToast('Payment confirmed — your wallet has been credited!', 'success', 7000);
+    history.replaceState({}, '', window.location.pathname);
+    {% endif %}
 })();
 
 // ── Temporary Email Inbox (Dashboard) ──────────────────────────────────────

@@ -135,6 +135,42 @@ def dashboard(request):
     from decimal import Decimal
 
     user = request.user
+
+    # Handle Paystack redirect callback — credit wallet if reference is in URL
+    paystack_ref = request.GET.get('reference') or request.GET.get('trxref')
+    payment_credited = False
+    if paystack_ref:
+        from orders.models import Transaction as Txn
+        from django.db import transaction as db_txn
+        from django.db.models import F
+        import requests as http_req
+        from django.conf import settings as dj_settings
+        try:
+            txn = Txn.objects.get(reference=paystack_ref, user=user, type='CREDIT')
+            if 'pending' in txn.description:
+                resp = http_req.get(
+                    f'https://api.paystack.co/transaction/verify/{paystack_ref}',
+                    headers={'Authorization': f'Bearer {dj_settings.PAYSTACK_SECRET}'},
+                    timeout=10,
+                )
+                result = resp.json()
+                if result.get('status') and result['data']['status'] == 'success':
+                    amount = Decimal(result['data']['amount']) / 100
+                    with db_txn.atomic():
+                        get_user_model().objects.filter(pk=user.pk).update(
+                            wallet_balance=F('wallet_balance') + amount
+                        )
+                        txn.description = 'Wallet top-up (confirmed)'
+                        txn.save()
+                    user.refresh_from_db()
+                    payment_credited = True
+                    try:
+                        from main.notifications import send_deposit_confirmed_email
+                        send_deposit_confirmed_email(user, amount, user.wallet_balance)
+                    except Exception:
+                        pass
+        except Exception:
+            pass
     orders = Order.objects.filter(user=user)
     active_orders  = orders.filter(status='PENDING').count()
     total_spent    = orders.filter(status__in=['RECEIVED', 'FINISHED']).aggregate(
@@ -163,6 +199,7 @@ def dashboard(request):
         'transactions': transactions,
         'temp_emails': temp_emails,
         'fivesim_balance': fivesim_balance,
+        'payment_credited': payment_credited,
     })
 
 
