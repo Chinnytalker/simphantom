@@ -57,7 +57,10 @@ def _wrap(inner_html, *, preheader='', footer_note=''):
 
       <!-- Header -->
       <tr><td style="background:#18181b;border-radius:16px 16px 0 0;padding:24px 32px;text-align:center;">
-        <span style="color:#fff;font-size:22px;font-weight:800;letter-spacing:-0.5px;">{BRAND}</span>
+        <img src="https://simphantom.com/static/img/android-chrome-192x192.png"
+             alt="{BRAND}" width="36" height="36"
+             style="display:inline-block;vertical-align:middle;border-radius:8px;margin-right:10px;" />
+        <span style="color:#fff;font-size:22px;font-weight:800;letter-spacing:-0.5px;vertical-align:middle;">{BRAND}</span>
       </td></tr>
 
       <!-- Body -->

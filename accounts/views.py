@@ -12,6 +12,9 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import PasswordResetForm
 from django.urls import reverse
 from django_ratelimit.decorators import ratelimit
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ThreadedPasswordResetForm(PasswordResetForm):
@@ -19,14 +22,14 @@ class ThreadedPasswordResetForm(PasswordResetForm):
 
     def send_mail(self, subject_template_name, email_template_name, context,
                   from_email, to_email, html_email_template_name=None):
-        request = context.get('request')
-        protocol = context.get('protocol', 'http')
+        protocol = context.get('protocol', 'https')
         domain = context.get('domain', '')
         uid = context.get('uid', '')
         token = context.get('token', '')
 
         reset_url = f"{protocol}://{domain}{reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token})}"
 
+        logger.info('Password reset email sending to %s, url=%s', to_email, reset_url)
         from main.notifications import send_password_reset_email
         send_password_reset_email(context['user'], reset_url)
 
