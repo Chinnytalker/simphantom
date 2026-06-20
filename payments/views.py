@@ -2,7 +2,10 @@ import hmac
 import hashlib
 import json
 import uuid
+import logging
 from django.conf import settings
+
+logger = logging.getLogger('payments')
 from django.db import transaction as db_transaction
 from django.db.models import F
 from django.contrib.auth import get_user_model
@@ -118,11 +121,15 @@ class VerifyPaymentView(APIView):
                 timeout=10,
             )
             result = resp.json()
-        except Exception:
+            logger.info('Paystack verify ref=%s http=%s body=%s', reference, resp.status_code, result)
+        except Exception as e:
+            logger.error('Paystack verify network error ref=%s err=%s', reference, e)
             return Response({'error': 'Could not reach Paystack'}, status=502)
 
-        if not result.get('status') or result['data']['status'] != 'success':
-            return Response({'error': 'Payment not confirmed by Paystack'}, status=400)
+        pay_status = result.get('data', {}).get('status')
+        if not result.get('status') or pay_status != 'success':
+            logger.warning('Paystack verify not success ref=%s pay_status=%s', reference, pay_status)
+            return Response({'error': f'Payment status: {pay_status}'}, status=400)
 
         amount = Decimal(result['data']['amount']) / 100  # kobo → naira
 
@@ -139,13 +146,22 @@ class VerifyPaymentView(APIView):
                     )
                     txn.description = 'Wallet top-up (confirmed)'
                     txn.save()
+                    logger.info('Wallet credited user=%s amount=%s ref=%s', request.user.id, amount, reference)
                 else:
+                    logger.info('Already confirmed ref=%s', reference)
                     return Response({'status': 'already_confirmed'})
 
             user = get_user_model().objects.get(pk=txn.user_id)
-            from main.notifications import send_deposit_confirmed_email
-            send_deposit_confirmed_email(user, amount, user.wallet_balance)
+            try:
+                from main.notifications import send_deposit_confirmed_email
+                send_deposit_confirmed_email(user, amount, user.wallet_balance)
+            except Exception as e:
+                logger.error('Deposit email failed user=%s err=%s', user.id, e)
             return Response({'status': 'ok', 'amount': str(amount)})
 
         except Transaction.DoesNotExist:
+            logger.error('Transaction not found ref=%s user=%s', reference, request.user.id)
             return Response({'error': 'Transaction not found'}, status=404)
+        except Exception as e:
+            logger.error('Verify DB error ref=%s err=%s', reference, e)
+            return Response({'error': 'Server error'}, status=500)
