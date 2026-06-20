@@ -193,11 +193,19 @@
 
         <!-- Change priority/status (separate form, non-AJAX) -->
         <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
-            <h3 class="font-bold text-gray-900 dark:text-white text-sm mb-4">Update Priority</h3>
+            <h3 class="font-bold text-gray-900 dark:text-white text-sm mb-4">Update Status & Priority</h3>
             <form method="post" action="/manage/tickets/{{ ticket.pk }}/" class="space-y-3">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="change_meta"/>
-                <input type="hidden" name="status" value="{{ ticket.status }}"/>
+                <select name="status"
+                        class="w-full border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5
+                               bg-white dark:bg-zinc-800 text-gray-900 dark:text-white text-sm
+                               focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="OPEN"        {% if ticket.status == 'OPEN' %}selected{% endif %}>Open</option>
+                    <option value="IN_PROGRESS" {% if ticket.status == 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
+                    <option value="RESOLVED"    {% if ticket.status == 'RESOLVED' %}selected{% endif %}>Resolved</option>
+                    <option value="CLOSED"      {% if ticket.status == 'CLOSED' %}selected{% endif %}>Closed</option>
+                </select>
                 <select name="priority"
                         class="w-full border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5
                                bg-white dark:bg-zinc-800 text-gray-900 dark:text-white text-sm
@@ -209,7 +217,7 @@
                 <button type="submit"
                         class="w-full bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700
                                text-gray-700 dark:text-gray-300 font-semibold py-2.5 rounded-xl transition text-sm">
-                    Update Priority
+                    Save Changes
                 </button>
             </form>
         </div>
