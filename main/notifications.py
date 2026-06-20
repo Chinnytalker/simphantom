@@ -22,12 +22,18 @@ def _send(subject, text, html, recipients):
         return  # email not configured — skip silently
 
     def _worker():
+        import socket
+        old_timeout = socket.getdefaulttimeout()
+        socket.setdefaulttimeout(20)
         try:
             msg = EmailMultiAlternatives(subject, text, _from(), recipients)
             msg.attach_alternative(html, 'text/html')
             msg.send(fail_silently=False)
+            logger.info('[%s] Email sent to %s: %s', BRAND, recipients, subject)
         except Exception as exc:
             logger.error('[%s] Email send failed to %s: %s', BRAND, recipients, exc)
+        finally:
+            socket.setdefaulttimeout(old_timeout)
 
     threading.Thread(target=_worker, daemon=True).start()
 

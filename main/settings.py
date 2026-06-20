@@ -227,12 +227,15 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 # ── Email (Brevo SMTP relay) ──────────────────────────────────────────────────
-EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST          = 'smtp-relay.brevo.com'
-EMAIL_PORT          = 587
-EMAIL_USE_TLS       = True
-EMAIL_HOST_USER     = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+if DJANGO_ENV == 'development':
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST          = 'smtp-relay.brevo.com'
+    EMAIL_PORT          = 587
+    EMAIL_USE_TLS       = True
+    EMAIL_HOST_USER     = config('EMAIL_HOST_USER', default='')
+    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL  = f'{config("EMAIL_FROM_NAME", default="SimPhantom")} <{config("EMAIL_FROM", default="noreply@simphantom.com")}>'
 ADMIN_NOTIFY_EMAIL  = config('ADMIN_NOTIFY_EMAIL', default='simphantom1@gmail.com')
 
