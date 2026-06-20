@@ -769,8 +769,28 @@ function initiatePayment(currency) {
                 ref:      data.reference,
                 currency: 'NGN',
                 callback: function() {
-                    showToast('Payment successful! Your wallet will be credited shortly.', 'success', 6000);
-                    setTimeout(function() { location.reload(); }, 3000);
+                    showToast('Payment received! Crediting your wallet…', 'info', 4000);
+                    fetch('/api/payments/verify/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken'),
+                        },
+                        body: JSON.stringify({ reference: data.reference }),
+                    })
+                    .then(function(r) { return r.json(); })
+                    .then(function(res) {
+                        if (res.status === 'ok' || res.status === 'already_confirmed') {
+                            showToast('Wallet credited successfully!', 'success', 5000);
+                        } else {
+                            showToast(res.error || 'Payment verified but credit failed. Contact support.', 'error', 8000);
+                        }
+                        setTimeout(function() { location.reload(); }, 2000);
+                    })
+                    .catch(function() {
+                        showToast('Payment received. Refreshing…', 'info');
+                        setTimeout(function() { location.reload(); }, 2000);
+                    });
                 },
                 onClose: function() {
                     showToast('Payment window closed.', 'info');

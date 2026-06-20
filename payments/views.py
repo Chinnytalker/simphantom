@@ -100,3 +100,52 @@ class PaystackWebhookView(APIView):
                 pass
 
         return Response({'status': 'ok'})
+
+
+class VerifyPaymentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        reference = request.data.get('reference', '').strip()
+        if not reference:
+            return Response({'error': 'Reference required'}, status=400)
+
+        import requests as http_requests
+        try:
+            resp = http_requests.get(
+                f'https://api.paystack.co/transaction/verify/{reference}',
+                headers={'Authorization': f'Bearer {settings.PAYSTACK_SECRET}'},
+                timeout=10,
+            )
+            result = resp.json()
+        except Exception:
+            return Response({'error': 'Could not reach Paystack'}, status=502)
+
+        if not result.get('status') or result['data']['status'] != 'success':
+            return Response({'error': 'Payment not confirmed by Paystack'}, status=400)
+
+        amount = Decimal(result['data']['amount']) / 100  # kobo → naira
+
+        try:
+            with db_transaction.atomic():
+                txn = Transaction.objects.get(
+                    reference=reference,
+                    user=request.user,
+                    type='CREDIT',
+                )
+                if 'pending' in txn.description:
+                    get_user_model().objects.filter(pk=txn.user_id).update(
+                        wallet_balance=F('wallet_balance') + amount
+                    )
+                    txn.description = 'Wallet top-up (confirmed)'
+                    txn.save()
+                else:
+                    return Response({'status': 'already_confirmed'})
+
+            user = get_user_model().objects.get(pk=txn.user_id)
+            from main.notifications import send_deposit_confirmed_email
+            send_deposit_confirmed_email(user, amount, user.wallet_balance)
+            return Response({'status': 'ok', 'amount': str(amount)})
+
+        except Transaction.DoesNotExist:
+            return Response({'error': 'Transaction not found'}, status=404)
