@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Signing you in… — SimPhantom{% endblock %}
+{% block main_class %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-white dark:bg-zinc-900 px-4">
+    <div class="text-center">
+        <!-- Spinner -->
+        <div class="flex justify-center mb-6">
+            <svg class="animate-spin w-12 h-12 text-blue-600" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+            </svg>
+        </div>
+
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Signing you in…</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">Completing your Google sign-in, please wait.</p>
+
+        <!-- Hidden auto-submit form -->
+        <form id="google-confirm-form" method="post" action="">
+            {% csrf_token %}
+            {% for field in form %}{{ field }}{% endfor %}
+            <noscript>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    JavaScript is disabled. Please click the button below to continue.
+                </p>
+                <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition">
+                    Continue to SimPhantom
+                </button>
+            </noscript>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.getElementById('google-confirm-form').submit();
+</script>
+{% endblock %}
