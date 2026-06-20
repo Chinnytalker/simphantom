@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Login Failed — SimPhantom{% endblock %}
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4">
+  <div class="max-w-md w-full text-center">
+    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-10 border border-gray-100 dark:border-gray-800">
+      <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+        <i class="fa-solid fa-triangle-exclamation text-red-500 text-2xl"></i>
+      </div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">Google Login Failed</h1>
+      <p class="text-gray-500 dark:text-gray-400 mb-8">
+        We couldn't sign you in with Google. This can happen if you cancelled the login,
+        or if there was a temporary issue. Please try again or use your email and password.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-3 justify-center">
+        <a href="{% url 'login' %}"
+           class="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-xl transition">
+          <i class="fa-solid fa-arrow-left text-sm"></i>
+          Back to Login
+        </a>
+        <a href="{% url 'register' %}"
+           class="inline-flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold px-6 py-3 rounded-xl transition">
+          Create Account
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
