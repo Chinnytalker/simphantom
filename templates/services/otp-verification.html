@@ -423,14 +423,14 @@
         });
     }
 
-    function resetToServicePicker() {
+    window.resetToServicePicker = function resetToServicePicker() {
         selectedService = null;
         allCountries = [];
         document.getElementById('service-search').value = '';
         document.getElementById('country-filter').value = '';
         renderPopularGrid('');
         showState('pick-service');
-    }
+    };
 
     // ── Select a service and load countries ───────────────────────────────
     async function selectService(svc) {
