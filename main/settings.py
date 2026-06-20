@@ -189,6 +189,8 @@ TWILIO_FROM_NUMBER  = config('TWILIO_FROM_NUMBER', default='')
 
 ESIMCARD_API_TOKEN  = config('ESIMCARD_API_TOKEN', default='')
 
+CLOUDFLARE_TURNSTILE_SECRET_KEY = config('CLOUDFLARE_TURNSTILE_SECRET_KEY', default='')
+
 AUTH_USER_MODEL = 'accounts.User'
 
 # ── Google OAuth (django-allauth) ─────────────────────────────────────────────

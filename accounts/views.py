@@ -76,6 +76,11 @@ def register_page(request):
         return render(request, 'register.html', {'error': 'Too many registration attempts. Please try again later.'})
 
     if request.method == 'POST':
+        from .turnstile import verify_turnstile
+        token = request.POST.get('cf-turnstile-response', '')
+        if not verify_turnstile(token, request.META.get('REMOTE_ADDR')):
+            return render(request, 'register.html', {'error': 'Security check failed. Please try again.'})
+
         username = request.POST.get('username')
         email = request.POST.get('email')
         password = request.POST.get('password')
@@ -105,6 +110,11 @@ def login_page(request):
         return render(request, 'login.html', {'error': 'Too many login attempts. Please wait 5 minutes and try again.'})
 
     if request.method == 'POST':
+        from .turnstile import verify_turnstile
+        token = request.POST.get('cf-turnstile-response', '')
+        if not verify_turnstile(token, request.META.get('REMOTE_ADDR')):
+            return render(request, 'login.html', {'error': 'Security check failed. Please try again.'})
+
         username = request.POST.get('username')
         password = request.POST.get('password')
 

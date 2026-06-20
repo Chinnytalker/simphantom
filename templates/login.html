@@ -179,6 +179,9 @@
                     <label for="remember" class="text-sm text-gray-600 dark:text-gray-400">Keep me signed in</label>
                 </div>
 
+                <!-- Turnstile -->
+                <div class="cf-turnstile" data-sitekey="0x4AAAAAADn7kkBwmyqxFXVJ" data-theme="auto"></div>
+
                 <!-- Submit -->
                 <button type="submit"
                         class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl
@@ -205,6 +208,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <script>
 function togglePw(fieldId, eyeId) {
     var f = document.getElementById(fieldId);
