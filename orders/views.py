@@ -146,9 +146,13 @@ class CheckOrderView(APIView):
                 order.sms_code = data['code']
                 order.status = 'RECEIVED'
                 order.save(update_fields=['sms_code', 'status'])
-            elif data['status'] == 'CANCELED':
-                order.status = 'CANCELED'
-                order.save(update_fields=['status'])
+            elif data['status'] == 'CANCELED' and order.status != 'CANCELED':
+                with db_transaction.atomic():
+                    get_user_model().objects.filter(pk=request.user.pk).update(
+                        wallet_balance=F('wallet_balance') + order.amount_charged
+                    )
+                    order.status = 'CANCELED'
+                    order.save(update_fields=['status'])
             return Response({
                 'status': data['status'],
                 'sms_code': order.sms_code,
@@ -157,12 +161,20 @@ class CheckOrderView(APIView):
 
         # 5sim path
         data = check_order(order.fivesim_order_id)
+        fivesim_status = data.get('status', '')
         if data.get('sms') and len(data['sms']) > 0:
             order.sms_code = data['sms'][0]['code']
             order.status = 'RECEIVED'
             order.save(update_fields=['sms_code', 'status'])
+        elif fivesim_status in ('CANCELED', 'EXPIRED') and order.status != 'CANCELED':
+            with db_transaction.atomic():
+                get_user_model().objects.filter(pk=request.user.pk).update(
+                    wallet_balance=F('wallet_balance') + order.amount_charged
+                )
+                order.status = 'CANCELED'
+                order.save(update_fields=['status'])
         return Response({
-            'status': data.get('status'),
+            'status': fivesim_status or order.status,
             'sms_code': order.sms_code,
             'phone': order.phone,
         })
