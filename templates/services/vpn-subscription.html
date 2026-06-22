@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}VPN Subscription — Coming Soon — SimPhantom{% endblock %}
+{% block title %}VPN Subscription — SimPhantom{% endblock %}
 
 {% block content %}
 
@@ -22,45 +22,310 @@
             </svg>
         </div>
         <div>
-            <div class="flex items-center gap-2 mb-1">
-                <h1 class="text-2xl font-extrabold text-white">VPN Subscription</h1>
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">Coming Soon</span>
-            </div>
-            <p class="text-zinc-400 text-sm">Secure your internet connection with enterprise-grade encryption.</p>
+            <h1 class="text-2xl font-extrabold text-white mb-1">WireGuard VPN</h1>
+            <p class="text-zinc-400 text-sm">Fast, private internet from USA or UK — powered by WireGuard encryption.</p>
+        </div>
+    </div>
+
+    <!-- Features row -->
+    <div class="relative mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-white/5 rounded-xl p-3 text-center">
+            <p class="text-white font-bold text-sm">WireGuard</p>
+            <p class="text-zinc-400 text-xs mt-0.5">Protocol</p>
+        </div>
+        <div class="bg-white/5 rounded-xl p-3 text-center">
+            <p class="text-white font-bold text-sm">No Logs</p>
+            <p class="text-zinc-400 text-xs mt-0.5">Policy</p>
+        </div>
+        <div class="bg-white/5 rounded-xl p-3 text-center">
+            <p class="text-white font-bold text-sm">USA & UK</p>
+            <p class="text-zinc-400 text-xs mt-0.5">Locations</p>
+        </div>
+        <div class="bg-white/5 rounded-xl p-3 text-center">
+            <p class="text-white font-bold text-sm">All Devices</p>
+            <p class="text-zinc-400 text-xs mt-0.5">Compatible</p>
         </div>
     </div>
 </div>
 
-<!-- Coming Soon card -->
-<div class="max-w-lg mx-auto text-center py-16">
-    <div class="w-20 h-20 rounded-3xl bg-emerald-600/10 dark:bg-emerald-600/20 flex items-center justify-center mx-auto mb-6">
-        <svg class="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-    </div>
-    <h2 class="text-2xl font-extrabold text-gray-900 dark:text-white mb-3">We're working on it</h2>
-    <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-6">
-        Our VPN service is currently in development and will be available soon. We're integrating a high-speed, no-logs VPN network across 50+ countries.
-    </p>
-    <div class="grid grid-cols-3 gap-4 mb-8 text-center">
-        <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4">
-            <p class="text-xl font-bold text-gray-900 dark:text-white">50+</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Countries</p>
-        </div>
-        <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4">
-            <p class="text-xl font-bold text-gray-900 dark:text-white">AES-256</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Encryption</p>
-        </div>
-        <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4">
-            <p class="text-xl font-bold text-gray-900 dark:text-white">No logs</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Policy</p>
-        </div>
-    </div>
-    <a href="/services/"
-       class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-xl
-              transition text-sm shadow-sm">
-        Browse Available Services
-    </a>
+<!-- Location tabs -->
+<div class="flex gap-2 mb-6">
+    <button id="tab-us" onclick="setLocation('us')"
+            class="tab-btn px-5 py-2 rounded-xl font-semibold text-sm transition border border-transparent bg-emerald-600 text-white">
+        🇺🇸 United States
+    </button>
+    <button id="tab-uk" onclick="setLocation('uk')"
+            class="tab-btn px-5 py-2 rounded-xl font-semibold text-sm transition border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800">
+        🇬🇧 United Kingdom
+    </button>
 </div>
+
+<!-- Plans grid -->
+<div id="plans-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+    <div class="col-span-full text-center py-10 text-gray-400">Loading plans…</div>
+</div>
+
+<!-- My VPN subscriptions -->
+<div id="my-vpn-section" class="hidden">
+    <h2 class="text-lg font-extrabold text-gray-900 dark:text-white mb-4">My VPN Subscriptions</h2>
+    <div id="my-vpn-list" class="space-y-3"></div>
+</div>
+
+<!-- Purchase modal -->
+<div id="purchase-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-md p-6">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="text-lg font-extrabold text-gray-900 dark:text-white">Confirm Purchase</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        <div id="modal-plan-info" class="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 mb-5 space-y-2 text-sm">
+            <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Plan</span><span id="modal-plan-name" class="font-semibold text-gray-900 dark:text-white"></span></div>
+            <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Location</span><span id="modal-location" class="font-semibold text-gray-900 dark:text-white"></span></div>
+
+            <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Duration</span><span id="modal-duration" class="font-semibold text-gray-900 dark:text-white"></span></div>
+            <div class="flex justify-between border-t border-gray-200 dark:border-zinc-700 pt-2 mt-2">
+                <span class="text-gray-500 dark:text-gray-400">Total</span>
+                <span id="modal-price" class="font-extrabold text-emerald-600 text-base"></span>
+            </div>
+        </div>
+
+        <div id="modal-error" class="hidden bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-xl p-3 mb-4 text-sm"></div>
+
+        <button onclick="confirmPurchase()"
+                class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition text-sm flex items-center justify-center gap-2">
+            <span id="modal-btn-text">Pay & Activate</span>
+            <svg id="modal-spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+        </button>
+    </div>
+</div>
+
+<!-- Config modal -->
+<div id="config-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-lg p-6">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="text-lg font-extrabold text-gray-900 dark:text-white">Your WireGuard Config</h3>
+            <button onclick="closeConfigModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        <!-- QR code -->
+        <div id="qr-wrap" class="hidden text-center mb-4">
+            <img id="qr-img" src="" alt="QR Code" class="w-40 h-40 mx-auto rounded-xl border border-gray-200 dark:border-zinc-700"/>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Scan with WireGuard mobile app</p>
+        </div>
+
+        <pre id="config-text" class="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 text-xs text-gray-800 dark:text-gray-200 overflow-x-auto whitespace-pre font-mono mb-4"></pre>
+
+        <div class="flex gap-3">
+            <button onclick="copyConfig()"
+                    class="flex-1 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-200 font-semibold py-2.5 rounded-xl text-sm transition">
+                Copy Config
+            </button>
+            <a id="download-link" href="#"
+               class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-xl text-sm transition text-center">
+                Download .conf
+            </a>
+        </div>
+
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
+            Import the .conf file into the WireGuard app on any device.
+        </p>
+    </div>
+</div>
+
+<script>
+const TOKEN = localStorage.getItem('access_token');
+let allPlans = [];
+let selectedPlanId = null;
+let currentLocation = 'us';
+
+async function loadPlans() {
+    try {
+        const res = await fetch('/api/services/vpn/plans/');
+        allPlans = await res.json();
+        renderPlans();
+    } catch {
+        document.getElementById('plans-grid').innerHTML =
+            '<div class="col-span-full text-center py-10 text-red-500">Failed to load plans.</div>';
+    }
+}
+
+function setLocation(loc) {
+    currentLocation = loc;
+    document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('bg-emerald-600', 'text-white');
+        b.classList.add('border-gray-200', 'dark:border-zinc-700', 'text-gray-600', 'dark:text-gray-300');
+    });
+    const active = document.getElementById('tab-' + loc);
+
+    active.classList.add('bg-emerald-600', 'text-white');
+    active.classList.remove('border-gray-200', 'dark:border-zinc-700', 'text-gray-600', 'dark:text-gray-300');
+    renderPlans();
+}
+
+function renderPlans() {
+    const plans = allPlans.filter(p => p.location === currentLocation);
+    const grid = document.getElementById('plans-grid');
+    if (!plans.length) { grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400">No plans available.</div>'; return; }
+
+    const durationLabel = d => d === 30 ? '1 Month' : d === 90 ? '3 Months' : d === 180 ? '6 Months' : '1 Year';
+    const popular = id => id.startsWith('3m');
+
+    grid.innerHTML = plans.map(p => `
+    <div class="relative bg-white dark:bg-zinc-900 border ${popular(p.id) ? 'border-emerald-500' : 'border-gray-100 dark:border-zinc-800'} rounded-2xl p-5 flex flex-col">
+        ${popular(p.id) ? '<div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full">Most Popular</div>' : ''}
+        <p class="text-xs font-bold text-emerald-600 uppercase tracking-wide mb-1">${durationLabel(p.duration_days)}</p>
+        <p class="text-2xl font-extrabold text-gray-900 dark:text-white mb-0.5">₦${p.price_ngn.toLocaleString()}</p>
+        <p class="text-xs text-gray-400 mb-4">${p.duration_days} days access</p>
+        <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1.5 mb-5 flex-1">
+            <li class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>Unlimited bandwidth</li>
+            <li class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>WireGuard encryption</li>
+            <li class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>All devices supported</li>
+            <li class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>Instant delivery</li>
+        </ul>
+        <button onclick="openModal('${p.id}')"
+                class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-sm transition">
+            Get Started
+        </button>
+    </div>`).join('');
+}
+
+function openModal(planId) {
+    if (!TOKEN) { window.location.href = '/login/?next=/services/vpn-subscription/'; return; }
+    const plan = allPlans.find(p => p.id === planId);
+    if (!plan) return;
+    selectedPlanId = planId;
+    document.getElementById('modal-plan-name').textContent = plan.name;
+    const locLabel = {'us': '🇺🇸 United States', 'uk': '🇬🇧 United Kingdom'};
+    document.getElementById('modal-location').textContent = locLabel[plan.location] || plan.location;
+    document.getElementById('modal-duration').textContent = plan.duration_days + ' days';
+    document.getElementById('modal-price').textContent = '₦' + plan.price_ngn.toLocaleString();
+    document.getElementById('modal-error').classList.add('hidden');
+    document.getElementById('modal-btn-text').textContent = 'Pay & Activate';
+    document.getElementById('modal-spinner').classList.add('hidden');
+    document.getElementById('purchase-modal').classList.remove('hidden');
+}
+
+function closeModal() { document.getElementById('purchase-modal').classList.add('hidden'); }
+
+async function confirmPurchase() {
+    if (!selectedPlanId) return;
+    document.getElementById('modal-btn-text').textContent = 'Processing…';
+    document.getElementById('modal-spinner').classList.remove('hidden');
+    document.getElementById('modal-error').classList.add('hidden');
+
+    try {
+        const res = await fetch('/api/services/vpn/purchase/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
+            body: JSON.stringify({ plan_id: selectedPlanId }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Purchase failed');
+        closeModal();
+        showConfig(data.config, data.id);
+        loadMyOrders();
+    } catch (e) {
+        const err = document.getElementById('modal-error');
+        err.textContent = e.message;
+        err.classList.remove('hidden');
+    } finally {
+        document.getElementById('modal-btn-text').textContent = 'Pay & Activate';
+        document.getElementById('modal-spinner').classList.add('hidden');
+    }
+}
+
+async function showConfig(configStr, orderId) {
+    document.getElementById('config-text').textContent = configStr;
+    document.getElementById('download-link').href = '/api/services/vpn/orders/' + orderId + '/download/';
+
+    // Try to load QR
+    try {
+        const res = await fetch('/api/services/vpn/orders/' + orderId + '/', {
+            headers: { 'Authorization': 'Bearer ' + TOKEN }
+        });
+        const data = await res.json();
+        if (data.qr_code) {
+            document.getElementById('qr-img').src = 'data:image/png;base64,' + data.qr_code;
+            document.getElementById('qr-wrap').classList.remove('hidden');
+        }
+    } catch {}
+
+    document.getElementById('config-modal').classList.remove('hidden');
+}
+
+function closeConfigModal() { document.getElementById('config-modal').classList.add('hidden'); }
+
+function copyConfig() {
+    navigator.clipboard.writeText(document.getElementById('config-text').textContent);
+    const btn = event.target;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy Config', 2000);
+}
+
+async function loadMyOrders() {
+    if (!TOKEN) return;
+    try {
+        const res = await fetch('/api/services/vpn/orders/', {
+            headers: { 'Authorization': 'Bearer ' + TOKEN }
+        });
+        const orders = await res.json();
+        const section = document.getElementById('my-vpn-section');
+        const list = document.getElementById('my-vpn-list');
+        if (!orders.length) { section.classList.add('hidden'); return; }
+        section.classList.remove('hidden');
+
+        list.innerHTML = orders.map(o => {
+            const expires = o.expires_at ? new Date(o.expires_at).toLocaleDateString() : '—';
+            const isActive = o.status === 'FINISHED';
+            const locFlag = {'us': '🇺🇸', 'uk': '🇬🇧'}[o.location] || '🌍';
+            return `
+            <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-base">${locFlag}</span>
+                        <span class="font-bold text-gray-900 dark:text-white text-sm">${o.plan}</span>
+                        <span class="px-2 py-0.5 rounded-full text-xs font-bold ${isActive ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-gray-100 dark:bg-zinc-800 text-gray-500'}">
+                            ${o.status}
+                        </span>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">IP: ${o.assigned_ip || '—'} · Expires: ${expires}</p>
+                </div>
+                ${isActive ? `
+                <div class="flex gap-2">
+                    <button onclick="viewConfig(${o.id})"
+                            class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition">
+                        View Config
+                    </button>
+                    <a href="/api/services/vpn/orders/${o.id}/download/"
+                       class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-200 text-xs font-semibold rounded-lg transition">
+                        Download
+                    </a>
+                </div>` : ''}
+            </div>`;
+        }).join('');
+    } catch {}
+}
+
+async function viewConfig(orderId) {
+    try {
+        const res = await fetch('/api/services/vpn/orders/' + orderId + '/', {
+            headers: { 'Authorization': 'Bearer ' + TOKEN }
+        });
+        const data = await res.json();
+        if (data.config) showConfig(data.config, orderId);
+    } catch {}
+}
+
+loadPlans();
+loadMyOrders();
+</script>
 
 {% endblock %}

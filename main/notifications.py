@@ -373,4 +373,127 @@ def send_broadcast_email(users, subject, message, email_type='newsletter', cta_t
 
     import threading
     threading.Thread(target=_bulk_worker, daemon=True).start()
+
+
+# ── VPN notifications ─────────────────────────────────────────────────────────
+
+def send_vpn_expiring_email(user, order, days_left):
+    """Warn user their VPN expires soon; VPN will auto-renew if wallet is funded."""
+    subject = f'Your SimPhantom VPN expires in {days_left} day{"s" if days_left != 1 else ""}'
+    plan_name = order.product.replace('-', ' ').title()
+    html = _wrap(f'''
+        <tr><td style="padding:32px;background:#fff;border-radius:0 0 16px 16px;">
+          <h2 style="margin:0 0 12px;font-size:20px;color:#18181b;">VPN Expiring Soon</h2>
+          <p style="margin:0 0 16px;font-size:15px;color:#52525b;line-height:1.7;">
+            Hi {user.first_name or user.email}, your <strong>{plan_name}</strong> VPN subscription
+            expires in <strong>{days_left} day{"s" if days_left != 1 else ""}</strong>.
+          </p>
+          <p style="margin:0 0 16px;font-size:15px;color:#52525b;line-height:1.7;">
+            <strong>Auto-renewal is on.</strong> If your wallet has enough balance, your VPN will
+            renew automatically — no action needed. If your balance is low, top up before expiry
+            to avoid losing your connection.
+          </p>
+          {_btn("Top Up Wallet", "https://simphantom.com/wallet/")}
+          {_btn("View My VPN", "https://simphantom.com/services/vpn/")}
+        </td></tr>
+    ''', preheader=f'Your VPN expires in {days_left} day{"s" if days_left != 1 else ""}. Top up to keep your connection.')
+    text = (f'Hi {user.first_name or user.email},\n\n'
+            f'Your {plan_name} VPN subscription expires in {days_left} day(s).\n\n'
+            f'Auto-renewal is active. Top up your wallet at https://simphantom.com/wallet/ '
+            f'to ensure uninterrupted service.')
+    _send(subject, text, html, [user.email])
+
+
+def send_vpn_expired_email(user, order, plan):
+    """Tell user their VPN expired and could not be auto-renewed (low balance)."""
+    subject = 'Your SimPhantom VPN has expired'
+    plan_name = plan.get('name', order.product)
+    html = _wrap(f'''
+        <tr><td style="padding:32px;background:#fff;border-radius:0 0 16px 16px;">
+          <h2 style="margin:0 0 12px;font-size:20px;color:#dc2626;">VPN Subscription Expired</h2>
+          <p style="margin:0 0 16px;font-size:15px;color:#52525b;line-height:1.7;">
+            Hi {user.first_name or user.email}, your <strong>{plan_name}</strong> VPN subscription
+            has expired and your wallet didn't have enough balance to auto-renew.
+          </p>
+          <p style="margin:0 0 16px;font-size:15px;color:#52525b;line-height:1.7;">
+            Top up your wallet and purchase a new VPN plan to restore your connection.
+          </p>
+          {_btn("Top Up & Renew VPN", "https://simphantom.com/services/vpn/")}
+        </td></tr>
+    ''', preheader='Your VPN has expired. Top up to reconnect.')
+    text = (f'Hi {user.first_name or user.email},\n\n'
+            f'Your {plan_name} VPN has expired. Top up your wallet and purchase a new plan at '
+            f'https://simphantom.com/services/vpn/')
+    _send(subject, text, html, [user.email])
+
+
+def send_vpn_renewed_email(user, old_order, new_order, plan, expires_at):
+    """Confirm successful auto-renewal."""
+    subject = 'Your SimPhantom VPN has been renewed'
+    plan_name = plan.get('name', old_order.product)
+    expiry_str = expires_at.strftime('%d %b %Y')
+    html = _wrap(f'''
+        <tr><td style="padding:32px;background:#fff;border-radius:0 0 16px 16px;">
+          <h2 style="margin:0 0 12px;font-size:20px;color:#16a34a;">VPN Auto-Renewed ✓</h2>
+          <p style="margin:0 0 16px;font-size:15px;color:#52525b;line-height:1.7;">
+            Hi {user.first_name or user.email}, your <strong>{plan_name}</strong> VPN has been
+            automatically renewed. Your connection stays active.
+          </p>
+          {_detail_table([
+              ("Plan", plan_name),
+              ("New expiry", expiry_str),
+              ("Amount charged", f"₦{new_order.amount_charged:,.2f}"),
+              ("Order #", str(new_order.id)),
+          ])}
+          {_btn("View My VPN", "https://simphantom.com/services/vpn/")}
+        </td></tr>
+    ''', preheader=f'Your VPN has been renewed until {expiry_str}.')
+    text = (f'Hi {user.first_name or user.email},\n\n'
+            f'Your {plan_name} VPN has been automatically renewed until {expiry_str}.\n'
+            f'Amount charged: ₦{new_order.amount_charged:,.2f}\n\n'
+            f'View your VPN at https://simphantom.com/services/vpn/')
+    _send(subject, text, html, [user.email])
+
+
+# ── eSIM notifications ────────────────────────────────────────────────────────
+
+def send_esim_expiring_email(user, order, days_left):
+    """Warn user their eSIM data or validity expires soon."""
+    subject = f'Your SimPhantom eSIM expires in {days_left} day{"s" if days_left != 1 else ""}'
+    html = _wrap(f'''
+        <tr><td style="padding:32px;background:#fff;border-radius:0 0 16px 16px;">
+          <h2 style="margin:0 0 12px;font-size:20px;color:#18181b;">eSIM Expiring Soon</h2>
+          <p style="margin:0 0 16px;font-size:15px;color:#52525b;line-height:1.7;">
+            Hi {user.first_name or user.email}, your <strong>{order.product}</strong> eSIM plan
+            expires in <strong>{days_left} day{"s" if days_left != 1 else ""}</strong>.
+          </p>
+          <p style="margin:0 0 16px;font-size:15px;color:#52525b;line-height:1.7;">
+            Purchase a new eSIM plan to stay connected.
+          </p>
+          {_btn("Buy eSIM Plan", "https://simphantom.com/services/esim/")}
+        </td></tr>
+    ''', preheader=f'Your eSIM expires in {days_left} day{"s" if days_left != 1 else ""}.')
+    text = (f'Hi {user.first_name or user.email},\n\n'
+            f'Your {order.product} eSIM expires in {days_left} day(s). '
+            f'Buy a new plan at https://simphantom.com/services/esim/')
+    _send(subject, text, html, [user.email])
+
+
+def send_esim_expired_email(user, order):
+    """Notify user their eSIM has expired."""
+    subject = 'Your SimPhantom eSIM has expired'
+    html = _wrap(f'''
+        <tr><td style="padding:32px;background:#fff;border-radius:0 0 16px 16px;">
+          <h2 style="margin:0 0 12px;font-size:20px;color:#dc2626;">eSIM Expired</h2>
+          <p style="margin:0 0 16px;font-size:15px;color:#52525b;line-height:1.7;">
+            Hi {user.first_name or user.email}, your <strong>{order.product}</strong> eSIM plan
+            has expired. Purchase a new plan to restore your data connection.
+          </p>
+          {_btn("Buy New eSIM Plan", "https://simphantom.com/services/esim/")}
+        </td></tr>
+    ''', preheader='Your eSIM has expired. Buy a new plan to reconnect.')
+    text = (f'Hi {user.first_name or user.email},\n\n'
+            f'Your {order.product} eSIM has expired. '
+            f'Buy a new plan at https://simphantom.com/services/esim/')
+    _send(subject, text, html, [user.email])
     logger.info('[%s] Broadcast "%s" queued for %d recipients', BRAND, subject, len(recipient_list))

@@ -9,6 +9,26 @@ services:
     expose:
       - "8000"
 
+  cron:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    entrypoint: []
+    command: >
+      sh -c "
+        echo 'Starting SimPhantom cron worker...' &&
+        while true; do
+          python manage.py expire_orders &&
+          sleep 3600
+        done &
+        while true; do
+          python manage.py send_renewal_reminders &&
+          sleep 21600
+        done
+      "
+    depends_on:
+      - web
+
   nginx:
     image: nginx:1.27-alpine
     restart: unless-stopped
