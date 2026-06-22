@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from . import fivesim, mailtm, tigersms
-from .config import USD_TO_NGN, FLAT_MARKUP_NGN, TIGER_MARKUP_PCT, FIVESIM_MARKUP_PCT, esim_naira_price, VPN_PLANS
+from .config import USD_TO_NGN, FLAT_MARKUP_NGN, esim_naira_price, VPN_PLANS
 from orders.models import Order, Transaction
 
 
@@ -31,7 +31,7 @@ class ProductsView(APIView):
             for service in data:
                 if 'Price' in data[service]:
                     cost_ngn = data[service]['Price'] * USD_TO_NGN
-                    data[service]['naira_price'] = round(cost_ngn * (1 + FIVESIM_MARKUP_PCT), 2)
+                    data[service]['naira_price'] = round(cost_ngn + FLAT_MARKUP_NGN, 2)
 
         return Response(data)
 
@@ -79,7 +79,7 @@ class PricesByProductView(APIView):
                 continue
             if count <= 0:
                 continue
-            naira_price = round(cost_usd * USD_TO_NGN * (1 + FIVESIM_MARKUP_PCT), 2)
+            naira_price = round(cost_usd * USD_TO_NGN + FLAT_MARKUP_NGN, 2)
             results.append({
                 'country': country_key,
                 'operator': op_key,
@@ -1168,7 +1168,7 @@ class TigerProductsView(APIView):
                 if count <= 0 or cost_usd <= 0:
                     continue
                 product_name = tigersms.CODE_TO_FIVESIM.get(service_code, service_code)
-                naira_price = round(cost_usd * USD_TO_NGN * (1 + TIGER_MARKUP_PCT), 2)
+                naira_price = round(cost_usd * USD_TO_NGN + FLAT_MARKUP_NGN, 2)
                 tiger_result[product_name] = {
                     'Price': cost_usd,
                     'Qty': count,
@@ -1184,6 +1184,6 @@ class TigerProductsView(APIView):
             for svc in data:
                 if 'Price' in data[svc]:
                     data[svc]['naira_price'] = round(
-                        data[svc]['Price'] * USD_TO_NGN * (1 + FIVESIM_MARKUP_PCT), 2
+                        data[svc]['Price'] * USD_TO_NGN + FLAT_MARKUP_NGN, 2
                     )
         return Response(data)

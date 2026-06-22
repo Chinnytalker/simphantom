@@ -14,10 +14,7 @@ def _fetch_usd_to_ngn():
 USD_TO_NGN = _fetch_usd_to_ngn()
 
 # Flat markup for 5sim (OTP / virtual numbers — costs are tiny, flat works well)
-FLAT_MARKUP_NGN = 1500  # legacy — kept for any direct references
-
-TIGER_MARKUP_PCT = 0.25   # 25% margin on TigerSMS virtual numbers
-FIVESIM_MARKUP_PCT = 0.30  # 30% margin on 5sim virtual numbers
+FLAT_MARKUP_NGN = 1500  # flat ₦1500 profit on every virtual number / OTP sale
 
 
 def pack_naira_price(cost_usd: float) -> float:
