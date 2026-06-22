@@ -2,6 +2,24 @@ import requests
 from django.conf import settings
 from .config import pack_naira_price
 
+
+def get_balance():
+    """Return Twilio account balance as {'balance': float, 'currency': str} or {'error': str}."""
+    try:
+        sid = settings.TWILIO_ACCOUNT_SID
+        token = settings.TWILIO_AUTH_TOKEN
+        if not sid or not token:
+            return {'error': 'not_configured'}
+        r = requests.get(
+            f'https://api.twilio.com/2010-04-01/Accounts/{sid}/Balance.json',
+            auth=(sid, token),
+            timeout=10,
+        )
+        data = r.json()
+        return {'balance': float(data['balance']), 'currency': data.get('currency', 'USD')}
+    except Exception as e:
+        return {'error': str(e)}
+
 # Twilio cost per SMS (adjust to your Twilio rate for your destination country)
 SMS_COST_PER_CREDIT_USD = 0.0079   # default: US domestic rate
 

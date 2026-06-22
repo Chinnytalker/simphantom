@@ -193,6 +193,11 @@ def dashboard(request):
 
     fivesim_balance = None
     tigersms_balance = None
+    twilio_balance = None
+    twilio_currency = 'USD'
+    esimcard_balance = None
+    paystack_balance = None
+
     if user.is_staff or user.is_superuser:
         try:
             from services.fivesim import get_balance as fivesim_get_balance
@@ -206,6 +211,34 @@ def dashboard(request):
             tigersms_balance = tiger.get('balance')
         except Exception:
             pass
+        try:
+            from services.twilio_sms import get_balance as twilio_get_balance
+            tw = twilio_get_balance()
+            if 'balance' in tw:
+                twilio_balance = tw['balance']
+                twilio_currency = tw.get('currency', 'USD')
+        except Exception:
+            pass
+        try:
+            from services.esimcard import get_balance as esim_get_balance
+            esim = esim_get_balance()
+            if isinstance(esim, dict):
+                esimcard_balance = esim.get('balance') or esim.get('data', {}).get('balance')
+        except Exception:
+            pass
+        try:
+            import requests as _req
+            from django.conf import settings as dj_settings
+            r = _req.get(
+                'https://api.paystack.co/balance',
+                headers={'Authorization': f'Bearer {dj_settings.PAYSTACK_SECRET}'},
+                timeout=10,
+            )
+            ps = r.json()
+            if ps.get('status') and ps.get('data'):
+                paystack_balance = float(ps['data'][0]['balance']) / 100
+        except Exception:
+            pass
 
     return render(request, 'dashboard.html', {
         'user': user,
@@ -216,6 +249,10 @@ def dashboard(request):
         'temp_emails': temp_emails,
         'fivesim_balance': fivesim_balance,
         'tigersms_balance': tigersms_balance,
+        'twilio_balance': twilio_balance,
+        'twilio_currency': twilio_currency,
+        'esimcard_balance': esimcard_balance,
+        'paystack_balance': paystack_balance,
         'payment_credited': payment_credited,
     })
 
