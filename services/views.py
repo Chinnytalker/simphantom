@@ -7,8 +7,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
-from . import fivesim, mailtm
-from .config import USD_TO_NGN, FLAT_MARKUP_NGN, esim_naira_price
+from . import fivesim, mailtm, tigersms
+from .config import USD_TO_NGN, FLAT_MARKUP_NGN, esim_naira_price, VPN_PLANS
 from orders.models import Order, Transaction
 
 
@@ -914,3 +914,268 @@ class ESIMRefreshView(APIView):
             'iccid': creds['iccid'],
             'universal_link': universal_link,
         })
+
+
+# ── WireGuard VPN ─────────────────────────────────────────────────────────────
+
+class VPNPlansView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        plans = [
+            {
+                'id': plan_id,
+                'name': plan['name'],
+                'location': plan['location'],
+                'duration_days': plan['duration_days'],
+                'price_ngn': plan['price_ngn'],
+            }
+            for plan_id, plan in VPN_PLANS.items()
+        ]
+        return Response(plans)
+
+
+class VPNPurchaseView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        from . import wireguard, vpn_server
+        import uuid
+        from django.utils import timezone
+
+        plan_id = request.data.get('plan_id', '').strip()
+        plan = VPN_PLANS.get(plan_id)
+        if not plan:
+            return Response({'error': 'Invalid VPN plan.'}, status=400)
+
+        price = Decimal(str(plan['price_ngn']))
+        user = request.user
+        User = get_user_model()
+
+        deducted = User.objects.filter(pk=user.pk, wallet_balance__gte=price).update(
+            wallet_balance=F('wallet_balance') - price
+        )
+        if not deducted:
+            user.refresh_from_db(fields=['wallet_balance'])
+            return Response({
+                'error': f'Insufficient balance. Need ₦{price:,.0f}, have ₦{user.wallet_balance:,.0f}.'
+            }, status=400)
+
+        client_private_key, client_public_key = wireguard.generate_keypair()
+
+        result = vpn_server.add_peer(plan['location'], client_public_key)
+        if 'error' in result:
+            User.objects.filter(pk=user.pk).update(wallet_balance=F('wallet_balance') + price)
+            return Response({'error': f"VPN provisioning failed: {result['error']}"}, status=502)
+
+        assigned_ip = result['assigned_ip']
+        server_public_key = result['server_public_key']
+        server_endpoint = vpn_server.VPN_SERVERS[plan['location']]['endpoint']
+
+        config_str = wireguard.build_client_config(
+            client_private_key, assigned_ip, server_public_key, server_endpoint
+        )
+
+        ref = 'VPN-' + uuid.uuid4().hex[:12].upper()
+        Transaction.objects.create(
+            user=user, amount=price, type='DEBIT', reference=ref,
+            description=f'VPN — {plan["name"]}',
+        )
+
+        expires_at = timezone.now() + timezone.timedelta(days=plan['duration_days'])
+
+        order = Order.objects.create(
+            user=user,
+            service_type='VPN',
+            product=plan_id,
+            status='FINISHED',
+            amount_charged=price,
+            expires_at=expires_at,
+            credentials=json.dumps({
+                'plan_name': plan['name'],
+                'location': plan['location'],
+                'client_private_key': client_private_key,
+                'client_public_key': client_public_key,
+                'server_public_key': server_public_key,
+                'server_endpoint': server_endpoint,
+                'assigned_ip': assigned_ip,
+                'config': config_str,
+            }),
+        )
+
+        from main.notifications import send_purchase_email
+        send_purchase_email(
+            user, 'VPN Subscription',
+            [
+                ('Plan', plan['name']),
+                ('Location', {'us': 'United States', 'uk': 'United Kingdom'}.get(plan['location'], plan['location'])),
+                ('Validity', f'{plan["duration_days"]} days'),
+                ('Assigned IP', assigned_ip),
+            ],
+            order.id, price,
+        )
+
+        return Response({
+            'id': order.id,
+            'plan': plan['name'],
+            'location': plan['location'],
+            'assigned_ip': assigned_ip,
+            'expires_at': expires_at.isoformat(),
+            'config': config_str,
+        }, status=201)
+
+
+class VPNOrdersView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        orders = Order.objects.filter(
+            user=request.user, service_type='VPN'
+        ).order_by('-created_at')[:20]
+
+        result = []
+        for o in orders:
+            creds = json.loads(o.credentials or '{}')
+            result.append({
+                'id': o.id,
+                'plan': creds.get('plan_name', o.product),
+                'location': creds.get('location', ''),
+                'assigned_ip': creds.get('assigned_ip', ''),
+                'status': o.status,
+                'amount_charged': str(o.amount_charged),
+                'created_at': o.created_at.isoformat(),
+                'expires_at': o.expires_at.isoformat() if o.expires_at else None,
+            })
+
+        return Response(result)
+
+
+class VPNOrderDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, order_id):
+        try:
+            order = Order.objects.get(id=order_id, user=request.user, service_type='VPN')
+        except Order.DoesNotExist:
+            return Response({'error': 'VPN order not found'}, status=404)
+
+        from . import wireguard as wg
+        creds = json.loads(order.credentials or '{}')
+        config_str = creds.get('config', '')
+        qr_code = wg.config_to_qr_base64(config_str) if config_str else None
+
+        return Response({
+            'id': order.id,
+            'plan': creds.get('plan_name', order.product),
+            'location': creds.get('location', ''),
+            'assigned_ip': creds.get('assigned_ip', ''),
+            'server_endpoint': creds.get('server_endpoint', ''),
+            'status': order.status,
+            'amount_charged': str(order.amount_charged),
+            'created_at': order.created_at.isoformat(),
+            'expires_at': order.expires_at.isoformat() if order.expires_at else None,
+            'config': config_str,
+            'qr_code': qr_code,
+        })
+
+
+class VPNConfigDownloadView(APIView):
+    """Serve the .conf file as a direct file download."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, order_id):
+        from django.http import HttpResponse
+        try:
+            order = Order.objects.get(id=order_id, user=request.user, service_type='VPN')
+        except Order.DoesNotExist:
+            return Response({'error': 'VPN order not found'}, status=404)
+
+        creds = json.loads(order.credentials or '{}')
+        config_str = creds.get('config', '')
+        if not config_str:
+            return Response({'error': 'Config not available'}, status=404)
+
+        location = creds.get('location', 'vpn').upper()
+        filename = f'simphantom-vpn-{location}-{order.id}.conf'
+        response = HttpResponse(config_str, content_type='text/plain; charset=utf-8')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+
+
+class VPNCancelView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, order_id):
+        from . import vpn_server
+        try:
+            order = Order.objects.get(id=order_id, user=request.user, service_type='VPN', status='FINISHED')
+        except Order.DoesNotExist:
+            return Response({'error': 'Active VPN order not found'}, status=404)
+
+        creds = json.loads(order.credentials or '{}')
+        location = creds.get('location', '')
+        public_key = creds.get('client_public_key', '')
+
+        if location and public_key:
+            vpn_server.remove_peer(location, public_key)
+
+        order.status = 'CANCELED'
+        order.save(update_fields=['status'])
+        return Response({'success': True})
+
+
+# ── TigerSMS — virtual number countries & products ────────────────────────────
+
+class TigerCountriesView(APIView):
+    """
+    Returns countries available in TigerSMS, validated against the live getPrices dump.
+    Add ?raw=1 to run the full diagnostic.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        if request.query_params.get('raw') == '1':
+            return Response(tigersms.diagnose())
+
+        countries = tigersms.get_all_countries()
+        result = {c['code']: {'text_en': c['text_en'], 'tiger_id': c['tiger_id']}
+                  for c in countries}
+        return Response(result)
+
+
+class TigerProductsView(APIView):
+    """
+    Returns TigerSMS services + prices for a given country code (5sim name).
+    Add ?raw=1 to see the raw cached slice for debugging.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, country):
+        country_id = tigersms.resolve_country_id(country)
+
+        if country_id is None:
+            return Response({
+                'error': f'Country "{country}" not found on TigerSMS.',
+                'hint': 'Run /api/services/tiger/countries/?raw=1 to see matched_country_map_entries.',
+            }, status=400)
+
+        if request.query_params.get('raw') == '1':
+            return Response(tigersms.get_prices_raw(country_id))
+
+        prices = tigersms.get_prices(country_id)
+
+        result = {}
+        for service_code, data in prices.items():
+            count = data.get('count', 0)
+            cost_usd = data.get('cost', 0.0)
+            if count <= 0 or cost_usd <= 0:
+                continue
+            product_name = tigersms.CODE_TO_FIVESIM.get(service_code, service_code)
+            naira_price = round(cost_usd * USD_TO_NGN + FLAT_MARKUP_NGN, 2)
+            result[product_name] = {
+                'Price': cost_usd,
+                'Qty': count,
+                'naira_price': naira_price,
+            }
+
+        return Response(result)

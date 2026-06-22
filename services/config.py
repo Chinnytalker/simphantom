@@ -112,3 +112,14 @@ SERVICES = {
         'popular': False,
     },
 }
+
+VPN_PLANS = {
+    '1m-us': {'name': '1 Month — USA',    'duration_days': 30,  'location': 'us', 'price_ngn': 2500},
+    '3m-us': {'name': '3 Months — USA',   'duration_days': 90,  'location': 'us', 'price_ngn': 6500},
+    '6m-us': {'name': '6 Months — USA',   'duration_days': 180, 'location': 'us', 'price_ngn': 11000},
+    '1y-us': {'name': '1 Year — USA',     'duration_days': 365, 'location': 'us', 'price_ngn': 18000},
+    '1m-uk': {'name': '1 Month — UK',     'duration_days': 30,  'location': 'uk', 'price_ngn': 2500},
+    '3m-uk': {'name': '3 Months — UK',    'duration_days': 90,  'location': 'uk', 'price_ngn': 6500},
+    '6m-uk': {'name': '6 Months — UK',    'duration_days': 180, 'location': 'uk', 'price_ngn': 11000},
+    '1y-uk': {'name': '1 Year — UK',      'duration_days': 365, 'location': 'uk', 'price_ngn': 18000},
+}

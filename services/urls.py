@@ -29,4 +29,16 @@ urlpatterns = [
     path('esim/orders/', views.ESIMOrdersView.as_view(), name='esim-orders'),
     path('esim/orders/<int:order_id>/', views.ESIMOrderDetailView.as_view(), name='esim-order-detail'),
     path('esim/orders/<int:order_id>/refresh/', views.ESIMRefreshView.as_view(), name='esim-refresh'),
+    # TigerSMS (virtual number countries & products)
+    path('tiger/countries/', views.TigerCountriesView.as_view(), name='tiger-countries'),
+    path('tiger/products/<str:country>/', views.TigerProductsView.as_view(), name='tiger-products'),
+    # Debug: see raw TigerSMS response — remove after confirming format
+    path('tiger/debug/<str:country>/', views.TigerProductsView.as_view(), name='tiger-debug'),
+    # WireGuard VPN
+    path('vpn/plans/', views.VPNPlansView.as_view(), name='vpn-plans'),
+    path('vpn/purchase/', views.VPNPurchaseView.as_view(), name='vpn-purchase'),
+    path('vpn/orders/', views.VPNOrdersView.as_view(), name='vpn-orders'),
+    path('vpn/orders/<int:order_id>/', views.VPNOrderDetailView.as_view(), name='vpn-order-detail'),
+    path('vpn/orders/<int:order_id>/download/', views.VPNConfigDownloadView.as_view(), name='vpn-config-download'),
+    path('vpn/orders/<int:order_id>/cancel/', views.VPNCancelView.as_view(), name='vpn-cancel'),
 ]

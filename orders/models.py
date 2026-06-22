@@ -1,3 +1,4 @@
+import json
 from django.db import models
 from django.conf import settings
 
@@ -45,6 +46,12 @@ class Order(models.Model):
     amount_charged = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField(blank=True, null=True)
+
+    @property
+    def provider(self):
+        """Which API provider fulfilled this order: 'tigersms' or '5sim'."""
+        creds = json.loads(self.credentials or '{}')
+        return creds.get('provider', '5sim')
 
     def __str__(self):
         return f"{self.user.email} - {self.get_service_type_display()} - {self.product}"

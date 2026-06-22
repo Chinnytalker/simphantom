@@ -1,4 +1,6 @@
-﻿from rest_framework.views import APIView
+﻿import json
+import logging
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -7,10 +9,14 @@ from django.db.models import F
 from django.contrib.auth import get_user_model
 from decimal import Decimal
 from services.fivesim import buy_number, check_order, cancel_order
+from services import tigersms
 from .models import Order, Transaction
 from .serializers import OrderSerializer, TransactionSerializer
 
+logger = logging.getLogger(__name__)
+
 MARKUP = Decimal('1.30')
+
 
 class BuyNumberView(APIView):
     permission_classes = [IsAuthenticated]
@@ -42,24 +48,45 @@ class BuyNumberView(APIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
-                order_data = buy_number(country, operator, product)
+                order_data = None
+                used_provider = '5sim'
 
-                # Raise so atomic rolls back the wallet deduction
-                if 'error' in order_data:
-                    raise ValueError(order_data['error'])
+                # Try TigerSMS first for all products when country+service mapping exists
+                tiger_country = tigersms.map_country(country or '')
+                tiger_service = tigersms.map_service((product or '').lower())
 
-                # Warn you (via server log) when 5sim balance is getting low
-                try:
-                    from services.fivesim import get_balance
-                    profile = get_balance()
-                    balance_usd = float(profile.get('balance', 999))
-                    if balance_usd < 5:
-                        import logging
-                        logging.getLogger(__name__).warning(
-                            f"[SimPhantom] 5sim balance LOW: ${balance_usd:.2f} — top up now!"
+                if tiger_country is not None and tiger_service is not None:
+                    result = tigersms.get_number(tiger_service, tiger_country)
+                    if 'error' not in result:
+                        order_data = {
+                            'id': result['id'],
+                            'phone': result['phone'],
+                            'status': 'PENDING',
+                        }
+                        used_provider = 'tigersms'
+                    else:
+                        logger.warning(
+                            "[SimPhantom] TigerSMS failed for %s/%s: %s — falling back to 5sim",
+                            country, product, result['error'],
                         )
-                except Exception:
-                    pass
+
+                # Fall back to (or default to) 5sim
+                if order_data is None:
+                    order_data = buy_number(country, operator, product)
+                    if 'error' in order_data:
+                        raise ValueError(order_data['error'])
+
+                    # Warn when 5sim balance is low
+                    try:
+                        from services.fivesim import get_balance
+                        profile = get_balance()
+                        balance_usd = float(profile.get('balance', 999))
+                        if balance_usd < 5:
+                            logger.warning(
+                                "[SimPhantom] 5sim balance LOW: $%.2f — top up now!", balance_usd
+                            )
+                    except Exception:
+                        pass
 
                 order = Order.objects.create(
                     user=request.user,
@@ -71,6 +98,7 @@ class BuyNumberView(APIView):
                     operator=operator,
                     status=order_data['status'],
                     amount_charged=price,
+                    credentials=json.dumps({'provider': used_provider}),
                 )
 
                 Transaction.objects.create(
@@ -104,24 +132,40 @@ class CheckOrderView(APIView):
     def get(self, request, order_id):
         try:
             order = Order.objects.get(id=order_id, user=request.user)
-            data = check_order(order.fivesim_order_id)
+        except Order.DoesNotExist:
+            return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
 
-            # Update SMS code if received
-            if data.get('sms') and len(data['sms']) > 0:
-                order.sms_code = data['sms'][0]['code']
+        creds = json.loads(order.credentials or '{}')
+        provider = creds.get('provider', '5sim')
+
+        if provider == 'tigersms':
+            data = tigersms.get_status(order.fivesim_order_id)
+            if 'error' in data:
+                return Response({'error': data['error']}, status=status.HTTP_502_BAD_GATEWAY)
+            if data['status'] == 'RECEIVED' and data.get('code'):
+                order.sms_code = data['code']
                 order.status = 'RECEIVED'
-                order.save()
-
+                order.save(update_fields=['sms_code', 'status'])
+            elif data['status'] == 'CANCELED':
+                order.status = 'CANCELED'
+                order.save(update_fields=['status'])
             return Response({
-                'status': data.get('status'),
+                'status': data['status'],
                 'sms_code': order.sms_code,
                 'phone': order.phone,
             })
-        except Order.DoesNotExist:
-            return Response(
-                {'error': 'Order not found'},
-                status=status.HTTP_404_NOT_FOUND
-            )
+
+        # 5sim path
+        data = check_order(order.fivesim_order_id)
+        if data.get('sms') and len(data['sms']) > 0:
+            order.sms_code = data['sms'][0]['code']
+            order.status = 'RECEIVED'
+            order.save(update_fields=['sms_code', 'status'])
+        return Response({
+            'status': data.get('status'),
+            'sms_code': order.sms_code,
+            'phone': order.phone,
+        })
 
 
 class CancelOrderView(APIView):
@@ -139,8 +183,15 @@ class CancelOrderView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # External call before any DB changes so we don't hold a transaction open
-        result = cancel_order(order.fivesim_order_id)
+        creds = json.loads(order.credentials or '{}')
+        provider = creds.get('provider', '5sim')
+
+        # External cancel call before any DB writes (avoids holding a transaction open)
+        if provider == 'tigersms':
+            result = tigersms.cancel_number(order.fivesim_order_id)
+        else:
+            result = cancel_order(order.fivesim_order_id)
+
         if isinstance(result, dict) and 'error' in result:
             return Response({'error': result['error']}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -149,7 +200,7 @@ class CancelOrderView(APIView):
                 wallet_balance=F('wallet_balance') + order.amount_charged
             )
             order.status = 'CANCELED'
-            order.save()
+            order.save(update_fields=['status'])
 
         request.user.refresh_from_db()
         return Response({

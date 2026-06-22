@@ -388,7 +388,7 @@
     // ── Load full country list ────────────────────────────────────────────
     async function loadCountries() {
         try {
-            const res = await fetch('/api/services/countries/');
+            const res = await fetch('/api/services/tiger/countries/');
             allCountries = await res.json();
             const count = Object.keys(allCountries).length;
             const statusEl = document.getElementById('country-count-status');
@@ -531,7 +531,7 @@
         setState('loading');
 
         try {
-            const res = await fetch('/api/services/products/' + countryCode + '/');
+            const res = await fetch('/api/services/tiger/products/' + countryCode + '/');
             const data = await res.json();
             if (data.error) throw new Error(data.error);
             currentProducts = data;

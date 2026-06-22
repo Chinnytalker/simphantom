@@ -192,11 +192,18 @@ def dashboard(request):
     ).exclude(status='CANCELED').order_by('-created_at')[:5]
 
     fivesim_balance = None
+    tigersms_balance = None
     if user.is_staff or user.is_superuser:
         try:
-            from services.fivesim import get_balance
-            profile = get_balance()
+            from services.fivesim import get_balance as fivesim_get_balance
+            profile = fivesim_get_balance()
             fivesim_balance = profile.get('balance')
+        except Exception:
+            pass
+        try:
+            from services.tigersms import get_balance as tiger_get_balance
+            tiger = tiger_get_balance()
+            tigersms_balance = tiger.get('balance')
         except Exception:
             pass
 
@@ -208,6 +215,7 @@ def dashboard(request):
         'transactions': transactions,
         'temp_emails': temp_emails,
         'fivesim_balance': fivesim_balance,
+        'tigersms_balance': tigersms_balance,
         'payment_credited': payment_credited,
     })
 
