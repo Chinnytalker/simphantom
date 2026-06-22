@@ -72,6 +72,11 @@ def health():
     return {'ok': True}
 
 
+@app.get('/pubkey')
+def pubkey():
+    return {'public_key': WG_PUBLIC_KEY}
+
+
 @app.post('/peers', dependencies=[Depends(_auth)])
 def add_peer(body: AddPeerRequest):
     with lock:
