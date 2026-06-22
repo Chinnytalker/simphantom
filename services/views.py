@@ -1156,32 +1156,34 @@ class TigerProductsView(APIView):
         if request.query_params.get('raw') == '1':
             return Response(tigersms.get_prices_raw(country_id) if country_id else {'country_id': None})
 
-        # If TigerSMS doesn't cover this country, fall back to 5sim product list
-        if country_id is None:
-            operator = request.query_params.get('operator', 'any')
-            data = fivesim.get_products(country, operator)
-            if isinstance(data, dict) and 'error' not in data:
-                for svc in data:
-                    if 'Price' in data[svc]:
-                        data[svc]['naira_price'] = round(
-                            data[svc]['Price'] * USD_TO_NGN + FLAT_MARKUP_NGN, 2
-                        )
-            return Response(data)
+        operator = request.query_params.get('operator', 'any')
 
-        prices = tigersms.get_prices(country_id)
+        # Try TigerSMS prices from cache
+        tiger_result = {}
+        if country_id is not None:
+            prices = tigersms.get_prices(country_id)
+            for service_code, data in prices.items():
+                count = data.get('count', 0)
+                cost_usd = data.get('cost', 0.0)
+                if count <= 0 or cost_usd <= 0:
+                    continue
+                product_name = tigersms.CODE_TO_FIVESIM.get(service_code, service_code)
+                naira_price = round(cost_usd * USD_TO_NGN + FLAT_MARKUP_NGN, 2)
+                tiger_result[product_name] = {
+                    'Price': cost_usd,
+                    'Qty': count,
+                    'naira_price': naira_price,
+                }
 
-        result = {}
-        for service_code, data in prices.items():
-            count = data.get('count', 0)
-            cost_usd = data.get('cost', 0.0)
-            if count <= 0 or cost_usd <= 0:
-                continue
-            product_name = tigersms.CODE_TO_FIVESIM.get(service_code, service_code)
-            naira_price = round(cost_usd * USD_TO_NGN + FLAT_MARKUP_NGN, 2)
-            result[product_name] = {
-                'Price': cost_usd,
-                'Qty': count,
-                'naira_price': naira_price,
-            }
+        if tiger_result:
+            return Response(tiger_result)
 
-        return Response(result)
+        # Cache miss or country not in dump yet — fall back to 5sim for listing
+        data = fivesim.get_products(country, operator)
+        if isinstance(data, dict) and 'error' not in data:
+            for svc in data:
+                if 'Price' in data[svc]:
+                    data[svc]['naira_price'] = round(
+                        data[svc]['Price'] * USD_TO_NGN + FLAT_MARKUP_NGN, 2
+                    )
+        return Response(data)

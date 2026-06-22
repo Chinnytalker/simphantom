@@ -445,16 +445,16 @@ def get_balance():
 
 def get_all_countries() -> list:
     """
-    Return sorted list of countries available in TigerSMS, validated against
-    the live getPrices dump so we only show countries that actually have stock.
+    Return sorted list of all countries in COUNTRY_MAP.
+    Uses the prices cache to mark availability, but never hides a country
+    just because the cache is cold or the ID hasn't been confirmed yet.
     Each entry: {code: str, text_en: str, tiger_id: str}
     """
-    prices = _load_all_prices()
     seen_ids = set()
     countries = []
     for fivesim_name, raw_id in COUNTRY_MAP.items():
         cid_str = str(raw_id)
-        if cid_str not in prices or cid_str in seen_ids:
+        if cid_str in seen_ids:
             continue
         seen_ids.add(cid_str)
         display = COUNTRY_DISPLAY.get(fivesim_name, fivesim_name.replace('_', ' ').title())
@@ -469,15 +469,13 @@ def get_all_countries() -> list:
 def resolve_country_id(country_name):
     """
     Return the TigerSMS country ID string for a given 5sim country name.
-    Returns None if the country is not available in TigerSMS.
+    Returns the COUNTRY_MAP value directly so the buy flow always attempts
+    TigerSMS; the getNumber call itself will return BAD_COUNTRY if the ID
+    is wrong, and the caller can fall back to 5sim at that point.
     """
     name = (country_name or '').lower().strip()
     raw_id = COUNTRY_MAP.get(name)
-    if raw_id is None:
-        return None
-    cid_str = str(raw_id)
-    prices = _load_all_prices()
-    return cid_str if cid_str in prices else None
+    return str(raw_id) if raw_id is not None else None
 
 
 def get_prices(country_id) -> dict:
