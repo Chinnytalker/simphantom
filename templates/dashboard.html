@@ -121,10 +121,10 @@
             </a>
         </div>
 
-        <!-- TigerSMS -->
+        <!-- SimPhantom SMS provider balance -->
         <div class="flex-shrink-0 w-64 sm:w-auto bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
             <div class="flex items-center justify-between mb-3">
-                <span class="text-gray-400 dark:text-gray-500 text-xs font-medium uppercase tracking-wider">TigerSMS Balance</span>
+                <span class="text-gray-400 dark:text-gray-500 text-xs font-medium uppercase tracking-wider">SimPhantom Balance</span>
                 <div class="w-8 h-8 bg-orange-100 dark:bg-orange-900/40 rounded-lg flex items-center justify-center">
                     <svg class="w-4 h-4 text-orange-500 dark:text-orange-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
@@ -234,13 +234,13 @@
                             {% if order.service_type == 'VIRTUAL_NUMBER' or order.service_type == 'OTP_VERIFICATION' %}
                                 {% if order.provider == 'tigersms' %}
                                 <span class="inline-block text-xs px-2 py-0.5 rounded-full font-semibold
-                                             bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300">
-                                    TigerSMS
+                                             bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                                    SimPhantom
                                 </span>
                                 {% else %}
                                 <span class="inline-block text-xs px-2 py-0.5 rounded-full font-semibold
-                                             bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300">
-                                    5sim
+                                             bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                                    SimPhantom
                                 </span>
                                 {% endif %}
                             {% else %}

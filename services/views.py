@@ -1153,14 +1153,20 @@ class TigerProductsView(APIView):
     def get(self, request, country):
         country_id = tigersms.resolve_country_id(country)
 
-        if country_id is None:
-            return Response({
-                'error': f'Country "{country}" not found on TigerSMS.',
-                'hint': 'Run /api/services/tiger/countries/?raw=1 to see matched_country_map_entries.',
-            }, status=400)
-
         if request.query_params.get('raw') == '1':
-            return Response(tigersms.get_prices_raw(country_id))
+            return Response(tigersms.get_prices_raw(country_id) if country_id else {'country_id': None})
+
+        # If TigerSMS doesn't cover this country, fall back to 5sim product list
+        if country_id is None:
+            operator = request.query_params.get('operator', 'any')
+            data = fivesim.get_products(country, operator)
+            if isinstance(data, dict) and 'error' not in data:
+                for svc in data:
+                    if 'Price' in data[svc]:
+                        data[svc]['naira_price'] = round(
+                            data[svc]['Price'] * USD_TO_NGN + FLAT_MARKUP_NGN, 2
+                        )
+            return Response(data)
 
         prices = tigersms.get_prices(country_id)
 
