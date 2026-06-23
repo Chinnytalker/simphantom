@@ -22,11 +22,13 @@ def get_countries():
 def get_products(country, operator='any'):
     """Get available services and prices for a country"""
     operators_to_try = [operator] if operator != 'any' else ['any', 'virtual']
+    last_err = f"No products available for {country}"
     for op in operators_to_try:
         try:
             url = f"{BASE_URL}/guest/products/{country}/{op}"
             response = requests.get(url, headers=get_headers())
             if response.status_code == 400:
+                last_err = f"No products found for {country} ({op})"
                 continue
             response.raise_for_status()
             return response.json()
