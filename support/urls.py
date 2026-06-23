@@ -23,4 +23,10 @@ urlpatterns = [
     path('manage/tickets/<int:pk>/send/',         views.manage_ticket_send,     name='manage-ticket-send'),
     path('manage/agents/',                        views.manage_agents,          name='manage-agents'),
     path('manage/broadcast/',                     views.manage_broadcast,       name='manage-broadcast'),
+    # Blog
+    path('manage/blog/',                          views.manage_blog_list,       name='manage-blog-list'),
+    path('manage/blog/new/',                      views.manage_blog_create,     name='manage-blog-create'),
+    path('manage/blog/<int:pk>/edit/',            views.manage_blog_edit,       name='manage-blog-edit'),
+    path('manage/blog/<int:pk>/toggle/',          views.manage_blog_toggle,     name='manage-blog-toggle'),
+    path('manage/blog/<int:pk>/delete/',          views.manage_blog_delete,     name='manage-blog-delete'),
 ]

@@ -13,6 +13,28 @@
     <link rel="manifest" href="{% static 'img/site.webmanifest' %}">
     <meta name="theme-color" content="#1e1b4b">
 
+    <!-- SEO Meta -->
+    <meta name="description" content="{% block meta_description %}SimPhantom — buy virtual phone numbers, OTP verification, WireGuard VPN, eSIM, and residential proxies. Instant delivery. Pay with Paystack.{% endblock %}">
+    <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="SimPhantom">
+    <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+    <meta property="og:title" content="{% block og_title %}SimPhantom — Virtual Numbers & Digital Services{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}SimPhantom — buy virtual phone numbers, OTP verification, WireGuard VPN, eSIM, and residential proxies. Instant delivery. Pay with Paystack.{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'img/og-default.png' %}{% endblock %}">
+    <meta property="og:locale" content="en_NG">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}SimPhantom — Virtual Numbers & Digital Services{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}SimPhantom — buy virtual phone numbers, OTP verification, WireGuard VPN, eSIM, and residential proxies.{% endblock %}">
+    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/og-default.png' %}">
+
+    <!-- Structured Data -->
+    {% block structured_data %}{% endblock %}
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -251,6 +273,10 @@
                     </div>
                 </div>
 
+                <a href="/blog/" class="px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400
+                                   hover:text-gray-900 dark:hover:text-white hover:bg-gray-100
+                                   dark:hover:bg-zinc-800 rounded-lg transition">Blog</a>
+
                 {% if user.is_authenticated %}
                 <a href="/dashboard/" class="px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400
                                              hover:text-gray-900 dark:hover:text-white hover:bg-gray-100
@@ -451,6 +477,12 @@
                 </div>
             </div>
 
+            <a href="/blog/" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
+                               text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+                Blog
+            </a>
+
             {% if user.is_authenticated %}
             <a href="/dashboard/" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
                                          text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition">
@@ -629,6 +661,8 @@
                             <span class="w-1 h-1 bg-zinc-600 rounded-full"></span>Home</a></li>
                         <li><a href="/services/" class="text-zinc-400 hover:text-white text-sm transition flex items-center gap-1.5">
                             <span class="w-1 h-1 bg-zinc-600 rounded-full"></span>All Services</a></li>
+                        <li><a href="/blog/" class="text-zinc-400 hover:text-white text-sm transition flex items-center gap-1.5">
+                            <span class="w-1 h-1 bg-zinc-600 rounded-full"></span>Blog</a></li>
                         <li><a href="/contact/" class="text-zinc-400 hover:text-white text-sm transition flex items-center gap-1.5">
                             <span class="w-1 h-1 bg-zinc-600 rounded-full"></span>Contact Us</a></li>
                         <li><a href="/support/" class="text-zinc-400 hover:text-white text-sm transition flex items-center gap-1.5">
@@ -644,6 +678,7 @@
                     &copy; 2026 SimPhantom. All rights reserved.
                 </p>
                 <div class="flex items-center gap-5">
+                    <a href="/blog/" class="text-zinc-500 hover:text-zinc-300 text-xs transition">Blog</a>
                     <a href="/privacy/" class="text-zinc-500 hover:text-zinc-300 text-xs transition">Privacy Policy</a>
                     <a href="/terms/" class="text-zinc-500 hover:text-zinc-300 text-xs transition">Terms of Service</a>
                     <a href="/cookies/" class="text-zinc-500 hover:text-zinc-300 text-xs transition">Cookie Policy</a>

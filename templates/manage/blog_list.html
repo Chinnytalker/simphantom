@@ -1,0 +1,98 @@
+{% extends 'manage/base.html' %}
+{% block title %}Blog Posts — SimPhantom Admin{% endblock %}
+{% block page_title %}Blog Posts{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <p class="text-sm text-gray-500 dark:text-gray-400">{{ posts|length }} post{{ posts|length|pluralize }}</p>
+    <a href="/manage/blog/new/"
+       class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        New Post
+    </a>
+</div>
+
+{% if posts %}
+<div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl overflow-hidden">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="border-b border-gray-100 dark:border-zinc-800 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th class="px-5 py-3.5">Title</th>
+                <th class="px-5 py-3.5 hidden sm:table-cell">Status</th>
+                <th class="px-5 py-3.5 hidden md:table-cell">Published</th>
+                <th class="px-5 py-3.5 hidden md:table-cell">Reading time</th>
+                <th class="px-5 py-3.5 text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50 dark:divide-zinc-800">
+            {% for post in posts %}
+            <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition">
+                <td class="px-5 py-4">
+                    <p class="font-semibold text-gray-900 dark:text-white leading-snug">{{ post.title }}</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">/blog/{{ post.slug }}/</p>
+                </td>
+                <td class="px-5 py-4 hidden sm:table-cell">
+                    {% if post.is_published %}
+                    <span class="inline-flex items-center gap-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-bold px-2.5 py-1 rounded-full">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Published
+                    </span>
+                    {% else %}
+                    <span class="inline-flex items-center gap-1.5 bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 text-xs font-bold px-2.5 py-1 rounded-full">
+                        <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>Draft
+                    </span>
+                    {% endif %}
+                </td>
+                <td class="px-5 py-4 hidden md:table-cell text-gray-500 dark:text-gray-400 text-xs">
+                    {{ post.published_at|date:"j M Y"|default:"—" }}
+                </td>
+                <td class="px-5 py-4 hidden md:table-cell text-gray-500 dark:text-gray-400 text-xs">
+                    {{ post.reading_time }}
+                </td>
+                <td class="px-5 py-4">
+                    <div class="flex items-center gap-2 justify-end flex-wrap">
+                        <a href="/manage/blog/{{ post.pk }}/edit/"
+                           class="text-xs bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 font-semibold px-3 py-1.5 rounded-lg transition">
+                            Edit
+                        </a>
+                        {% if post.is_published %}
+                        <a href="/blog/{{ post.slug }}/" target="_blank"
+                           class="text-xs bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-zinc-700 font-semibold px-3 py-1.5 rounded-lg transition">
+                            View
+                        </a>
+                        {% endif %}
+                        <form method="post" action="/manage/blog/{{ post.pk }}/toggle/" class="inline">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="text-xs {% if post.is_published %}bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 hover:bg-amber-100{% else %}bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100{% endif %} font-semibold px-3 py-1.5 rounded-lg transition">
+                                {% if post.is_published %}Unpublish{% else %}Publish{% endif %}
+                            </button>
+                        </form>
+                        <form method="post" action="/manage/blog/{{ post.pk }}/delete/"
+                              onsubmit="return confirm('Delete «{{ post.title }}»? This cannot be undone.')" class="inline">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="text-xs bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 font-semibold px-3 py-1.5 rounded-lg transition">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% else %}
+<div class="text-center py-20 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl">
+    <div class="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0118 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+    </div>
+    <p class="text-gray-900 dark:text-white font-bold mb-1">No blog posts yet</p>
+    <p class="text-gray-500 dark:text-gray-400 text-sm mb-5">Write your first post to start driving SEO traffic.</p>
+    <a href="/manage/blog/new/" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition">
+        Write First Post
+    </a>
+</div>
+{% endif %}
+{% endblock %}

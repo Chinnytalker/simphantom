@@ -1,5 +1,10 @@
 ﻿{% extends 'base.html' %}
-{% block title %}OTP Verification — SimPhantom{% endblock %}
+{% block title %}OTP Verification — Receive SMS Codes Online | SimPhantom{% endblock %}
+{% block og_title %}OTP Verification — Receive SMS Codes Online | SimPhantom{% endblock %}
+{% block twitter_title %}OTP Verification — Receive SMS Codes Online | SimPhantom{% endblock %}
+{% block meta_description %}Receive one-time passwords and SMS verification codes online without a physical SIM. 190+ countries supported. Instant delivery. Auto-refund if no code. Pay with Paystack.{% endblock %}
+{% block og_description %}Receive OTP and SMS verification codes from 190+ countries. No physical SIM needed. Instant delivery. Pay with Paystack.{% endblock %}
+{% block twitter_description %}Get OTP codes online from 190+ countries. No SIM card needed. Instant delivery, auto-refund if no code.{% endblock %}
 
 {% block content %}
 <!-- Breadcrumb -->
@@ -530,8 +535,8 @@
         const countryLabel = country.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         document.getElementById('modal-service-name').textContent = selectedService ? selectedService.label + ' OTP' : 'OTP';
         document.getElementById('modal-country-name').textContent = countryLabel;
-        document.getElementById('modal-price').textContent = '&#x20A6;' + price.toFixed(2);
-        document.getElementById('modal-balance').textContent = '&#x20A6;' + WALLET.toFixed(2);
+        document.getElementById('modal-price').textContent = '₦' + price.toFixed(2);
+        document.getElementById('modal-balance').textContent = '₦' + WALLET.toFixed(2);
 
         const insufficient = WALLET < price;
         document.getElementById('modal-balance-warning').classList.toggle('hidden', !insufficient);

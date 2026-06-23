@@ -21,13 +21,20 @@ def get_countries():
 
 def get_products(country, operator='any'):
     """Get available services and prices for a country"""
-    try:
-        url = f"{BASE_URL}/guest/products/{country}/{operator}"
-        response = requests.get(url, headers=get_headers())
-        response.raise_for_status()
-        return response.json()
-    except Exception as e:
-        return {'error': str(e)}
+    operators_to_try = [operator] if operator != 'any' else ['any', 'virtual']
+    for op in operators_to_try:
+        try:
+            url = f"{BASE_URL}/guest/products/{country}/{op}"
+            response = requests.get(url, headers=get_headers())
+            if response.status_code == 400:
+                continue
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.HTTPError as e:
+            last_err = f"5sim returned {e.response.status_code} for {country}"
+        except Exception as e:
+            last_err = f"Could not load products for {country}"
+    return {'error': last_err}
 
 def buy_number(country, operator, product):
     """Purchase a virtual number"""

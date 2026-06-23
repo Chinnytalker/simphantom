@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% block title %}Virtual Number for WhatsApp Nigeria — Get OTP Instantly | SimPhantom{% endblock %}
+{% block og_title %}Virtual Number for WhatsApp Nigeria — Instant OTP | SimPhantom{% endblock %}
+{% block twitter_title %}Virtual Number for WhatsApp Nigeria | SimPhantom{% endblock %}
+{% block meta_description %}Get a virtual phone number for WhatsApp verification in Nigeria. No physical SIM needed. Instant OTP delivery. Auto-refund if no code in 5 minutes. Pay with Paystack.{% endblock %}
+{% block og_description %}Virtual numbers for WhatsApp in Nigeria. Instant OTP. Auto-refund if no code. Pay with Paystack.{% endblock %}
+{% block twitter_description %}Get a WhatsApp virtual number in Nigeria — instant OTP, auto-refund if no code, pay with Paystack.{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+        {
+            "@type": "Question",
+            "name": "Can I get a virtual number for WhatsApp in Nigeria?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. SimPhantom provides virtual phone numbers from 190+ countries that can receive WhatsApp OTP verification codes. You pay with Paystack and numbers are available instantly."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "What happens if WhatsApp doesn't send an OTP to my virtual number?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "If no OTP is received within 5 minutes, SimPhantom automatically cancels the number and refunds the full amount to your wallet. You can immediately order a new number and try again."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Which countries work best for WhatsApp verification?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Countries like Lithuania, Kazakhstan, Indonesia, and Russia tend to have higher success rates for WhatsApp verification. USA numbers have lower success rates due to WhatsApp's blocking of many US virtual number ranges."
+            }
+        }
+    ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="mb-5 text-sm flex items-center gap-1.5 text-gray-400 dark:text-gray-500">
+    <a href="/" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Home</a>
+    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+    <span class="text-gray-600 dark:text-gray-300">Virtual Number for WhatsApp</span>
+</div>
+
+<!-- Hero -->
+<div class="relative bg-gradient-to-br from-green-600 to-emerald-700 rounded-2xl p-8 mb-8 overflow-hidden">
+    <div class="absolute inset-0 opacity-10" style="background-image: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"60\" height=\"60\"><circle cx=\"30\" cy=\"30\" r=\"2\" fill=\"white\"/></svg>')"></div>
+    <div class="relative max-w-xl">
+        <div class="inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1 mb-4">
+            <span class="text-white text-xs font-semibold">🇳🇬 Made for Nigeria</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-white leading-tight mb-3">
+            Virtual Number for WhatsApp Verification
+        </h1>
+        <p class="text-green-100 text-base mb-6">
+            Need a number to verify WhatsApp without using your real SIM? Get one instantly from 190+ countries. Auto-refund in 5 minutes if no OTP arrives.
+        </p>
+        <div class="flex flex-wrap gap-3">
+            <a href="/services/virtual-numbers/"
+               class="bg-white text-green-700 hover:bg-green-50 font-bold px-6 py-3 rounded-xl text-sm transition shadow">
+                Get a Number Now
+            </a>
+            <a href="#how-it-works"
+               class="border border-white/40 text-white hover:bg-white/10 font-semibold px-6 py-3 rounded-xl text-sm transition">
+                How it works
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Trust badges -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 text-center">
+        <p class="text-2xl font-extrabold text-gray-900 dark:text-white">190+</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Countries</p>
+    </div>
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 text-center">
+        <p class="text-2xl font-extrabold text-gray-900 dark:text-white">5 min</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Auto-refund</p>
+    </div>
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 text-center">
+        <p class="text-2xl font-extrabold text-gray-900 dark:text-white">₦0</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">If no OTP</p>
+    </div>
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 text-center">
+        <p class="text-2xl font-extrabold text-gray-900 dark:text-white">Paystack</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Pay in Naira</p>
+    </div>
+</div>
+
+<!-- How it works -->
+<div id="how-it-works" class="mb-10">
+    <h2 class="text-xl font-extrabold text-gray-900 dark:text-white mb-5">How to get a WhatsApp number on SimPhantom</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5">
+            <div class="w-9 h-9 rounded-xl bg-green-50 dark:bg-green-900/30 flex items-center justify-center mb-3">
+                <span class="text-green-600 font-extrabold text-sm">1</span>
+            </div>
+            <p class="font-bold text-gray-900 dark:text-white text-sm mb-1">Top up your wallet</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Add balance via Paystack bank transfer, card, or USSD. Minimum ₦500.</p>
+        </div>
+        <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5">
+            <div class="w-9 h-9 rounded-xl bg-green-50 dark:bg-green-900/30 flex items-center justify-center mb-3">
+                <span class="text-green-600 font-extrabold text-sm">2</span>
+            </div>
+            <p class="font-bold text-gray-900 dark:text-white text-sm mb-1">Pick a country & buy</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Select "WhatsApp" as the service, choose a country, and buy a number instantly.</p>
+        </div>
+        <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5">
+            <div class="w-9 h-9 rounded-xl bg-green-50 dark:bg-green-900/30 flex items-center justify-center mb-3">
+                <span class="text-green-600 font-extrabold text-sm">3</span>
+            </div>
+            <p class="font-bold text-gray-900 dark:text-white text-sm mb-1">Enter it in WhatsApp</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Type the number in WhatsApp, wait for the OTP to appear on your dashboard, and enter it.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Country tips -->
+<div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-2xl p-5 mb-10">
+    <h3 class="font-bold text-amber-900 dark:text-amber-300 text-sm mb-2">💡 Pro tip: Best countries for WhatsApp</h3>
+    <p class="text-xs text-amber-800 dark:text-amber-400 mb-3">For the highest chance of receiving a WhatsApp OTP, choose numbers from these countries:</p>
+    <div class="flex flex-wrap gap-2">
+        {% for country in 'Lithuania,Kazakhstan,Indonesia,Ukraine,Poland,Sweden,Denmark,Netherlands'|split:',' %}
+        <span class="bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 text-xs font-semibold px-2.5 py-1 rounded-lg">{{ country }}</span>
+        {% empty %}
+        <span class="bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 text-xs font-semibold px-2.5 py-1 rounded-lg">Lithuania</span>
+        <span class="bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 text-xs font-semibold px-2.5 py-1 rounded-lg">Kazakhstan</span>
+        <span class="bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 text-xs font-semibold px-2.5 py-1 rounded-lg">Indonesia</span>
+        <span class="bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 text-xs font-semibold px-2.5 py-1 rounded-lg">Ukraine</span>
+        <span class="bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 text-xs font-semibold px-2.5 py-1 rounded-lg">Poland</span>
+        <span class="bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 text-xs font-semibold px-2.5 py-1 rounded-lg">Sweden</span>
+        {% endfor %}
+    </div>
+    <p class="text-xs text-amber-700 dark:text-amber-500 mt-3">USA numbers have lower success rates due to WhatsApp blocking many US virtual ranges. If a number fails, you get an automatic full refund.</p>
+</div>
+
+<!-- FAQ -->
+<section class="mb-10">
+    <h2 class="text-xl font-extrabold text-gray-900 dark:text-white mb-4">Frequently Asked Questions</h2>
+    <div class="space-y-2">
+        <details class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 group">
+            <summary class="font-semibold text-gray-900 dark:text-white text-sm cursor-pointer list-none flex items-center justify-between gap-3">
+                Can I get a virtual number for WhatsApp in Nigeria?
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Yes. SimPhantom provides virtual phone numbers from 190+ countries that can receive WhatsApp OTP verification codes. Pay with Paystack and your number is available in seconds.</p>
+        </details>
+        <details class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 group">
+            <summary class="font-semibold text-gray-900 dark:text-white text-sm cursor-pointer list-none flex items-center justify-between gap-3">
+                What if WhatsApp doesn't send the OTP to my virtual number?
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">If no OTP arrives within 5 minutes, SimPhantom automatically cancels the number and refunds the full amount to your wallet. You can then order a new number and try again no support needed, no questions asked.</p>
+        </details>
+        <details class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 group">
+            <summary class="font-semibold text-gray-900 dark:text-white text-sm cursor-pointer list-none flex items-center justify-between gap-3">
+                Is this legal?
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Virtual phone numbers are legal services used for legitimate privacy protection, managing multiple business accounts, and testing apps. SimPhantom's terms of service prohibit using the service for spam, fraud, or any illegal activity.</p>
+        </details>
+        <details class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 group">
+            <summary class="font-semibold text-gray-900 dark:text-white text-sm cursor-pointer list-none flex items-center justify-between gap-3">
+                How much does a WhatsApp virtual number cost?
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Prices vary by country. Cheaper countries start from around ₦600–₦900. Check the <a href="/services/virtual-numbers/" class="text-indigo-600 dark:text-indigo-400 underline">virtual numbers page</a> for live pricing from all countries.</p>
+        </details>
+    </div>
+</section>
+
+<!-- CTA -->
+<div class="bg-green-600 rounded-2xl p-7 text-center">
+    <h2 class="text-xl font-extrabold text-white mb-2">Ready to get your WhatsApp number?</h2>
+    <p class="text-green-100 text-sm mb-5">Instant delivery · Auto-refund if no OTP · Pay with Paystack</p>
+    <a href="/services/virtual-numbers/" class="bg-white text-green-700 hover:bg-green-50 font-bold px-8 py-3 rounded-xl text-sm transition shadow">
+        Get a Number Now →
+    </a>
+</div>
+{% endblock %}

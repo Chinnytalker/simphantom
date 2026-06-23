@@ -1,0 +1,206 @@
+{% extends 'manage/base.html' %}
+{% block title %}{% if post %}Edit Post{% else %}New Post{% endif %} — SimPhantom Admin{% endblock %}
+{% block page_title %}{% if post %}Edit Post{% else %}New Post{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl">
+
+    <!-- Back -->
+    <a href="/manage/blog/" class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white transition mb-6">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        All Posts
+    </a>
+
+    {% if saved %}
+    <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 rounded-xl px-4 py-3 text-sm mb-5 flex items-center gap-2">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        Post saved successfully.
+        {% if post.is_published %}
+        <a href="/blog/{{ post.slug }}/" target="_blank" class="underline ml-1">View live →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-xl px-4 py-3 text-sm mb-5">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="post" class="space-y-5">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+            <!-- Main content (left 2/3) -->
+            <div class="lg:col-span-2 space-y-5">
+
+                <!-- Title -->
+                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5">
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Title *</label>
+                    <input type="text" name="title" id="title-input"
+                           value="{{ post.title|default:'' }}"
+                           placeholder="How to get a virtual number for WhatsApp in Nigeria"
+                           required
+                           class="w-full bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-gray-900 dark:text-white text-base font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                </div>
+
+                <!-- Slug -->
+                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5">
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                        URL Slug
+                        <span class="font-normal normal-case text-gray-400 ml-1">(auto-filled from title)</span>
+                    </label>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-400 text-sm flex-shrink-0">/blog/</span>
+                        <input type="text" name="slug" id="slug-input"
+                               value="{{ post.slug|default:'' }}"
+                               placeholder="how-to-get-virtual-number-whatsapp-nigeria"
+                               class="flex-1 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                        <span class="text-gray-400 text-sm flex-shrink-0">/</span>
+                    </div>
+                </div>
+
+                <!-- Excerpt -->
+                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5">
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                        Excerpt
+                        <span class="font-normal normal-case text-gray-400 ml-1">(shown on blog listing, max 300 chars)</span>
+                    </label>
+                    <textarea name="excerpt" rows="2" maxlength="300"
+                              placeholder="A short 1–2 sentence summary of the post..."
+                              class="w-full bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition resize-none">{{ post.excerpt|default:'' }}</textarea>
+                </div>
+
+                <!-- Body -->
+                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Body *</label>
+                        <span class="text-xs text-gray-400 dark:text-gray-500">HTML supported — use &lt;h2&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;strong&gt;, &lt;a&gt;</span>
+                    </div>
+                    <textarea name="body" id="body-input" rows="22" required
+                              placeholder="<h2>Introduction</h2>&#10;<p>Start writing your post here...</p>&#10;&#10;<h2>Section heading</h2>&#10;<p>More content...</p>&#10;&#10;<ul>&#10;  <li>Bullet point one</li>&#10;  <li>Bullet point two</li>&#10;</ul>"
+                              class="w-full bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-gray-900 dark:text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 transition resize-y">{{ post.body|default:'' }}</textarea>
+                </div>
+
+            </div>
+
+            <!-- Sidebar (right 1/3) -->
+            <div class="space-y-5">
+
+                <!-- Publish -->
+                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5">
+                    <p class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Publish</p>
+
+                    <label class="flex items-center gap-3 cursor-pointer mb-5">
+                        <div class="relative">
+                            <input type="checkbox" name="is_published" value="1" id="publish-toggle"
+                                   {% if post.is_published %}checked{% endif %}
+                                   class="sr-only peer">
+                            <div class="w-10 h-5 bg-gray-200 dark:bg-zinc-700 rounded-full peer-checked:bg-indigo-600 transition"></div>
+                            <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5"></div>
+                        </div>
+                        <span class="text-sm font-semibold text-gray-900 dark:text-white" id="publish-label">
+                            {% if post.is_published %}Published{% else %}Draft{% endif %}
+                        </span>
+                    </label>
+
+                    <button type="submit"
+                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-sm transition">
+                        {% if post %}Save Changes{% else %}Create Post{% endif %}
+                    </button>
+
+                    {% if post %}
+                    <a href="/manage/blog/" class="block text-center text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 mt-3 transition">
+                        Cancel
+                    </a>
+                    {% endif %}
+                </div>
+
+                <!-- SEO -->
+                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5">
+                    <p class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">SEO</p>
+                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">
+                        Meta Description
+                        <span class="font-normal text-gray-400 ml-1">max 160 chars</span>
+                    </label>
+                    <textarea name="meta_description" rows="3" maxlength="160" id="meta-desc"
+                              placeholder="Leave blank to use the excerpt..."
+                              class="w-full bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5 text-gray-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 transition resize-none">{{ post.meta_description|default:'' }}</textarea>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1.5 text-right" id="meta-count">
+                        {{ post.meta_description|length|default:0 }}/160
+                    </p>
+                </div>
+
+                <!-- Quick tips -->
+                <div class="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900 rounded-2xl p-4">
+                    <p class="text-xs font-bold text-indigo-700 dark:text-indigo-400 mb-2">Writing tips</p>
+                    <ul class="text-xs text-indigo-600 dark:text-indigo-500 space-y-1.5">
+                        <li>• Start with &lt;h2&gt; for section headings</li>
+                        <li>• Use &lt;p&gt; for paragraphs</li>
+                        <li>• Use &lt;ul&gt;&lt;li&gt; for bullet lists</li>
+                        <li>• Use &lt;strong&gt; to bold key terms</li>
+                        <li>• Link to services with &lt;a href="/services/..."&gt;</li>
+                        <li>• Aim for 400–800 words per post</li>
+                    </ul>
+                </div>
+
+                {% if post %}
+                <!-- Danger zone -->
+                <div class="bg-white dark:bg-zinc-900 border border-red-100 dark:border-red-900/40 rounded-2xl p-5">
+                    <p class="text-xs font-bold text-red-500 uppercase tracking-wider mb-3">Danger Zone</p>
+                    <form method="post" action="/manage/blog/{{ post.pk }}/delete/"
+                          onsubmit="return confirm('Delete «{{ post.title }}»? This cannot be undone.')">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="w-full bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 font-semibold py-2 rounded-xl text-sm transition">
+                            Delete This Post
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </form>
+</div>
+
+{% block extra_scripts %}
+<script>
+// Auto-fill slug from title (only when slug is empty or matches old auto-slug)
+const titleInput = document.getElementById('title-input');
+const slugInput = document.getElementById('slug-input');
+let autoSlug = true;
+
+function toSlug(s) {
+    return s.toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
+
+{% if not post %}
+titleInput.addEventListener('input', function() {
+    if (autoSlug) slugInput.value = toSlug(this.value);
+});
+slugInput.addEventListener('input', function() {
+    autoSlug = false;
+});
+{% endif %}
+
+// Publish toggle label
+document.getElementById('publish-toggle').addEventListener('change', function() {
+    document.getElementById('publish-label').textContent = this.checked ? 'Published' : 'Draft';
+});
+
+// Meta description character counter
+const metaDesc = document.getElementById('meta-desc');
+const metaCount = document.getElementById('meta-count');
+metaDesc.addEventListener('input', function() {
+    const n = this.value.length;
+    metaCount.textContent = n + '/160';
+    metaCount.className = 'text-xs mt-1.5 text-right ' + (n > 140 ? 'text-red-500' : 'text-gray-400 dark:text-gray-500');
+});
+</script>
+{% endblock %}
+{% endblock %}

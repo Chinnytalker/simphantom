@@ -19,10 +19,11 @@ def generate_keypair():
     return priv_b64, pub_b64
 
 
-def build_client_config(client_private_key, assigned_ip, server_public_key, server_endpoint):
+def build_client_config(client_private_key, assigned_ip, server_public_key, server_endpoint, name='SimPhantom VPN'):
     """Build the .conf file text that the user imports into the WireGuard app."""
     return (
         "[Interface]\n"
+        f"# Name = {name}\n"
         f"PrivateKey = {client_private_key}\n"
         f"Address = {assigned_ip}/32\n"
         "DNS = 1.1.1.1, 1.0.0.1\n"

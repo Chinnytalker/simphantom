@@ -387,3 +387,11 @@ def error_404(request, exception):
 
 def error_500(request):
     return render(request, '500.html', status=500)
+
+
+def landing_whatsapp_number(request):
+    return render(request, 'landing/virtual-number-for-whatsapp.html')
+
+
+def landing_vpn_nigeria(request):
+    return render(request, 'landing/vpn-nigeria.html')

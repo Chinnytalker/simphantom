@@ -1,4 +1,4 @@
-﻿import json
+import json
 import logging
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -7,6 +7,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.db import transaction as db_transaction
 from django.db.models import F
 from django.contrib.auth import get_user_model
+from django.utils import timezone
+from datetime import timedelta
 from decimal import Decimal
 from services.fivesim import buy_number, check_order, cancel_order
 from services import tigersms
@@ -16,6 +18,7 @@ from .serializers import OrderSerializer, TransactionSerializer
 logger = logging.getLogger(__name__)
 
 MARKUP = Decimal('1.30')
+EXPIRY_MINUTES = 5
 
 
 class BuyNumberView(APIView):
@@ -48,45 +51,20 @@ class BuyNumberView(APIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
-                order_data = None
-                used_provider = '5sim'
+                order_data = buy_number(country, operator, product)
+                if 'error' in order_data:
+                    raise ValueError(order_data['error'])
 
-                # Try TigerSMS first for all products when country+service mapping exists
-                tiger_country = tigersms.map_country(country or '')
-                tiger_service = tigersms.map_service((product or '').lower())
-
-                if tiger_country is not None and tiger_service is not None:
-                    result = tigersms.get_number(tiger_service, tiger_country)
-                    if 'error' not in result:
-                        order_data = {
-                            'id': result['id'],
-                            'phone': result['phone'],
-                            'status': 'PENDING',
-                        }
-                        used_provider = 'tigersms'
-                    else:
+                try:
+                    from services.fivesim import get_balance
+                    profile = get_balance()
+                    balance_usd = float(profile.get('balance', 999))
+                    if balance_usd < 5:
                         logger.warning(
-                            "[SimPhantom] TigerSMS failed for %s/%s: %s — falling back to 5sim",
-                            country, product, result['error'],
+                            "[SimPhantom] 5sim balance LOW: $%.2f — top up now!", balance_usd
                         )
-
-                # Fall back to (or default to) 5sim
-                if order_data is None:
-                    order_data = buy_number(country, operator, product)
-                    if 'error' in order_data:
-                        raise ValueError(order_data['error'])
-
-                    # Warn when 5sim balance is low
-                    try:
-                        from services.fivesim import get_balance
-                        profile = get_balance()
-                        balance_usd = float(profile.get('balance', 999))
-                        if balance_usd < 5:
-                            logger.warning(
-                                "[SimPhantom] 5sim balance LOW: $%.2f — top up now!", balance_usd
-                            )
-                    except Exception:
-                        pass
+                except Exception:
+                    pass
 
                 order = Order.objects.create(
                     user=request.user,
@@ -96,9 +74,10 @@ class BuyNumberView(APIView):
                     product=product,
                     country=country,
                     operator=operator,
-                    status=order_data['status'],
+                    status=order_data.get('status', 'PENDING'),
                     amount_charged=price,
-                    credentials=json.dumps({'provider': used_provider}),
+                    credentials=json.dumps({'provider': '5sim'}),
+                    expires_at=timezone.now() + timedelta(minutes=EXPIRY_MINUTES),
                 )
 
                 Transaction.objects.create(
@@ -135,9 +114,58 @@ class CheckOrderView(APIView):
         except Order.DoesNotExist:
             return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
 
+        if order.status in ('RECEIVED', 'FINISHED', 'CANCELED', 'EXPIRED'):
+            return Response({
+                'status': order.status,
+                'sms_code': order.sms_code,
+                'phone': order.phone,
+            })
+
+        # Auto-expire after EXPIRY_MINUTES with no SMS — works for both 5sim and TigerSMS orders
+        if order.expires_at and timezone.now() >= order.expires_at:
+            creds = json.loads(order.credentials or '{}')
+            provider = creds.get('provider', '5sim')
+            try:
+                if provider == 'tigersms':
+                    tigersms.cancel_number(order.fivesim_order_id)
+                else:
+                    cancel_order(order.fivesim_order_id)
+            except Exception:
+                pass
+
+            with db_transaction.atomic():
+                get_user_model().objects.filter(pk=request.user.pk).update(
+                    wallet_balance=F('wallet_balance') + order.amount_charged
+                )
+                Transaction.objects.get_or_create(
+                    reference=f"REFUND-EXPIRE-{order.id}",
+                    defaults={
+                        'user': request.user,
+                        'amount': order.amount_charged,
+                        'type': 'CREDIT',
+                        'description': f"Auto-refund: {order.product} number expired after {EXPIRY_MINUTES}min",
+                    }
+                )
+                order.status = 'EXPIRED'
+                order.save(update_fields=['status'])
+
+            request.user.refresh_from_db()
+            return Response({
+                'status': 'EXPIRED',
+                'sms_code': None,
+                'phone': order.phone,
+                'refunded': True,
+                'amount_refunded': str(order.amount_charged),
+                'new_balance': str(request.user.wallet_balance),
+                'product': order.product,
+                'country': order.country,
+                'operator': order.operator or 'any',
+            })
+
         creds = json.loads(order.credentials or '{}')
         provider = creds.get('provider', '5sim')
 
+        # Handle legacy TigerSMS orders
         if provider == 'tigersms':
             data = tigersms.get_status(order.fivesim_order_id)
             if 'error' in data:
@@ -151,8 +179,26 @@ class CheckOrderView(APIView):
                     get_user_model().objects.filter(pk=request.user.pk).update(
                         wallet_balance=F('wallet_balance') + order.amount_charged
                     )
+                    Transaction.objects.get_or_create(
+                        reference=f"REFUND-{order.id}",
+                        defaults={
+                            'user': request.user,
+                            'amount': order.amount_charged,
+                            'type': 'CREDIT',
+                            'description': f"Refund: {order.product} number cancelled",
+                        }
+                    )
                     order.status = 'CANCELED'
                     order.save(update_fields=['status'])
+                request.user.refresh_from_db()
+                return Response({
+                    'status': 'CANCELED',
+                    'sms_code': order.sms_code,
+                    'phone': order.phone,
+                    'refunded': True,
+                    'amount_refunded': str(order.amount_charged),
+                    'new_balance': str(request.user.wallet_balance),
+                })
             return Response({
                 'status': data['status'],
                 'sms_code': order.sms_code,
@@ -161,18 +207,40 @@ class CheckOrderView(APIView):
 
         # 5sim path
         data = check_order(order.fivesim_order_id)
+        if 'error' in data:
+            return Response({'error': data['error']}, status=status.HTTP_502_BAD_GATEWAY)
+
         fivesim_status = data.get('status', '')
         if data.get('sms') and len(data['sms']) > 0:
             order.sms_code = data['sms'][0]['code']
             order.status = 'RECEIVED'
             order.save(update_fields=['sms_code', 'status'])
-        elif fivesim_status in ('CANCELED', 'EXPIRED') and order.status != 'CANCELED':
+        elif fivesim_status in ('CANCELED', 'EXPIRED') and order.status not in ('CANCELED', 'EXPIRED'):
             with db_transaction.atomic():
                 get_user_model().objects.filter(pk=request.user.pk).update(
                     wallet_balance=F('wallet_balance') + order.amount_charged
                 )
+                Transaction.objects.get_or_create(
+                    reference=f"REFUND-{order.id}",
+                    defaults={
+                        'user': request.user,
+                        'amount': order.amount_charged,
+                        'type': 'CREDIT',
+                        'description': f"Refund: {order.product} number cancelled",
+                    }
+                )
                 order.status = 'CANCELED'
                 order.save(update_fields=['status'])
+            request.user.refresh_from_db()
+            return Response({
+                'status': 'CANCELED',
+                'sms_code': None,
+                'phone': order.phone,
+                'refunded': True,
+                'amount_refunded': str(order.amount_charged),
+                'new_balance': str(request.user.wallet_balance),
+            })
+
         return Response({
             'status': fivesim_status or order.status,
             'sms_code': order.sms_code,
@@ -198,7 +266,6 @@ class CancelOrderView(APIView):
         creds = json.loads(order.credentials or '{}')
         provider = creds.get('provider', '5sim')
 
-        # External cancel call before any DB writes (avoids holding a transaction open)
         if provider == 'tigersms':
             result = tigersms.cancel_number(order.fivesim_order_id)
         else:
@@ -210,6 +277,15 @@ class CancelOrderView(APIView):
         with db_transaction.atomic():
             get_user_model().objects.filter(pk=request.user.pk).update(
                 wallet_balance=F('wallet_balance') + order.amount_charged
+            )
+            Transaction.objects.get_or_create(
+                reference=f"REFUND-CANCEL-{order.id}",
+                defaults={
+                    'user': request.user,
+                    'amount': order.amount_charged,
+                    'type': 'CREDIT',
+                    'description': f"Refund: cancelled {order.product} number",
+                }
             )
             order.status = 'CANCELED'
             order.save(update_fields=['status'])

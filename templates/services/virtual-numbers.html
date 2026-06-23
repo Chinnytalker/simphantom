@@ -1,5 +1,69 @@
 ﻿{% extends 'base.html' %}
-{% block title %}Virtual Numbers — SimPhantom{% endblock %}
+{% block title %}Virtual Numbers — Buy Instant Phone Numbers from 190+ Countries | SimPhantom{% endblock %}
+{% block og_title %}Virtual Numbers — Buy Instant Phone Numbers | SimPhantom{% endblock %}
+{% block twitter_title %}Virtual Numbers — Buy Instant Phone Numbers | SimPhantom{% endblock %}
+{% block meta_description %}Buy temporary virtual phone numbers from 190+ countries instantly. Receive OTP for WhatsApp, Telegram, Instagram, TikTok and more. Auto-refund if no OTP in 5 minutes. Pay with Paystack.{% endblock %}
+{% block og_description %}Get virtual phone numbers from 190+ countries. Receive OTP codes instantly. Auto-refund if no OTP in 5 minutes. From ₦600. Pay with Paystack.{% endblock %}
+{% block twitter_description %}Buy virtual numbers for WhatsApp, Telegram, Instagram & more. 190+ countries. Auto-refund if no OTP in 5 min.{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+        {
+            "@type": "Question",
+            "name": "What is a virtual phone number?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "A virtual phone number is a temporary number that can receive SMS messages and OTP codes without needing a physical SIM card. SimPhantom provides numbers from 190+ countries, available instantly."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "What happens if I don't receive an OTP?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "If no OTP is received within 5 minutes, SimPhantom automatically cancels the number and refunds the full amount to your wallet. You can reorder immediately with no extra steps."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Which apps can I verify with a virtual number?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "You can verify accounts on WhatsApp, Telegram, Instagram, TikTok, Facebook, Twitter/X, Google, Snapchat, and hundreds of other apps and websites that require phone number verification."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "How do I pay for virtual numbers in Nigeria?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "SimPhantom uses Paystack for payments, supporting bank transfers, debit/credit cards, and USSD. You top up your wallet balance in Naira, then spend it per number. Minimum top-up is just ₦500."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Can I use the same virtual number multiple times?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Virtual numbers are single-use — one number per verification session. This ensures your privacy and prevents accounts from being linked."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Why do USA WhatsApp numbers sometimes not deliver an OTP?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "WhatsApp actively blocks many US virtual number ranges to prevent abuse. If a US number fails, your money is automatically refunded and you can reorder. For higher success rates, try numbers from Lithuania, Kazakhstan, or Indonesia."
+            }
+        }
+    ]
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <!-- Breadcrumb -->
@@ -100,6 +164,23 @@
 
         <!-- Results state -->
         <div id="state-results" class="hidden space-y-5">
+
+            <!-- USA low success rate warning -->
+            <div id="usa-warning" class="hidden bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700 rounded-2xl p-4">
+                <div class="flex gap-3 items-start">
+                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <div>
+                        <p class="text-sm font-semibold text-amber-800 dark:text-amber-300">USA numbers have a limited success rate</p>
+                        <p class="text-xs text-amber-700 dark:text-amber-400 mt-1 leading-relaxed">
+                            Due to WhatsApp aggressively blocking US virtual number ranges, not every number will deliver an OTP.
+                            If you don't receive a code within 5 minutes, your money is automatically refunded and you can reorder a new number.
+                            Keep reordering until one works it may take a few tries.
+                        </p>
+                    </div>
+                </div>
+            </div>
 
             <!-- Header row with back button -->
             <div class="flex items-center justify-between">
@@ -259,7 +340,7 @@
                 </li>
                 <li class="flex gap-2 items-start text-sm">
                     <svg class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                    <span class="text-gray-600 dark:text-gray-400">Pay in Naira — no FX fees</span>
+                    <span class="text-gray-600 dark:text-gray-400">Pay in Naira, no FX fees</span>
                 </li>
                 <li class="flex gap-2 items-start text-sm">
                     <svg class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
@@ -327,6 +408,66 @@
         </div>
     </div>
 </div>
+
+<!-- FAQ Section -->
+<section class="mt-12 mb-10">
+    <h2 class="text-lg font-extrabold text-gray-900 dark:text-white mb-4">Frequently Asked Questions</h2>
+    <div class="space-y-2">
+        {% for q, a in faq_items %}
+        <details class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 group">
+            <summary class="font-semibold text-gray-900 dark:text-white text-sm cursor-pointer list-none flex items-center justify-between gap-3">
+                {{ q }}
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{{ a }}</p>
+        </details>
+        {% empty %}
+        <details class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 group">
+            <summary class="font-semibold text-gray-900 dark:text-white text-sm cursor-pointer list-none flex items-center justify-between gap-3">
+                What is a virtual phone number?
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">A virtual phone number is a temporary number that can receive SMS messages and OTP codes without needing a physical SIM card. SimPhantom provides numbers from 190+ countries, available instantly.</p>
+        </details>
+        <details class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 group">
+            <summary class="font-semibold text-gray-900 dark:text-white text-sm cursor-pointer list-none flex items-center justify-between gap-3">
+                What happens if I don't receive an OTP?
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">If no OTP is received within 5 minutes, SimPhantom automatically cancels the number on our provider and refunds the full amount to your wallet. You can reorder immediately with no extra steps.</p>
+        </details>
+        <details class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 group">
+            <summary class="font-semibold text-gray-900 dark:text-white text-sm cursor-pointer list-none flex items-center justify-between gap-3">
+                Which apps can I verify with a virtual number?
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">You can verify accounts on WhatsApp, Telegram, Instagram, TikTok, Facebook, Twitter/X, Google, Snapchat, and hundreds of other apps and websites that require phone number verification.</p>
+        </details>
+        <details class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 group">
+            <summary class="font-semibold text-gray-900 dark:text-white text-sm cursor-pointer list-none flex items-center justify-between gap-3">
+                How do I pay for virtual numbers in Nigeria?
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">SimPhantom uses Paystack for payments, supporting bank transfers, debit/credit cards, and USSD. You top up your wallet balance in Naira, then spend it per number. Minimum top-up is just ₦500.</p>
+        </details>
+        <details class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 group">
+            <summary class="font-semibold text-gray-900 dark:text-white text-sm cursor-pointer list-none flex items-center justify-between gap-3">
+                Can I use the same virtual number multiple times?
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Virtual numbers are single-use one number per verification session. This ensures your privacy and prevents accounts from being linked. If you need to verify multiple accounts, simply buy a new number each time.</p>
+        </details>
+        <details class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 group">
+            <summary class="font-semibold text-gray-900 dark:text-white text-sm cursor-pointer list-none flex items-center justify-between gap-3">
+                Why do USA WhatsApp numbers sometimes not deliver an OTP?
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">WhatsApp actively blocks many US virtual number ranges to prevent abuse. If a US number fails, your money is automatically refunded and you can reorder. For higher success rates on WhatsApp, try numbers from countries like Lithuania, Kazakhstan, or Indonesia they tend to work more reliably.</p>
+        </details>
+        {% endfor %}
+    </div>
+</section>
+
 {% endblock %}
 
 {% block extra_scripts %}
@@ -388,7 +529,7 @@
     // ── Load full country list ────────────────────────────────────────────
     async function loadCountries() {
         try {
-            const res = await fetch('/api/services/tiger/countries/');
+            const res = await fetch('/api/services/countries/');
             allCountries = await res.json();
             const count = Object.keys(allCountries).length;
             const statusEl = document.getElementById('country-count-status');
@@ -531,12 +672,13 @@
         setState('loading');
 
         try {
-            const res = await fetch('/api/services/tiger/products/' + countryCode + '/');
+            const res = await fetch('/api/services/products/' + countryCode + '/');
             const data = await res.json();
             if (data.error) throw new Error(data.error);
             currentProducts = data;
             renderGrid(data, countryName);
             setState('results');
+            document.getElementById('usa-warning').classList.toggle('hidden', countryCode !== 'usa');
         } catch (e) {
             document.getElementById('error-message').textContent =
                 e.message || 'Failed to load services for this country.';

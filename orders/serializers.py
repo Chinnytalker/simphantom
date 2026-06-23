@@ -6,7 +6,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'fivesim_order_id', 'phone', 'product', 'country', 'status', 'sms_code', 'amount_charged', 'created_at', 'provider']
+        fields = ['id', 'fivesim_order_id', 'phone', 'product', 'country', 'status', 'sms_code', 'amount_charged', 'created_at', 'expires_at', 'provider']
 
 
 class TransactionSerializer(serializers.ModelSerializer):

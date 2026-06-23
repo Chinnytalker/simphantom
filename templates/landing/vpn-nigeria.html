@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% block title %}VPN Nigeria — Fast WireGuard VPN for Nigerians from ₦2,500 | SimPhantom{% endblock %}
+{% block og_title %}VPN Nigeria — WireGuard VPN from ₦2,500/month | SimPhantom{% endblock %}
+{% block twitter_title %}VPN Nigeria — Fast WireGuard VPN | SimPhantom{% endblock %}
+{% block meta_description %}The best VPN for Nigeria. WireGuard protocol, USA and UK servers, unlimited bandwidth, no logs. From ₦2,500/month. Works on iOS, Android, Windows & Mac. Pay with Paystack.{% endblock %}
+{% block og_description %}WireGuard VPN for Nigerians. USA & UK servers, unlimited bandwidth, no-logs. From ₦2,500/month. Pay with Paystack.{% endblock %}
+{% block twitter_description %}Fast WireGuard VPN for Nigeria — USA & UK servers, no logs, unlimited bandwidth. From ₦2,500/month.{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+        {
+            "@type": "Question",
+            "name": "What is the best VPN for Nigeria?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "SimPhantom VPN uses the WireGuard protocol — the fastest and most modern VPN available. It's designed for Nigerian internet connections, with USA and UK server options, unlimited bandwidth, and a no-logs policy. Plans start at ₦2,500/month."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Does SimPhantom VPN work on MTN, Airtel, and Glo Nigeria?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. SimPhantom WireGuard VPN works on all Nigerian internet providers including MTN, Airtel, Glo, 9mobile, and broadband connections. WireGuard's efficient protocol handles variable connections well."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "How do I pay for VPN in Nigeria?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "SimPhantom accepts payment via Paystack in Naira — using bank transfer, debit/credit cards, or USSD. No need for a dollar card or international payment method."
+            }
+        }
+    ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="mb-5 text-sm flex items-center gap-1.5 text-gray-400 dark:text-gray-500">
+    <a href="/" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Home</a>
+    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+    <span class="text-gray-600 dark:text-gray-300">VPN Nigeria</span>
+</div>
+
+<!-- Hero -->
+<div class="relative bg-zinc-950 rounded-2xl p-8 mb-8 overflow-hidden">
+    <div class="absolute inset-0 opacity-20" style="background: radial-gradient(ellipse at 70% 50%, #10b981 0%, transparent 70%)"></div>
+    <div class="relative max-w-xl">
+        <div class="inline-flex items-center gap-2 bg-emerald-500/20 border border-emerald-500/30 rounded-full px-3 py-1 mb-4">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-emerald-400 text-xs font-semibold">Servers online · Nigeria-ready</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-white leading-tight mb-3">
+            The Best VPN for Nigeria
+        </h1>
+        <p class="text-zinc-400 text-base mb-6">
+            WireGuard protocol. USA and UK servers. Unlimited bandwidth, no logs. Works on every device. Pay in Naira with Paystack.
+        </p>
+        <div class="flex flex-wrap gap-3">
+            <a href="/services/vpn-subscription/"
+               class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-xl text-sm transition shadow">
+                Get Started from ₦2,500
+            </a>
+            <a href="#compare"
+               class="border border-zinc-700 text-zinc-300 hover:bg-zinc-800 font-semibold px-6 py-3 rounded-xl text-sm transition">
+                See plans
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Key benefits -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 text-center">
+        <div class="text-2xl mb-1">⚡</div>
+        <p class="text-sm font-bold text-gray-900 dark:text-white">WireGuard</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Fastest protocol</p>
+    </div>
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 text-center">
+        <div class="text-2xl mb-1">🔒</div>
+        <p class="text-sm font-bold text-gray-900 dark:text-white">No Logs</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Zero activity stored</p>
+    </div>
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 text-center">
+        <div class="text-2xl mb-1">📱</div>
+        <p class="text-sm font-bold text-gray-900 dark:text-white">All Devices</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400">iOS · Android · PC</p>
+    </div>
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 text-center">
+        <div class="text-2xl mb-1">🇳🇬</div>
+        <p class="text-sm font-bold text-gray-900 dark:text-white">Pay in Naira</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Paystack · No dollar card</p>
+    </div>
+</div>
+
+<!-- Why WireGuard -->
+<div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-6 mb-10">
+    <h2 class="text-lg font-extrabold text-gray-900 dark:text-white mb-4">Why WireGuard beats other VPNs</h2>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm min-w-[400px]">
+            <thead>
+                <tr class="text-left text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-zinc-800">
+                    <th class="pb-3 font-semibold">Feature</th>
+                    <th class="pb-3 font-semibold text-emerald-600">SimPhantom (WireGuard)</th>
+                    <th class="pb-3 font-semibold">OpenVPN</th>
+                    <th class="pb-3 font-semibold">L2TP</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50 dark:divide-zinc-800">
+                <tr>
+                    <td class="py-3 text-gray-700 dark:text-gray-300">Speed</td>
+                    <td class="py-3 text-emerald-600 font-semibold">Very Fast</td>
+                    <td class="py-3 text-gray-500">Moderate</td>
+                    <td class="py-3 text-gray-500">Slow</td>
+                </tr>
+                <tr>
+                    <td class="py-3 text-gray-700 dark:text-gray-300">Code size (attack surface)</td>
+                    <td class="py-3 text-emerald-600 font-semibold">~4,000 lines</td>
+                    <td class="py-3 text-gray-500">~600,000 lines</td>
+                    <td class="py-3 text-gray-500">Large</td>
+                </tr>
+                <tr>
+                    <td class="py-3 text-gray-700 dark:text-gray-300">Battery drain</td>
+                    <td class="py-3 text-emerald-600 font-semibold">Very low</td>
+                    <td class="py-3 text-gray-500">High</td>
+                    <td class="py-3 text-gray-500">High</td>
+                </tr>
+                <tr>
+                    <td class="py-3 text-gray-700 dark:text-gray-300">Setup time</td>
+                    <td class="py-3 text-emerald-600 font-semibold">Under 2 min</td>
+                    <td class="py-3 text-gray-500">10–20 min</td>
+                    <td class="py-3 text-gray-500">5–15 min</td>
+                </tr>
+                <tr>
+                    <td class="py-3 text-gray-700 dark:text-gray-300">Works on mobile data</td>
+                    <td class="py-3 text-emerald-600 font-semibold">Yes</td>
+                    <td class="py-3 text-gray-500">Sometimes</td>
+                    <td class="py-3 text-gray-500">Unreliable</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Plans -->
+<div id="compare" class="mb-10">
+    <h2 class="text-xl font-extrabold text-gray-900 dark:text-white mb-5">Choose your plan</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 text-center">
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">1 Month</p>
+            <p class="text-2xl font-extrabold text-gray-900 dark:text-white mb-0.5">₦2,500</p>
+            <p class="text-xs text-gray-400 mb-4">30 days</p>
+            <a href="/services/vpn-subscription/" class="block w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs transition">Get Started</a>
+        </div>
+        <div class="relative bg-white dark:bg-zinc-900 border-2 border-emerald-500 rounded-2xl p-5 text-center shadow-md">
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap">Best Value</div>
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">3 Months</p>
+            <p class="text-2xl font-extrabold text-gray-900 dark:text-white mb-0.5">₦6,500</p>
+            <p class="text-xs text-gray-400 mb-4">90 days</p>
+            <a href="/services/vpn-subscription/" class="block w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs transition">Get Started</a>
+        </div>
+        <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 text-center">
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">6 Months</p>
+            <p class="text-2xl font-extrabold text-gray-900 dark:text-white mb-0.5">₦11,000</p>
+            <p class="text-xs text-gray-400 mb-4">180 days</p>
+            <a href="/services/vpn-subscription/" class="block w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs transition">Get Started</a>
+        </div>
+        <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 text-center">
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">1 Year</p>
+            <p class="text-2xl font-extrabold text-gray-900 dark:text-white mb-0.5">₦18,000</p>
+            <p class="text-xs text-gray-400 mb-4">365 days</p>
+            <a href="/services/vpn-subscription/" class="block w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs transition">Get Started</a>
+        </div>
+    </div>
+    <p class="text-xs text-center text-gray-400 dark:text-gray-500 mt-3">All plans include USA & UK servers · Unlimited bandwidth · No-logs policy</p>
+</div>
+
+<!-- Compatible ISPs -->
+<div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 mb-10">
+    <h3 class="font-extrabold text-gray-900 dark:text-white text-sm mb-3">Works on all Nigerian networks</h3>
+    <div class="flex flex-wrap gap-2">
+        {% for isp in 'MTN Nigeria,Airtel Nigeria,Glo,9mobile,Spectranet,Smile,IPNX,Swift Networks'|split:',' %}
+        <span class="bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 text-xs font-semibold px-3 py-1.5 rounded-lg">{{ isp }}</span>
+        {% empty %}
+        <span class="bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 text-xs font-semibold px-3 py-1.5 rounded-lg">MTN Nigeria</span>
+        <span class="bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 text-xs font-semibold px-3 py-1.5 rounded-lg">Airtel Nigeria</span>
+        <span class="bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 text-xs font-semibold px-3 py-1.5 rounded-lg">Glo</span>
+        <span class="bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 text-xs font-semibold px-3 py-1.5 rounded-lg">9mobile</span>
+        <span class="bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 text-xs font-semibold px-3 py-1.5 rounded-lg">Spectranet</span>
+        <span class="bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 text-xs font-semibold px-3 py-1.5 rounded-lg">Smile</span>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- FAQ -->
+<section class="mb-10">
+    <h2 class="text-xl font-extrabold text-gray-900 dark:text-white mb-4">Frequently Asked Questions</h2>
+    <div class="space-y-2">
+        <details class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 group">
+            <summary class="font-semibold text-gray-900 dark:text-white text-sm cursor-pointer list-none flex items-center justify-between gap-3">
+                What is the best VPN for Nigeria?
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">SimPhantom VPN uses WireGuard the fastest, most modern VPN protocol. With USA and UK servers, unlimited bandwidth, and a no-logs policy, it's purpose-built for Nigerian internet conditions. Plans start at ₦2,500/month, payable with Paystack.</p>
+        </details>
+        <details class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 group">
+            <summary class="font-semibold text-gray-900 dark:text-white text-sm cursor-pointer list-none flex items-center justify-between gap-3">
+                Does it work on MTN, Airtel, and Glo data?
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Yes. SimPhantom WireGuard VPN works on all Nigerian ISPs including MTN, Airtel, Glo, 9mobile, Spectranet, Smile, and broadband providers. WireGuard's efficient UDP transport handles variable mobile connections reliably.</p>
+        </details>
+        <details class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 group">
+            <summary class="font-semibold text-gray-900 dark:text-white text-sm cursor-pointer list-none flex items-center justify-between gap-3">
+                Do I need a dollar card to pay?
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">No. All payments go through Paystack in Naira. You can pay via bank transfer, local debit card, or USSD no dollar card or international account needed.</p>
+        </details>
+        <details class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 group">
+            <summary class="font-semibold text-gray-900 dark:text-white text-sm cursor-pointer list-none flex items-center justify-between gap-3">
+                How long does setup take?
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Under 2 minutes. After payment, download the .conf file, import it into the free WireGuard app, and hit connect. On mobile you can scan the QR code instead of downloading the file.</p>
+        </details>
+    </div>
+</section>
+
+<!-- CTA -->
+<div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-7 text-center">
+    <h2 class="text-xl font-extrabold text-white mb-2">Protect your privacy today</h2>
+    <p class="text-zinc-400 text-sm mb-5">WireGuard VPN for Nigeria · USA & UK servers · Pay with Paystack</p>
+    <a href="/services/vpn-subscription/" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-8 py-3 rounded-xl text-sm transition shadow">
+        Get VPN from ₦2,500 →
+    </a>
+</div>
+{% endblock %}

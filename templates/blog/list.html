@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Blog — Tips, Guides & News | SimPhantom{% endblock %}
+{% block og_title %}SimPhantom Blog — Tips, Guides & News{% endblock %}
+{% block twitter_title %}SimPhantom Blog — Tips, Guides & News{% endblock %}
+{% block meta_description %}Read SimPhantom's guides on virtual numbers, VPN setup, online privacy, and digital services in Nigeria. Practical tips to protect your privacy and stay connected.{% endblock %}
+{% block og_description %}Guides on virtual numbers, VPN, online privacy, and digital services in Nigeria.{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="mb-5 text-sm flex items-center gap-1.5 text-gray-400 dark:text-gray-500">
+    <a href="/" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Home</a>
+    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+    <span class="text-gray-600 dark:text-gray-300">Blog</span>
+</div>
+
+<!-- Hero -->
+<div class="mb-8">
+    <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">SimPhantom Blog</h1>
+    <p class="text-gray-500 dark:text-gray-400">Guides, tips, and news about virtual numbers, VPN, and digital privacy in Nigeria.</p>
+</div>
+
+{% if page_obj.object_list %}
+<!-- Post grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+    {% for post in page_obj %}
+    <article class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl overflow-hidden flex flex-col hover:shadow-md transition">
+        {% if post.og_image %}
+        <img src="{{ post.og_image.url }}" alt="{{ post.title }}" class="w-full h-44 object-cover">
+        {% else %}
+        <div class="w-full h-44 bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-zinc-800 dark:to-zinc-700 flex items-center justify-center">
+            <svg class="w-10 h-10 text-indigo-300 dark:text-zinc-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+        </div>
+        {% endif %}
+        <div class="p-5 flex flex-col flex-1">
+            <p class="text-xs text-gray-400 dark:text-gray-500 mb-2">
+                {{ post.published_at|date:"j M Y" }} &middot; {{ post.reading_time }}
+            </p>
+            <h2 class="font-extrabold text-gray-900 dark:text-white text-base mb-2 leading-snug">
+                <a href="{{ post.get_absolute_url }}" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">{{ post.title }}</a>
+            </h2>
+            {% if post.excerpt %}
+            <p class="text-sm text-gray-500 dark:text-gray-400 flex-1 mb-4 line-clamp-3">{{ post.excerpt }}</p>
+            {% endif %}
+            <a href="{{ post.get_absolute_url }}"
+               class="mt-auto text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition flex items-center gap-1">
+                Read more
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center items-center gap-2 mb-10">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}"
+       class="px-4 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition">
+        ← Previous
+    </a>
+    {% endif %}
+    <span class="text-sm text-gray-500 dark:text-gray-400 px-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}"
+       class="px-4 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition">
+        Next →
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<!-- Empty state -->
+<div class="text-center py-20">
+    <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+    </div>
+    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">No posts yet</h2>
+    <p class="text-gray-500 dark:text-gray-400 text-sm">Check back soon, guides and tips are coming.</p>
+    <a href="/services/" class="mt-6 inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition">Browse Services</a>
+</div>
+{% endif %}
+
+<!-- CTA -->
+<div class="bg-indigo-600 rounded-2xl p-7 text-center mb-6">
+    <h2 class="text-xl font-extrabold text-white mb-2">Ready to protect your privacy?</h2>
+    <p class="text-indigo-200 text-sm mb-5">Get a virtual number, VPN, or eSIM instant delivery, pay with Paystack.</p>
+    <a href="/services/" class="bg-white text-indigo-700 hover:bg-indigo-50 font-bold px-6 py-2.5 rounded-xl text-sm transition">View All Services</a>
+</div>
+{% endblock %}

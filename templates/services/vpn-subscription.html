@@ -1,5 +1,10 @@
 {% extends 'base.html' %}
-{% block title %}VPN Subscription — SimPhantom{% endblock %}
+{% block title %}WireGuard VPN Nigeria — USA & UK Servers from ₦2,500 | SimPhantom{% endblock %}
+{% block og_title %}WireGuard VPN Nigeria — Fast, Private, from ₦2,500/month | SimPhantom{% endblock %}
+{% block twitter_title %}WireGuard VPN Nigeria — USA & UK Servers | SimPhantom{% endblock %}
+{% block meta_description %}Fast WireGuard VPN for Nigeria. Choose USA or UK servers. Unlimited bandwidth, no-logs policy, works on iOS, Android, Windows & Mac. From ₦2,500/month. Instant config file. Pay with Paystack.{% endblock %}
+{% block og_description %}Nigeria's fastest WireGuard VPN. USA and UK servers, unlimited bandwidth, instant .conf file. From ₦2,500/month. Pay with Paystack.{% endblock %}
+{% block twitter_description %}WireGuard VPN for Nigeria — USA & UK servers, unlimited bandwidth. From ₦2,500/month. Instant setup.{% endblock %}
 
 {% block content %}
 
@@ -158,12 +163,22 @@
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Scan with WireGuard mobile app</p>
         </div>
 
-        <pre id="config-text" class="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 text-xs text-gray-800 dark:text-gray-200 overflow-x-auto whitespace-pre font-mono mb-4"></pre>
+        <!-- Individual config fields with per-field copy -->
+        <div id="config-fields" class="space-y-2 mb-4"></div>
+
+        <!-- Raw config (collapsed) -->
+        <details class="mb-4 group">
+            <summary class="text-xs text-gray-400 dark:text-gray-500 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 transition select-none list-none flex items-center gap-1">
+                <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                Show raw config file
+            </summary>
+            <pre id="config-text" class="mt-2 bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 text-xs text-gray-800 dark:text-gray-200 overflow-x-auto whitespace-pre font-mono"></pre>
+        </details>
 
         <div class="flex gap-3">
             <button onclick="copyConfig()" id="copy-btn"
                     class="flex-1 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-200 font-semibold py-2.5 rounded-xl text-sm transition">
-                Copy Config
+                Copy Full Config
             </button>
             <a id="download-link" href="#"
                class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-xl text-sm transition text-center flex items-center justify-center">
@@ -291,10 +306,63 @@ async function confirmPurchase() {
 }
 
 // ── Config modal ───────────────────────────────────────────────────────────────
+const CONFIG_LABEL_MAP = {
+    PrivateKey: 'Private Key',
+    Address: 'Address',
+    DNS: 'DNS Servers',
+    PublicKey: 'Server Public Key',
+    Endpoint: 'Server Endpoint',
+    AllowedIPs: 'Allowed IPs',
+    PersistentKeepalive: 'Keepalive (sec)',
+};
+
+function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function parseConfigFields(configStr) {
+    const rows = [];
+    (configStr || '').split('\n').forEach(line => {
+        const nameM = line.match(/^#\s*Name\s*=\s*(.+)/);
+        if (nameM) { rows.push({ label: 'Tunnel Name', value: nameM[1].trim() }); return; }
+        if (line.startsWith('#') || line.startsWith('[') || !line.trim()) return;
+        const m = line.match(/^(\w+)\s*=\s*(.+)/);
+        if (m) rows.push({ label: CONFIG_LABEL_MAP[m[1]] || m[1], value: m[2].trim() });
+    });
+    return rows;
+}
+
+function renderConfigFields(configStr) {
+    const rows = parseConfigFields(configStr);
+    document.getElementById('config-fields').innerHTML = rows.map(row => {
+        const display = row.value.length > 26 ? row.value.slice(0, 24) + '…' : row.value;
+        return `
+        <div class="flex items-center justify-between bg-gray-50 dark:bg-zinc-800 rounded-xl px-3 py-2.5 gap-3">
+            <div class="min-w-0 flex-1">
+                <p class="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">${escHtml(row.label)}</p>
+                <p class="text-xs font-mono text-gray-800 dark:text-gray-200 truncate" title="${escHtml(row.value)}">${escHtml(display)}</p>
+            </div>
+            <button data-val="${escHtml(row.value)}" onclick="copyFieldVal(this)"
+                    class="flex-shrink-0 text-xs text-emerald-600 hover:text-emerald-700 dark:text-emerald-500 dark:hover:text-emerald-400 font-semibold px-2.5 py-1 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition whitespace-nowrap">
+                Copy
+            </button>
+        </div>`;
+    }).join('');
+}
+
+function copyFieldVal(btn) {
+    navigator.clipboard.writeText(btn.dataset.val).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = orig, 1500);
+    });
+}
+
 async function showConfig(configStr, orderId) {
     document.getElementById('config-text').textContent = configStr || '';
     document.getElementById('download-link').href = '/api/services/vpn/orders/' + orderId + '/download/';
     document.getElementById('qr-wrap').classList.add('hidden');
+    renderConfigFields(configStr);
 
     try {
         const res = await fetch('/api/services/vpn/orders/' + orderId + '/');
@@ -315,7 +383,7 @@ function copyConfig() {
     navigator.clipboard.writeText(text).then(() => {
         const btn = document.getElementById('copy-btn');
         btn.textContent = 'Copied!';
-        setTimeout(() => btn.textContent = 'Copy Config', 2000);
+        setTimeout(() => btn.textContent = 'Copy Full Config', 2000);
     });
 }
 
@@ -379,4 +447,111 @@ loadPlans();
 loadMyOrders();
 </script>
 
+<!-- FAQ Section -->
+<section class="mt-4 mb-10">
+    <h2 class="text-lg font-extrabold text-gray-900 dark:text-white mb-4">Frequently Asked Questions</h2>
+    <div class="space-y-2">
+        <details class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 group">
+            <summary class="font-semibold text-gray-900 dark:text-white text-sm cursor-pointer list-none flex items-center justify-between gap-3">
+                What VPN protocol does SimPhantom use?
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">SimPhantom uses WireGuard — the fastest, most modern VPN protocol available. It offers significantly better speeds than OpenVPN and higher security than L2TP/IPSec, with a much smaller attack surface.</p>
+        </details>
+        <details class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 group">
+            <summary class="font-semibold text-gray-900 dark:text-white text-sm cursor-pointer list-none flex items-center justify-between gap-3">
+                Does SimPhantom VPN work well in Nigeria?
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Yes. SimPhantom VPN is designed for Nigerian internet connections. WireGuard's lightweight protocol handles high-latency connections better than traditional VPNs. Choose USA or UK servers and connect in seconds.</p>
+        </details>
+        <details class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 group">
+            <summary class="font-semibold text-gray-900 dark:text-white text-sm cursor-pointer list-none flex items-center justify-between gap-3">
+                What devices does WireGuard support?
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">WireGuard works on iOS, Android, Windows, macOS, and Linux. SimPhantom provides a <strong>.conf</strong> file you import into the free WireGuard app on any of these devices. One config works on all your devices.</p>
+        </details>
+        <details class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 group">
+            <summary class="font-semibold text-gray-900 dark:text-white text-sm cursor-pointer list-none flex items-center justify-between gap-3">
+                Does SimPhantom keep VPN activity logs?
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">No. SimPhantom operates a strict no-logs policy. Your browsing activity, DNS queries, and connection history are never recorded, monitored, or shared with third parties.</p>
+        </details>
+        <details class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 group">
+            <summary class="font-semibold text-gray-900 dark:text-white text-sm cursor-pointer list-none flex items-center justify-between gap-3">
+                How much does SimPhantom VPN cost in Nigeria?
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Plans start at ₦2,500 for 1 month. A 3-month plan costs ₦6,500, 6 months costs ₦11,000, and a full year costs ₦18,000. All plans include unlimited bandwidth and work on all devices. Pay with Paystack.</p>
+        </details>
+        <details class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 group">
+            <summary class="font-semibold text-gray-900 dark:text-white text-sm cursor-pointer list-none flex items-center justify-between gap-3">
+                How do I set up the VPN after purchase?
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">After purchase, download the .conf file from your dashboard and import it into the WireGuard app. On mobile, you can also scan the QR code directly in the app. The whole process takes under 2 minutes.</p>
+        </details>
+    </div>
+</section>
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+        {
+            "@type": "Question",
+            "name": "What VPN protocol does SimPhantom use?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "SimPhantom uses WireGuard — the fastest and most modern VPN protocol available. It offers better speeds than OpenVPN and higher security than L2TP/IPSec."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Does SimPhantom VPN work well in Nigeria?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. SimPhantom VPN is designed for Nigerian internet connections. WireGuard's lightweight protocol handles high-latency connections better than traditional VPNs. Choose USA or UK servers and connect in seconds."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "What devices does WireGuard support?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "WireGuard works on iOS, Android, Windows, macOS, and Linux. SimPhantom provides a .conf file you import into the free WireGuard app. One config works on all your devices."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Does SimPhantom keep VPN activity logs?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "No. SimPhantom operates a strict no-logs policy. Your browsing activity, DNS queries, and connection history are never recorded, monitored, or shared."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "How much does SimPhantom VPN cost in Nigeria?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Plans start at ₦2,500 for 1 month. 3 months costs ₦6,500, 6 months costs ₦11,000, and 1 year costs ₦18,000. All plans include unlimited bandwidth. Pay with Paystack."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "How do I set up the VPN after purchase?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "After purchase, download the .conf file from your dashboard and import it into the WireGuard app. On mobile, scan the QR code directly. Setup takes under 2 minutes."
+            }
+        }
+    ]
+}
+</script>
+{% endblock %}
 {% endblock %}

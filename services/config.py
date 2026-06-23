@@ -14,7 +14,7 @@ def _fetch_usd_to_ngn():
 USD_TO_NGN = _fetch_usd_to_ngn()
 
 # Flat markup for 5sim (OTP / virtual numbers — costs are tiny, flat works well)
-FLAT_MARKUP_NGN = 1500  # flat ₦1500 profit on every virtual number / OTP sale
+FLAT_MARKUP_NGN = 1000  # flat ₦1000 profit on every virtual number / OTP sale
 
 
 def pack_naira_price(cost_usd: float) -> float:

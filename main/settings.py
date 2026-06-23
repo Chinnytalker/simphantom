@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'payments',
     'services',
     'support',
+    'blog',
     'rest_framework',
     'corsheaders',
 ]

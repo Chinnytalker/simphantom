@@ -325,22 +325,31 @@
                         <td class="px-6 py-3">
                             {% if order.fivesim_order_id %}
                                 {% if order.status == 'PENDING' or order.status == 'RECEIVED' %}
-                                <div class="flex gap-1.5 flex-wrap" id="actions-{{ order.id }}">
-                                    <button onclick="checkSms({{ order.id }})"
-                                            class="text-xs bg-blue-600 hover:bg-blue-700 text-white
-                                                   px-2.5 py-1.5 rounded-lg transition font-medium
-                                                   disabled:opacity-50 whitespace-nowrap">
-                                        Check SMS
-                                    </button>
-                                    {% if order.status == 'PENDING' %}
-                                    <button onclick="cancelOrder({{ order.id }}, '{{ order.amount_charged }}')"
-                                            class="text-xs bg-red-50 dark:bg-red-950/30 hover:bg-red-100
-                                                   text-red-600 dark:text-red-400 border border-red-200
-                                                   dark:border-red-800 px-2.5 py-1.5 rounded-lg transition
-                                                   font-medium whitespace-nowrap">
-                                        Cancel
-                                    </button>
+                                <div class="flex flex-col gap-1.5" id="actions-{{ order.id }}">
+                                    {% if order.status == 'PENDING' and order.expires_at %}
+                                    <span class="text-xs text-orange-500 dark:text-orange-400 whitespace-nowrap"
+                                          data-expires="{{ order.expires_at|date:'c' }}"
+                                          id="timer-{{ order.id }}">
+                                        5:00 left
+                                    </span>
                                     {% endif %}
+                                    <div class="flex gap-1.5 flex-wrap">
+                                        <button onclick="checkSms({{ order.id }})"
+                                                class="text-xs bg-blue-600 hover:bg-blue-700 text-white
+                                                       px-2.5 py-1.5 rounded-lg transition font-medium
+                                                       disabled:opacity-50 whitespace-nowrap">
+                                            Check SMS
+                                        </button>
+                                        {% if order.status == 'PENDING' %}
+                                        <button onclick="cancelOrder({{ order.id }}, '{{ order.amount_charged }}')"
+                                                class="text-xs bg-red-50 dark:bg-red-950/30 hover:bg-red-100
+                                                       text-red-600 dark:text-red-400 border border-red-200
+                                                       dark:border-red-800 px-2.5 py-1.5 rounded-lg transition
+                                                       font-medium whitespace-nowrap">
+                                            Cancel
+                                        </button>
+                                        {% endif %}
+                                    </div>
                                 </div>
                                 {% else %}
                                 <span class="text-xs text-gray-300 dark:text-zinc-700">—</span>
@@ -909,6 +918,7 @@ function updateStatusBadge(orderId, status) {
         'RECEIVED': 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
         'FINISHED': 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
         'CANCELED': 'bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300',
+        'EXPIRED':  'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400',
         'TIMEOUT':  'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400',
     };
     var label = status.charAt(0) + status.slice(1).toLowerCase();
@@ -940,6 +950,15 @@ function copySms(code) {
     });
 }
 
+function updateWalletDisplay(newBalance) {
+    var balEl = document.getElementById('wallet-balance-display');
+    if (balEl && newBalance !== undefined) {
+        var nb = parseFloat(newBalance);
+        balEl.textContent = '₦' + nb.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        balEl.dataset.balance = newBalance;
+    }
+}
+
 function checkSms(orderId) {
     var actionsDiv = document.getElementById('actions-' + orderId);
     var btns = actionsDiv ? actionsDiv.querySelectorAll('button') : [];
@@ -956,10 +975,34 @@ function checkSms(orderId) {
             return;
         }
         updateStatusBadge(orderId, data.status);
-        if (data.sms_code) {
+
+        if (data.refunded && data.new_balance) {
+            updateWalletDisplay(data.new_balance);
+        }
+
+        if (data.status === 'EXPIRED') {
+            if (actionsDiv) actionsDiv.innerHTML =
+                '<a href="/services/virtual-numbers/" ' +
+                'class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1.5 rounded-lg transition font-medium whitespace-nowrap">' +
+                'Reorder</a>';
+            showToast(
+                'Number expired after 5 min — ₦' +
+                parseFloat(data.amount_refunded).toLocaleString('en-NG', {minimumFractionDigits: 2}) +
+                ' refunded. You can reorder now.',
+                'info', 8000
+            );
+        } else if (data.status === 'CANCELED' && data.refunded) {
+            if (actionsDiv) actionsDiv.innerHTML =
+                '<span class="text-xs text-gray-400 dark:text-gray-500">Cancelled — refunded</span>';
+            showToast(
+                'Number cancelled. ₦' +
+                parseFloat(data.amount_refunded).toLocaleString('en-NG', {minimumFractionDigits: 2}) +
+                ' refunded.',
+                'info', 5000
+            );
+        } else if (data.sms_code) {
             showSmsCode(orderId, data.sms_code);
             showToast('SMS code received: ' + data.sms_code, 'success', 6000);
-            // Hide Check SMS button once code received; cancel no longer relevant
             if (actionsDiv) actionsDiv.innerHTML =
                 '<span class="text-xs text-gray-400 dark:text-gray-500">Code received</span>';
         } else {
@@ -995,13 +1038,7 @@ function cancelOrder(orderId, amount) {
         // Remove action buttons
         if (actionsDiv) actionsDiv.innerHTML =
             '<span class="text-xs text-gray-400 dark:text-gray-500">Cancelled</span>';
-        // Update wallet balance display
-        var balEl = document.getElementById('wallet-balance-display');
-        if (balEl && data.new_balance !== undefined) {
-            var nb = parseFloat(data.new_balance);
-            balEl.textContent = '₦' + nb.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            balEl.dataset.balance = data.new_balance;
-        }
+        updateWalletDisplay(data.new_balance);
         showToast('Order cancelled. ₦' + parseFloat(amount).toLocaleString('en-NG', {minimumFractionDigits: 2}) + ' refunded.', 'success', 5000);
     })
     .catch(function() {
@@ -1220,5 +1257,74 @@ function deleteDashInbox(orderId, fromModal) {
 document.getElementById('dash-inbox-overlay').addEventListener('click', function(e) {
     if (e.target === this) closeDashInbox();
 });
+
+// ── Auto-poll PENDING virtual number orders (5-min expiry) ─────────────────
+(function() {
+    var pendingIds = [
+        {% for order in recent_orders %}{% if order.fivesim_order_id and order.status == 'PENDING' %}{{ order.id }},{% endif %}{% endfor %}
+    ].filter(Boolean);
+
+    if (!pendingIds.length) return;
+
+    function autoPollOrder(id) {
+        var statusCell = document.getElementById('status-' + id);
+        if (!statusCell) return;
+        if (statusCell.textContent.trim().toUpperCase() !== 'PENDING') {
+            pendingIds = pendingIds.filter(function(x) { return x !== id; });
+            return;
+        }
+        fetch('/api/orders/check/' + id + '/', {
+            headers: { 'X-CSRFToken': getCookie('csrftoken') }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.error) return;
+            updateStatusBadge(id, data.status);
+            if (data.refunded && data.new_balance) updateWalletDisplay(data.new_balance);
+            var actionsDiv = document.getElementById('actions-' + id);
+            if (data.status === 'EXPIRED') {
+                pendingIds = pendingIds.filter(function(x) { return x !== id; });
+                if (actionsDiv) actionsDiv.innerHTML =
+                    '<a href="/services/virtual-numbers/" ' +
+                    'class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1.5 rounded-lg transition font-medium whitespace-nowrap">' +
+                    'Reorder</a>';
+                showToast(
+                    'Order #' + id + ' expired — ₦' +
+                    parseFloat(data.amount_refunded).toLocaleString('en-NG', {minimumFractionDigits: 2}) +
+                    ' refunded. Tap Reorder to get a new number.',
+                    'info', 9000
+                );
+            } else if (data.sms_code) {
+                pendingIds = pendingIds.filter(function(x) { return x !== id; });
+                showSmsCode(id, data.sms_code);
+                if (actionsDiv) actionsDiv.innerHTML =
+                    '<span class="text-xs text-gray-400 dark:text-gray-500">Code received</span>';
+                showToast('SMS received for order #' + id + ': ' + data.sms_code, 'success', 6000);
+            }
+        })
+        .catch(function() {});
+    }
+
+    var pollTimer = setInterval(function() {
+        if (!pendingIds.length) { clearInterval(pollTimer); return; }
+        pendingIds.slice().forEach(autoPollOrder);
+    }, 15000);
+
+    // Live countdown timers
+    setInterval(function() {
+        document.querySelectorAll('[id^="timer-"]').forEach(function(el) {
+            var expiresAt = new Date(el.dataset.expires);
+            if (isNaN(expiresAt)) return;
+            var secsLeft = Math.floor((expiresAt - Date.now()) / 1000);
+            if (secsLeft <= 0) {
+                el.textContent = 'Expired';
+            } else {
+                var m = Math.floor(secsLeft / 60);
+                var s = secsLeft % 60;
+                el.textContent = m + ':' + (s < 10 ? '0' : '') + s + ' left';
+            }
+        });
+    }, 1000);
+})();
 </script>
 {% endblock %}

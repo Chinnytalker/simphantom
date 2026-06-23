@@ -673,3 +673,83 @@ def manage_broadcast(request):
         'form_data': form_data,
         'total_users': total_users,
     })
+
+
+# ── Blog management ────────────────────────────────────────────────────────────
+
+@login_required(login_url='login')
+@staff_required
+def manage_blog_list(request):
+    from blog.models import Post
+    posts = Post.objects.order_by('-created_at')
+    return render(request, 'manage/blog_list.html', {'posts': posts})
+
+
+@login_required(login_url='login')
+@staff_required
+def manage_blog_create(request):
+    from blog.models import Post
+    from django.utils.text import slugify
+    error = ''
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        slug = request.POST.get('slug', '').strip() or slugify(title)
+        excerpt = request.POST.get('excerpt', '').strip()
+        body = request.POST.get('body', '').strip()
+        meta_description = request.POST.get('meta_description', '').strip()
+        is_published = request.POST.get('is_published') == '1'
+        if not title or not body:
+            error = 'Title and body are required.'
+        elif Post.objects.filter(slug=slug).exists():
+            error = f'A post with slug "{slug}" already exists.'
+        else:
+            post = Post.objects.create(
+                title=title, slug=slug, excerpt=excerpt, body=body,
+                meta_description=meta_description, is_published=is_published,
+            )
+            return redirect('manage-blog-edit', pk=post.pk)
+    return render(request, 'manage/blog_form.html', {'error': error, 'post': None})
+
+
+@login_required(login_url='login')
+@staff_required
+def manage_blog_edit(request, pk):
+    from blog.models import Post
+    post = get_object_or_404(Post, pk=pk)
+    error = ''
+    saved = False
+    if request.method == 'POST':
+        post.title = request.POST.get('title', '').strip()
+        post.slug = request.POST.get('slug', '').strip()
+        post.excerpt = request.POST.get('excerpt', '').strip()
+        post.body = request.POST.get('body', '').strip()
+        post.meta_description = request.POST.get('meta_description', '').strip()
+        post.is_published = request.POST.get('is_published') == '1'
+        if not post.title or not post.body:
+            error = 'Title and body are required.'
+        elif Post.objects.filter(slug=post.slug).exclude(pk=pk).exists():
+            error = f'Another post already uses the slug "{post.slug}".'
+        else:
+            post.save()
+            saved = True
+    return render(request, 'manage/blog_form.html', {'post': post, 'error': error, 'saved': saved})
+
+
+@login_required(login_url='login')
+@staff_required
+def manage_blog_toggle(request, pk):
+    from blog.models import Post
+    if request.method == 'POST':
+        post = get_object_or_404(Post, pk=pk)
+        post.is_published = not post.is_published
+        post.save()
+    return redirect('manage-blog-list')
+
+
+@login_required(login_url='login')
+@staff_required
+def manage_blog_delete(request, pk):
+    from blog.models import Post
+    if request.method == 'POST':
+        get_object_or_404(Post, pk=pk).delete()
+    return redirect('manage-blog-list')

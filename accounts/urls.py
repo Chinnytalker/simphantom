@@ -36,6 +36,10 @@ urlpatterns = [
     path('cookies/', views.cookies_page, name='cookies'),
     path('contact/', views.contact_page, name='contact'),
 
+    # LANDING PAGES
+    path('virtual-number-for-whatsapp/', views.landing_whatsapp_number, name='landing-whatsapp-number'),
+    path('vpn-nigeria/', views.landing_vpn_nigeria, name='landing-vpn-nigeria'),
+
     # API ROUTES (full paths — no conflict with page routes above)
     path('api/auth/register/', views.RegisterView.as_view(), name='api-register'),
     path('api/auth/login/', TokenObtainPairView.as_view(), name='token-obtain-pair'),

@@ -972,8 +972,10 @@ class VPNPurchaseView(APIView):
         server_public_key = result['server_public_key']
         server_endpoint = vpn_server.VPN_SERVERS[plan['location']]['endpoint']
 
+        location_label = {'us': 'USA', 'uk': 'United Kingdom'}.get(plan['location'], plan['location'].upper())
         config_str = wireguard.build_client_config(
-            client_private_key, assigned_ip, server_public_key, server_endpoint
+            client_private_key, assigned_ip, server_public_key, server_endpoint,
+            name=f'SimPhantom VPN - {location_label}',
         )
 
         ref = 'VPN-' + uuid.uuid4().hex[:12].upper()
