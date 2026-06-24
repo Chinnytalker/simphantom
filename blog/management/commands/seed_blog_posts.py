@@ -743,7 +743,7 @@ POSTS = [
         "title": "What Is OTP Fraud and How Nigerians Get Targeted",
         "slug": "what-is-otp-fraud-how-nigerians-get-targeted",
         "excerpt": "OTP fraud is behind many of the bank account drainings reported in Nigeria every week. Understanding exactly how the attack works is the first step to not becoming a victim.",
-        "meta_description": "OTP fraud explained: how Nigerian scammers intercept one-time passwords to drain bank accounts, and how to protect yourself from this increasingly common attack.",
+        "meta_description": "OTP fraud explained: how Nigerian scammers intercept one-time passwords to drain bank accounts, and how to protect yourself from this common attack.",
         "body": """
 <p>OTP fraud is the most common method used to steal money from Nigerian bank accounts today. It bypasses your PIN, it bypasses your password, and it works because it exploits human psychology rather than technical vulnerabilities. Understanding the attack is the most important thing you can do to protect yourself.</p>
 
