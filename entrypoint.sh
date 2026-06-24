@@ -13,6 +13,9 @@ Site.objects.update_or_create(id=1, defaults={'domain': domain, 'name': 'SimPhan
 print('Site domain set to:', domain)
 "
 
+echo "==> Seeding blog posts..."
+python manage.py seed_blog_posts
+
 echo "==> Collecting static files..."
 python manage.py collectstatic --noinput
 
