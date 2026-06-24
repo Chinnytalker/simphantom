@@ -14,7 +14,7 @@ print('Site domain set to:', domain)
 "
 
 echo "==> Seeding blog posts..."
-python manage.py seed_blog_posts
+python manage.py seed_blog_posts || echo "WARNING: seed_blog_posts failed — continuing startup"
 
 echo "==> Collecting static files..."
 python manage.py collectstatic --noinput
