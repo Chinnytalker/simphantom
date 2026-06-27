@@ -280,6 +280,63 @@ def cancel_number(activation_id):
         return {'error': str(e)}
 
 
+def get_service_catalog() -> list:
+    """Return [{name (5sim product name), qty}] for every service available in the Grizzly price dump."""
+    prices = _load_all_prices()
+    service_counts: dict = {}
+    for country_data in prices.values():
+        if not isinstance(country_data, dict):
+            continue
+        for svc_code, info in country_data.items():
+            if not isinstance(info, dict):
+                continue
+            count = _extract_count(info)
+            cost = _extract_cost(info)
+            if count <= 0 or cost <= 0:
+                continue
+            service_counts[svc_code] = service_counts.get(svc_code, 0) + count
+
+    result = []
+    for svc_code, total_count in service_counts.items():
+        product_name = CODE_TO_FIVESIM.get(svc_code, svc_code)
+        result.append({'name': product_name, 'qty': total_count})
+    result.sort(key=lambda x: x['name'])
+    return result
+
+
+def get_prices_by_service(fivesim_product_name: str) -> list:
+    """Return [{country, cost_usd, count}] for all countries offering the given 5sim product name."""
+    svc_code = SERVICE_MAP.get((fivesim_product_name or '').lower())
+    if not svc_code:
+        return []
+
+    prices = _load_all_prices()
+
+    # Reverse COUNTRY_MAP: grizzly_id_str → country_name (first match wins)
+    id_to_country: dict = {}
+    for country_name, cid in COUNTRY_MAP.items():
+        cid_str = str(cid)
+        if cid_str not in id_to_country:
+            id_to_country[cid_str] = country_name
+
+    result = []
+    for country_id_str, country_data in prices.items():
+        if not isinstance(country_data, dict) or svc_code not in country_data:
+            continue
+        info = country_data[svc_code]
+        if not isinstance(info, dict):
+            continue
+        count = _extract_count(info)
+        cost_usd = _extract_cost(info)
+        if count <= 0 or cost_usd <= 0:
+            continue
+        country_name = id_to_country.get(country_id_str)
+        if not country_name:
+            continue
+        result.append({'country': country_name, 'cost_usd': cost_usd, 'count': count})
+    return result
+
+
 def map_country(fivesim_country):
     return resolve_country_id(fivesim_country)
 

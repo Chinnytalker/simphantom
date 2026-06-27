@@ -478,7 +478,39 @@
     const IS_AUTH = {% if user.is_authenticated %}true{% else %}false{% endif %};
     const CSRF = '{{ csrf_token }}';
 
-    // ── Popular countries (5sim codes + display names) ────────────────────
+    // ── Flag emoji lookup (same set as OTP page) ─────────────────────────
+    const FLAG_MAP = {
+        ukraine:'🇺🇦', kazakhstan:'🇰🇿', china:'🇨🇳', philippines:'🇵🇭', myanmar:'🇲🇲',
+        indonesia:'🇮🇩', malaysia:'🇲🇾', kenya:'🇰🇪', tanzania:'🇹🇿', vietnam:'🇻🇳',
+        kyrgyzstan:'🇰🇬', israel:'🇮🇱', hongkong:'🇭🇰', poland:'🇵🇱', england:'🇬🇧',
+        madagascar:'🇲🇬', nigeria:'🇳🇬', egypt:'🇪🇬', india:'🇮🇳', ireland:'🇮🇪',
+        cambodia:'🇰🇭', laos:'🇱🇦', ivorycoast:'🇨🇮', serbia:'🇷🇸', yemen:'🇾🇪',
+        southafrica:'🇿🇦', romania:'🇷🇴', colombia:'🇨🇴', estonia:'🇪🇪', azerbaijan:'🇦🇿',
+        canada:'🇨🇦', morocco:'🇲🇦', ghana:'🇬🇭', argentina:'🇦🇷', uzbekistan:'🇺🇿',
+        cameroon:'🇨🇲', germany:'🇩🇪', lithuania:'🇱🇹', croatia:'🇭🇷', sweden:'🇸🇪',
+        iraq:'🇮🇶', netherlands:'🇳🇱', latvia:'🇱🇻', austria:'🇦🇹', belarus:'🇧🇾',
+        thailand:'🇹🇭', saudiarabia:'🇸🇦', mexico:'🇲🇽', taiwan:'🇹🇼', spain:'🇪🇸',
+        algeria:'🇩🇿', czechrepublic:'🇨🇿', czechia:'🇨🇿', srilanka:'🇱🇰', peru:'🇵🇪',
+        pakistan:'🇵🇰', newzealand:'🇳🇿', guinea:'🇬🇳', mali:'🇲🇱', venezuela:'🇻🇪',
+        ethiopia:'🇪🇹', brazil:'🇧🇷', afghanistan:'🇦🇫', uganda:'🇺🇬', angola:'🇦🇴',
+        france:'🇫🇷', mozambique:'🇲🇿', nepal:'🇳🇵', belgium:'🇧🇪', bulgaria:'🇧🇬',
+        hungary:'🇭🇺', moldova:'🇲🇩', italy:'🇮🇹', japan:'🇯🇵', paraguay:'🇵🇾',
+        honduras:'🇭🇳', tunisia:'🇹🇳', nicaragua:'🇳🇮', bolivia:'🇧🇴', costarica:'🇨🇷',
+        guatemala:'🇬🇹', uae:'🇦🇪', zimbabwe:'🇿🇼', togo:'🇹🇬', kuwait:'🇰🇼',
+        elsalvador:'🇸🇻', trinidadandtobago:'🇹🇹', ecuador:'🇪🇨', swaziland:'🇸🇿',
+        oman:'🇴🇲', dominicanrepublic:'🇩🇴', syria:'🇸🇾', qatar:'🇶🇦', panama:'🇵🇦',
+        cuba:'🇨🇺', jordan:'🇯🇴', portugal:'🇵🇹', burundi:'🇧🇮', bahrain:'🇧🇭',
+        botswana:'🇧🇼', burkinafaso:'🇧🇫', greece:'🇬🇷', georgia:'🇬🇪', slovakia:'🇸🇰',
+        tajikistan:'🇹🇯', turkmenistan:'🇹🇲', finland:'🇫🇮', djibouti:'🇩🇯', norway:'🇳🇴',
+        australia:'🇦🇺', southkorea:'🇰🇷', korea:'🇰🇷', singapore:'🇸🇬', iran:'🇮🇷',
+        switzerland:'🇨🇭', rwanda:'🇷🇼', namibia:'🇳🇦', niger:'🇳🇪', senegal:'🇸🇳',
+        turkey:'🇹🇷', usa:'🇺🇸', uruguay:'🇺🇾', zambia:'🇿🇲',
+        russia:'🇷🇺', bangladesh:'🇧🇩',
+    };
+
+    function getFlag(code) { return FLAG_MAP[code] || '🌍'; }
+
+    // ── Popular countries (Grizzly codes + display names) ─────────────────
     const POPULAR_COUNTRIES = [
         { code: 'russia',       name: 'Russia' },
         { code: 'ukraine',      name: 'Ukraine' },
@@ -518,6 +550,9 @@
         'congodrc':             ['congo', 'democratic republic of congo'],
         'bosniaandherzegovina': ['bosnia', 'herzegovina'],
         'antiguaandbarbuda':    ['antigua', 'barbuda'],
+        'srilanka':             ['sri lanka', 'ceylon'],
+        'ivorycoast':           ['ivory coast', 'cote divoire'],
+        'burkinafaso':          ['burkina faso'],
     };
 
     let allCountries = {};
@@ -529,7 +564,7 @@
     // ── Load full country list ────────────────────────────────────────────
     async function loadCountries() {
         try {
-            const res = await fetch('/api/services/countries/');
+            const res = await fetch('/api/services/grizzly/countries/');
             allCountries = await res.json();
             const count = Object.keys(allCountries).length;
             const statusEl = document.getElementById('country-count-status');

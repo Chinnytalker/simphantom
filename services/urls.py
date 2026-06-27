@@ -34,9 +34,11 @@ urlpatterns = [
     path('tiger/products/<str:country>/', views.TigerProductsView.as_view(), name='tiger-products'),
     # Debug: see raw TigerSMS response — remove after confirming format
     path('tiger/debug/<str:country>/', views.TigerProductsView.as_view(), name='tiger-debug'),
-    # GrizzlySMS (primary virtual number provider)
+    # GrizzlySMS (primary virtual number provider + OTP)
     path('grizzly/countries/', views.GrizzlyCountriesView.as_view(), name='grizzly-countries'),
     path('grizzly/products/<str:country>/', views.GrizzlyProductsView.as_view(), name='grizzly-products'),
+    path('grizzly/catalog/', views.GrizzlyOTPCatalogView.as_view(), name='grizzly-catalog'),
+    path('grizzly/prices/', views.GrizzlyOTPPricesView.as_view(), name='grizzly-prices'),
     # WireGuard VPN
     path('vpn/plans/', views.VPNPlansView.as_view(), name='vpn-plans'),
     path('vpn/purchase/', views.VPNPurchaseView.as_view(), name='vpn-purchase'),

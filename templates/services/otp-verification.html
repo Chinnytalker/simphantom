@@ -121,7 +121,7 @@
             </div>
 
             <!-- Country cards grid -->
-            <div id="country-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+            <div id="country-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
 
             <!-- Empty: no countries from API -->
             <div id="no-countries-msg" class="hidden text-center py-12">
@@ -357,7 +357,7 @@
     // ── Load available services catalog from backend ───────────────────────
     async function loadCatalog() {
         try {
-            const r = await fetch('/api/services/catalog/');
+            const r = await fetch('/api/services/grizzly/catalog/');
             const data = await r.json();
             if (Array.isArray(data)) {
                 catalogAll = data;
@@ -443,7 +443,7 @@
         showState('loading');
 
         try {
-            const resp = await fetch('/api/services/prices/?product=' + encodeURIComponent(svc.key));
+            const resp = await fetch('/api/services/grizzly/prices/?product=' + encodeURIComponent(svc.key));
             if (!resp.ok) throw new Error('Failed to load countries — server error');
             const data = await resp.json();
             if (data && data.error) throw new Error(data.error);
@@ -458,13 +458,94 @@
         }
     }
 
+    // ── Country flag lookup ───────────────────────────────────────────────
+    var FLAG_MAP = {
+        ukraine:'🇺🇦', kazakhstan:'🇰🇿', china:'🇨🇳', philippines:'🇵🇭', myanmar:'🇲🇲',
+        indonesia:'🇮🇩', malaysia:'🇲🇾', kenya:'🇰🇪', tanzania:'🇹🇿', vietnam:'🇻🇳',
+        kyrgyzstan:'🇰🇬', israel:'🇮🇱', hongkong:'🇭🇰', poland:'🇵🇱', england:'🇬🇧',
+        madagascar:'🇲🇬', nigeria:'🇳🇬', egypt:'🇪🇬', india:'🇮🇳', ireland:'🇮🇪',
+        cambodia:'🇰🇭', laos:'🇱🇦', ivorycoast:'🇨🇮', serbia:'🇷🇸', yemen:'🇾🇪',
+        southafrica:'🇿🇦', romania:'🇷🇴', colombia:'🇨🇴', estonia:'🇪🇪', azerbaijan:'🇦🇿',
+        canada:'🇨🇦', morocco:'🇲🇦', ghana:'🇬🇭', argentina:'🇦🇷', uzbekistan:'🇺🇿',
+        cameroon:'🇨🇲', germany:'🇩🇪', lithuania:'🇱🇹', croatia:'🇭🇷', sweden:'🇸🇪',
+        iraq:'🇮🇶', netherlands:'🇳🇱', latvia:'🇱🇻', austria:'🇦🇹', belarus:'🇧🇾',
+        thailand:'🇹🇭', saudiarabia:'🇸🇦', mexico:'🇲🇽', taiwan:'🇹🇼', spain:'🇪🇸',
+        algeria:'🇩🇿', czechrepublic:'🇨🇿', czechia:'🇨🇿', srilanka:'🇱🇰', peru:'🇵🇪',
+        pakistan:'🇵🇰', newzealand:'🇳🇿', guinea:'🇬🇳', mali:'🇲🇱', venezuela:'🇻🇪',
+        ethiopia:'🇪🇹', brazil:'🇧🇷', afghanistan:'🇦🇫', uganda:'🇺🇬', angola:'🇦🇴',
+        france:'🇫🇷', mozambique:'🇲🇿', nepal:'🇳🇵', belgium:'🇧🇪', bulgaria:'🇧🇬',
+        hungary:'🇭🇺', moldova:'🇲🇩', italy:'🇮🇹', japan:'🇯🇵', paraguay:'🇵🇾',
+        honduras:'🇭🇳', tunisia:'🇹🇳', nicaragua:'🇳🇮', bolivia:'🇧🇴', costarica:'🇨🇷',
+        guatemala:'🇬🇹', uae:'🇦🇪', zimbabwe:'🇿🇼', togo:'🇹🇬', kuwait:'🇰🇼',
+        elsalvador:'🇸🇻', trinidadandtobago:'🇹🇹', ecuador:'🇪🇨', swaziland:'🇸🇿',
+        oman:'🇴🇲', dominicanrepublic:'🇩🇴', syria:'🇸🇾', qatar:'🇶🇦', panama:'🇵🇦',
+        cuba:'🇨🇺', jordan:'🇯🇴', portugal:'🇵🇹', burundi:'🇧🇮', bahrain:'🇧🇭',
+        botswana:'🇧🇼', burkinafaso:'🇧🇫', greece:'🇬🇷', georgia:'🇬🇪', slovakia:'🇸🇰',
+        tajikistan:'🇹🇯', turkmenistan:'🇹🇲', finland:'🇫🇮', djibouti:'🇩🇯', norway:'🇳🇴',
+        australia:'🇦🇺', southkorea:'🇰🇷', korea:'🇰🇷', singapore:'🇸🇬', iran:'🇮🇷',
+        switzerland:'🇨🇭', rwanda:'🇷🇼', namibia:'🇳🇦', niger:'🇳🇪', senegal:'🇸🇳',
+        turkey:'🇹🇷', usa:'🇺🇸', uruguay:'🇺🇾', zambia:'🇿🇲',
+    };
+
+    // ── Country display names (compound words that need proper spacing) ───
+    var COUNTRY_LABEL_MAP = {
+        southkorea:'South Korea', korea:'South Korea',
+        southafrica:'South Africa',
+        saudiarabia:'Saudi Arabia',
+        newzealand:'New Zealand',
+        ivorycoast:'Ivory Coast',
+        costarica:'Costa Rica',
+        dominicanrepublic:'Dominican Republic',
+        trinidadandtobago:'Trinidad & Tobago',
+        czechrepublic:'Czech Republic', czechia:'Czechia',
+        srilanka:'Sri Lanka',
+        burkinafaso:'Burkina Faso',
+        elsalvador:'El Salvador',
+        hongkong:'Hong Kong',
+        uae:'UAE', usa:'USA',
+        england:'England (UK)',
+    };
+
+    // Synonyms so abbreviations and alternate names also match
+    var COUNTRY_SYNONYMS = {
+        usa:'united states america us',
+        uae:'united arab emirates',
+        england:'uk united kingdom britain',
+        southkorea:'sk republic of korea',
+        saudiarabia:'ksa kingdom',
+        czechrepublic:'czech',
+        trinidadandtobago:'trinidad tobago tt',
+        dominicanrepublic:'dr dominican',
+        ivorycoast:'cote divoire',
+        hongkong:'hk',
+        srilanka:'ceylon',
+        newzealand:'nz kiwi',
+        southafrica:'sa rsa',
+    };
+
+    function countryDisplayName(key) {
+        return COUNTRY_LABEL_MAP[key] ||
+               key.replace(/\b\w/g, function(l){ return l.toUpperCase(); });
+    }
+
+    function countrySearchText(key) {
+        return (key + ' ' + countryDisplayName(key) + ' ' + (COUNTRY_SYNONYMS[key] || '')).toLowerCase();
+    }
+
+    function stockBadge(count) {
+        if (count >= 10000) return '<span class="text-xs text-green-600 dark:text-green-400 font-medium">● High stock</span>';
+        if (count >= 1000)  return '<span class="text-xs text-blue-500 dark:text-blue-400 font-medium">● ' + count.toLocaleString() + ' left</span>';
+        if (count >= 100)   return '<span class="text-xs text-amber-500 font-medium">● ' + count + ' left</span>';
+        return '<span class="text-xs text-red-500 font-medium">● Only ' + count + ' left</span>';
+    }
+
     // ── Render country cards ──────────────────────────────────────────────
     function renderCountries(filterText) {
         const grid = document.getElementById('country-grid');
         const noMsg = document.getElementById('no-countries-msg');
         const q = (filterText || '').toLowerCase();
         const items = q
-            ? allCountries.filter(function (c) { return c.country.toLowerCase().includes(q); })
+            ? allCountries.filter(function (c) { return countrySearchText(c.country).includes(q); })
             : allCountries;
 
         grid.innerHTML = '';
@@ -491,27 +572,26 @@
 
         items.forEach(function (c, idx) {
             const card = document.createElement('div');
-            card.className = 'bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 flex items-center justify-between gap-3 hover:border-indigo-200 dark:hover:border-indigo-800 transition';
+            card.className = 'bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl p-3 flex items-center justify-between gap-2 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-sm transition';
 
             const isCheapest = idx === 0 && !q;
-            const countryLabel = c.country.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            const countryLabel = countryDisplayName(c.country);
+            const flag = FLAG_MAP[c.country] || '🌍';
+            const price = Math.round(c.naira_price);
 
             card.innerHTML =
-                '<div class="flex items-center gap-3 min-w-0">' +
-                    '<div class="w-9 h-9 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">' +
-                        '<svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">' +
-                            '<path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>' +
-                        '</svg>' +
-                    '</div>' +
+                '<div class="flex items-center gap-2.5 min-w-0">' +
+                    '<span class="text-2xl leading-none flex-shrink-0">' + flag + '</span>' +
                     '<div class="min-w-0">' +
-                        '<p class="text-sm font-semibold text-gray-900 dark:text-white truncate">' + countryLabel + '</p>' +
-                        '<p class="text-xs text-gray-400 dark:text-gray-500">' + c.count + ' available' +
-                            (isCheapest ? ' &nbsp;<span class="text-green-500 font-semibold">Cheapest</span>' : '') +
-                        '</p>' +
+                        '<p class="text-sm font-semibold text-gray-900 dark:text-white truncate leading-tight">' + countryLabel + '</p>' +
+                        '<div class="flex items-center gap-1.5 mt-0.5">' +
+                            stockBadge(c.count) +
+                            (isCheapest ? '<span class="text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 font-semibold px-1.5 py-0.5 rounded-full">Cheapest</span>' : '') +
+                        '</div>' +
                     '</div>' +
                 '</div>' +
-                '<div class="flex items-center gap-3 flex-shrink-0">' +
-                    '<span class="text-sm font-bold text-indigo-600 dark:text-indigo-400">&#x20A6;' + c.naira_price.toFixed(2) + '</span>' +
+                '<div class="flex items-center gap-2 flex-shrink-0">' +
+                    '<span class="text-sm font-bold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">&#x20A6;' + price.toLocaleString() + '</span>' +
                     buildBuyBtn(c) +
                 '</div>';
 

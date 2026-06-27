@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from . import fivesim, mailtm, tigersms, grizzly as grizzlysms
-from .config import USD_TO_NGN, FLAT_MARKUP_NGN, esim_naira_price, VPN_PLANS
+from .config import USD_TO_NGN, FLAT_MARKUP_NGN, OTP_MARKUP_NGN, esim_naira_price, VPN_PLANS
 from orders.models import Order, Transaction
 
 
@@ -1237,3 +1237,84 @@ class GrizzlyProductsView(APIView):
                         data[svc]['Price'] * USD_TO_NGN + FLAT_MARKUP_NGN, 2
                     )
         return Response(data)
+
+
+class GrizzlyOTPCatalogView(APIView):
+    """Service catalog for the OTP page — sourced from Grizzly's live price dump."""
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        catalog = grizzlysms.get_service_catalog()
+        if catalog:
+            return Response(catalog)
+        # Fallback: use 5sim Russia as availability proxy
+        data = fivesim.get_products('russia', 'any')
+        if isinstance(data, dict) and 'error' not in data:
+            products = [
+                {'name': name, 'qty': details.get('Qty', 0)}
+                for name, details in data.items()
+                if isinstance(details, dict) and details.get('Qty', 0) > 0
+            ]
+            products.sort(key=lambda x: x['name'])
+            return Response(products)
+        return Response([])
+
+
+class GrizzlyOTPPricesView(APIView):
+    """Country prices for a given OTP product — sourced from Grizzly with ₦1,700 markup."""
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        product = request.query_params.get('product', '').strip().lower()
+        if not product:
+            return Response({'error': 'product param required'}, status=400)
+
+        country_data = grizzlysms.get_prices_by_service(product)
+        if country_data:
+            results = []
+            for item in country_data:
+                naira_price = round(item['cost_usd'] * USD_TO_NGN + OTP_MARKUP_NGN, 2)
+                results.append({
+                    'country': item['country'],
+                    'operator': 'any',
+                    'cost_usd': item['cost_usd'],
+                    'naira_price': naira_price,
+                    'count': item['count'],
+                })
+            results.sort(key=lambda x: x['naira_price'])
+            return Response(results)
+
+        # Fallback to 5sim prices with OTP markup
+        raw = fivesim.get_prices_by_product(product)
+        if isinstance(raw, dict) and 'error' in raw:
+            return Response(raw, status=502)
+
+        country_map = raw.get(product, raw) if isinstance(raw, dict) else raw
+        results = []
+        for country_key, operators in country_map.items():
+            if not isinstance(operators, dict):
+                continue
+            op_key = 'any' if 'any' in operators else (next(iter(operators)) if operators else None)
+            if op_key is None:
+                continue
+            op_data = operators[op_key]
+            if not isinstance(op_data, dict):
+                continue
+            count = op_data.get('count', op_data.get('Count', op_data.get('Qty', 0)))
+            cost_usd = op_data.get('cost', op_data.get('Cost', op_data.get('Price', 0)))
+            try:
+                count = int(count)
+                cost_usd = float(cost_usd)
+            except (TypeError, ValueError):
+                continue
+            if count <= 0:
+                continue
+            results.append({
+                'country': country_key,
+                'operator': op_key,
+                'cost_usd': cost_usd,
+                'naira_price': round(cost_usd * USD_TO_NGN + OTP_MARKUP_NGN, 2),
+                'count': count,
+            })
+        results.sort(key=lambda x: x['naira_price'])
+        return Response(results)
