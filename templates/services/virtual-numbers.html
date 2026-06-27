@@ -672,7 +672,7 @@
         setState('loading');
 
         try {
-            const res = await fetch('/api/services/products/' + countryCode + '/');
+            const res = await fetch('/api/services/grizzly/products/' + countryCode + '/');
             const data = await res.json();
             if (data.error) throw new Error(data.error);
             currentProducts = data;

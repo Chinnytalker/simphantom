@@ -193,6 +193,7 @@ def dashboard(request):
 
     fivesim_balance = None
     tigersms_balance = None
+    grizzly_balance = None
     twilio_balance = None
     twilio_currency = 'USD'
     esimcard_balance = None
@@ -209,6 +210,13 @@ def dashboard(request):
             from services.tigersms import get_balance as tiger_get_balance
             tiger = tiger_get_balance()
             tigersms_balance = tiger.get('balance')
+        except Exception:
+            pass
+        try:
+            from services.grizzly import get_balance as grizzly_get_balance
+            grz = grizzly_get_balance()
+            if 'balance' in grz:
+                grizzly_balance = grz['balance']
         except Exception:
             pass
         try:
@@ -249,6 +257,7 @@ def dashboard(request):
         'temp_emails': temp_emails,
         'fivesim_balance': fivesim_balance,
         'tigersms_balance': tigersms_balance,
+        'grizzly_balance': grizzly_balance,
         'twilio_balance': twilio_balance,
         'twilio_currency': twilio_currency,
         'esimcard_balance': esimcard_balance,

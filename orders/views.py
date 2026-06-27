@@ -11,7 +11,7 @@ from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
 from services.fivesim import buy_number, check_order, cancel_order
-from services import tigersms
+from services import tigersms, grizzly as grizzlysms
 from .models import Order, Transaction
 from .serializers import OrderSerializer, TransactionSerializer
 
@@ -51,18 +51,42 @@ class BuyNumberView(APIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
-                order_data = buy_number(country, operator, product)
+                # Try Grizzly first; fall back to 5sim if mapping missing or API fails
+                grizzly_country_id = grizzlysms.map_country(country)
+                grizzly_service_code = grizzlysms.map_service(product)
+                provider = '5sim'
+
+                if grizzly_country_id and grizzly_service_code:
+                    order_data = grizzlysms.get_number(grizzly_service_code, grizzly_country_id)
+                    if 'error' not in order_data:
+                        provider = 'grizzly'
+                    else:
+                        logger.warning(
+                            "[SimPhantom] Grizzly failed (%s) for %s/%s — falling back to 5sim",
+                            order_data['error'], country, product,
+                        )
+                        order_data = buy_number(country, operator, product)
+                else:
+                    order_data = buy_number(country, operator, product)
+
                 if 'error' in order_data:
                     raise ValueError(order_data['error'])
 
                 try:
-                    from services.fivesim import get_balance
-                    profile = get_balance()
-                    balance_usd = float(profile.get('balance', 999))
-                    if balance_usd < 5:
-                        logger.warning(
-                            "[SimPhantom] 5sim balance LOW: $%.2f — top up now!", balance_usd
-                        )
+                    if provider == 'grizzly':
+                        bal = grizzlysms.get_balance()
+                        if 'balance' in bal and bal['balance'] < 5:
+                            logger.warning(
+                                "[SimPhantom] Grizzly balance LOW: $%.2f — top up now!", bal['balance']
+                            )
+                    else:
+                        from services.fivesim import get_balance
+                        profile = get_balance()
+                        balance_usd = float(profile.get('balance', 999))
+                        if balance_usd < 5:
+                            logger.warning(
+                                "[SimPhantom] 5sim balance LOW: $%.2f — top up now!", balance_usd
+                            )
                 except Exception:
                     pass
 
@@ -76,7 +100,7 @@ class BuyNumberView(APIView):
                     operator=operator,
                     status=order_data.get('status', 'PENDING'),
                     amount_charged=price,
-                    credentials=json.dumps({'provider': '5sim'}),
+                    credentials=json.dumps({'provider': provider}),
                     expires_at=timezone.now() + timedelta(minutes=EXPIRY_MINUTES),
                 )
 
@@ -126,7 +150,9 @@ class CheckOrderView(APIView):
             creds = json.loads(order.credentials or '{}')
             provider = creds.get('provider', '5sim')
             try:
-                if provider == 'tigersms':
+                if provider == 'grizzly':
+                    grizzlysms.cancel_number(order.fivesim_order_id)
+                elif provider == 'tigersms':
                     tigersms.cancel_number(order.fivesim_order_id)
                 else:
                     cancel_order(order.fivesim_order_id)
@@ -164,6 +190,46 @@ class CheckOrderView(APIView):
 
         creds = json.loads(order.credentials or '{}')
         provider = creds.get('provider', '5sim')
+
+        # Handle GrizzlySMS orders
+        if provider == 'grizzly':
+            data = grizzlysms.get_status(order.fivesim_order_id)
+            if 'error' in data:
+                return Response({'error': data['error']}, status=status.HTTP_502_BAD_GATEWAY)
+            if data['status'] == 'RECEIVED' and data.get('code'):
+                order.sms_code = data['code']
+                order.status = 'RECEIVED'
+                order.save(update_fields=['sms_code', 'status'])
+            elif data['status'] == 'CANCELED' and order.status != 'CANCELED':
+                with db_transaction.atomic():
+                    get_user_model().objects.filter(pk=request.user.pk).update(
+                        wallet_balance=F('wallet_balance') + order.amount_charged
+                    )
+                    Transaction.objects.get_or_create(
+                        reference=f"REFUND-{order.id}",
+                        defaults={
+                            'user': request.user,
+                            'amount': order.amount_charged,
+                            'type': 'CREDIT',
+                            'description': f"Refund: {order.product} number cancelled",
+                        }
+                    )
+                    order.status = 'CANCELED'
+                    order.save(update_fields=['status'])
+                request.user.refresh_from_db()
+                return Response({
+                    'status': 'CANCELED',
+                    'sms_code': order.sms_code,
+                    'phone': order.phone,
+                    'refunded': True,
+                    'amount_refunded': str(order.amount_charged),
+                    'new_balance': str(request.user.wallet_balance),
+                })
+            return Response({
+                'status': data['status'],
+                'sms_code': order.sms_code,
+                'phone': order.phone,
+            })
 
         # Handle legacy TigerSMS orders
         if provider == 'tigersms':
@@ -266,7 +332,9 @@ class CancelOrderView(APIView):
         creds = json.loads(order.credentials or '{}')
         provider = creds.get('provider', '5sim')
 
-        if provider == 'tigersms':
+        if provider == 'grizzly':
+            result = grizzlysms.cancel_number(order.fivesim_order_id)
+        elif provider == 'tigersms':
             result = tigersms.cancel_number(order.fivesim_order_id)
         else:
             result = cancel_order(order.fivesim_order_id)

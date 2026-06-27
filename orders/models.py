@@ -49,7 +49,7 @@ class Order(models.Model):
 
     @property
     def provider(self):
-        """Which API provider fulfilled this order: 'tigersms' or '5sim'."""
+        """Which API provider fulfilled this order: 'grizzly', 'tigersms', or '5sim'."""
         creds = json.loads(self.credentials or '{}')
         return creds.get('provider', '5sim')
 

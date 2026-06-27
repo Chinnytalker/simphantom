@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
-from . import fivesim, mailtm, tigersms
+from . import fivesim, mailtm, tigersms, grizzly as grizzlysms
 from .config import USD_TO_NGN, FLAT_MARKUP_NGN, esim_naira_price, VPN_PLANS
 from orders.models import Order, Transaction
 
@@ -1182,6 +1182,54 @@ class TigerProductsView(APIView):
 
         # Cache miss or country not in dump yet — fall back to 5sim for listing
         data = fivesim.get_products(country, operator)
+        if isinstance(data, dict) and 'error' not in data:
+            for svc in data:
+                if 'Price' in data[svc]:
+                    data[svc]['naira_price'] = round(
+                        data[svc]['Price'] * USD_TO_NGN + FLAT_MARKUP_NGN, 2
+                    )
+        return Response(data)
+
+
+# ── GrizzlySMS — virtual number countries & products (primary provider) ────────
+
+class GrizzlyCountriesView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        countries = grizzlysms.get_all_countries()
+        result = {c['code']: {'text_en': c['text_en'], 'grizzly_id': c['grizzly_id']}
+                  for c in countries}
+        return Response(result)
+
+
+class GrizzlyProductsView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, country):
+        country_id = grizzlysms.map_country(country)
+
+        grizzly_result = {}
+        if country_id is not None:
+            prices = grizzlysms.get_prices(country_id)
+            for service_code, data in prices.items():
+                count = data.get('count', 0)
+                cost_usd = data.get('cost', 0.0)
+                if count <= 0 or cost_usd <= 0:
+                    continue
+                product_name = grizzlysms.CODE_TO_FIVESIM.get(service_code, service_code)
+                naira_price = round(cost_usd * USD_TO_NGN + FLAT_MARKUP_NGN, 2)
+                grizzly_result[product_name] = {
+                    'Price': cost_usd,
+                    'Qty': count,
+                    'naira_price': naira_price,
+                }
+
+        if grizzly_result:
+            return Response(grizzly_result)
+
+        # Fall back to 5sim for listing if Grizzly prices aren't cached yet
+        data = fivesim.get_products(country, 'any')
         if isinstance(data, dict) and 'error' not in data:
             for svc in data:
                 if 'Price' in data[svc]:
