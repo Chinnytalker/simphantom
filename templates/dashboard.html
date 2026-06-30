@@ -1082,9 +1082,17 @@ function cancelOrder(orderId, amount) {
             showToast(data.error, 'error');
             return;
         }
-        // Update status badge
+        // Provider had an SMS waiting — show it instead of cancelling
+        if (data.sms_code) {
+            updateStatusBadge(orderId, 'RECEIVED');
+            showSmsCode(orderId, data.sms_code);
+            if (actionsDiv) actionsDiv.innerHTML =
+                '<span class="text-xs text-gray-400 dark:text-gray-500">Code received</span>';
+            showToast('SMS code was already waiting: ' + data.sms_code, 'success', 8000);
+            return;
+        }
+        // Normal cancel + refund
         updateStatusBadge(orderId, 'CANCELED');
-        // Remove action buttons
         if (actionsDiv) actionsDiv.innerHTML =
             '<span class="text-xs text-gray-400 dark:text-gray-500">Cancelled</span>';
         updateWalletDisplay(data.new_balance);

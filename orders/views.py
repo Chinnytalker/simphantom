@@ -323,7 +323,7 @@ class CancelOrderView(APIView):
         except Order.DoesNotExist:
             return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        if order.status not in ['PENDING']:
+        if order.status not in ('PENDING', 'RECEIVED'):
             return Response(
                 {'error': 'Can only cancel pending orders'},
                 status=status.HTTP_400_BAD_REQUEST
@@ -340,6 +340,45 @@ class CancelOrderView(APIView):
             result = cancel_order(order.fivesim_order_id)
 
         if isinstance(result, dict) and 'error' in result:
+            # Provider rejected cancel — check if an SMS already arrived on their side
+            sms_code = None
+            if provider == 'grizzly':
+                chk = grizzlysms.get_status(order.fivesim_order_id)
+                if chk.get('status') == 'RECEIVED' and chk.get('code'):
+                    sms_code = chk['code']
+                elif chk.get('status') in ('CANCELED', 'NO_ACTIVATION'):
+                    # Already gone on provider side — treat as cancelled locally
+                    result = {'success': True}
+            elif provider == 'tigersms':
+                chk = tigersms.get_status(order.fivesim_order_id)
+                if chk.get('status') == 'RECEIVED' and chk.get('code'):
+                    sms_code = chk['code']
+                elif chk.get('status') == 'CANCELED':
+                    result = {'success': True}
+            else:
+                chk = check_order(order.fivesim_order_id)
+                if not chk.get('error'):
+                    if chk.get('sms') and len(chk['sms']) > 0:
+                        sms_code = chk['sms'][0]['code']
+                    elif chk.get('status') in ('CANCELED', 'EXPIRED', 'TIMEOUT'):
+                        result = {'success': True}
+
+            if sms_code:
+                order.sms_code = sms_code
+                order.status = 'RECEIVED'
+                order.save(update_fields=['sms_code', 'status'])
+                return Response({
+                    'status': 'RECEIVED',
+                    'sms_code': sms_code,
+                    'phone': order.phone,
+                    'message': 'Number already has an SMS — showing code instead of cancelling',
+                })
+
+        if isinstance(result, dict) and 'error' in result:
+            logger.warning(
+                '[CancelOrder] provider=%s order=%s error=%s',
+                provider, order.fivesim_order_id, result['error'],
+            )
             return Response({'error': result['error']}, status=status.HTTP_400_BAD_REQUEST)
 
         with db_transaction.atomic():
