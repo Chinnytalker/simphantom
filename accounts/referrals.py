@@ -31,12 +31,13 @@ def capture_referral(request):
         request.session[SESSION_KEY] = code
 
 
-def apply_referral(request, user):
+def apply_referral(request, user, code=None):
     """
-    Link a freshly-created user to their referrer using the captured code.
-    Safe for both the email signup view and the Google (allauth) adapter.
+    Link a freshly-created user to their referrer. Uses an explicitly typed
+    `code` (from the signup form) if given, otherwise the code captured from the
+    invite link in the session. Safe for both the email view and the Google adapter.
     """
-    code = (request.session.get(SESSION_KEY) or '').strip().upper()
+    code = (code or request.session.get(SESSION_KEY) or '').strip().upper()
     if not code or user.referred_by_id:
         return
     User = get_user_model()

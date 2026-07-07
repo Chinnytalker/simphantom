@@ -82,17 +82,21 @@ def home(request):
 
 @ratelimit(key='ip', rate='8/h', method='POST')
 def register_page(request):
-    from .referrals import capture_referral, apply_referral
+    from .referrals import capture_referral, apply_referral, SESSION_KEY
     capture_referral(request)
 
+    # Pre-fill the referral field from the invite link, or keep what was typed.
+    referral_prefill = request.POST.get('referral_code') or request.session.get(SESSION_KEY, '')
+    ctx = {'referral_prefill': referral_prefill}
+
     if getattr(request, 'limited', False):
-        return render(request, 'register.html', {'error': 'Too many registration attempts. Please try again later.'})
+        return render(request, 'register.html', {**ctx, 'error': 'Too many registration attempts. Please try again later.'})
 
     if request.method == 'POST':
         from .turnstile import verify_turnstile
         token = request.POST.get('cf-turnstile-response', '')
         if not verify_turnstile(token, request.META.get('REMOTE_ADDR')):
-            return render(request, 'register.html', {'error': 'Security check failed. Please try again.'})
+            return render(request, 'register.html', {**ctx, 'error': 'Security check failed. Please try again.'})
 
         username = request.POST.get('username')
         email = request.POST.get('email')
@@ -100,22 +104,22 @@ def register_page(request):
         password_confirm = request.POST.get('password_confirm')
 
         if password != password_confirm:
-            return render(request, 'register.html', {'error': 'Passwords do not match'})
+            return render(request, 'register.html', {**ctx, 'error': 'Passwords do not match'})
 
         if get_user_model().objects.filter(username=username).exists():
-            return render(request, 'register.html', {'error': 'Username already exists'})
+            return render(request, 'register.html', {**ctx, 'error': 'Username already exists'})
 
         if get_user_model().objects.filter(email=email).exists():
-            return render(request, 'register.html', {'error': 'Email already exists'})
+            return render(request, 'register.html', {**ctx, 'error': 'Email already exists'})
 
         user = get_user_model().objects.create_user(username=username, email=email, password=password)
-        apply_referral(request, user)
+        apply_referral(request, user, code=request.POST.get('referral_code'))
         from main.notifications import send_welcome_email
         send_welcome_email(user)
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         return redirect('dashboard')
 
-    return render(request, 'register.html')
+    return render(request, 'register.html', ctx)
 
 
 @ratelimit(key='ip', rate='15/5m', method='POST')

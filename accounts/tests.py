@@ -52,6 +52,19 @@ class ReferralSignupTests(TestCase):
         newbie = User.objects.get(username='newbie')
         self.assertEqual(newbie.referred_by_id, referrer.pk)
 
+    def test_typed_referral_code_links_referrer(self):
+        """A code typed into the signup form (no invite link) links the referrer."""
+        referrer = User.objects.create_user('reflink', 'reflink@test.com', 'pass12345')
+        with patch('main.notifications.send_welcome_email'), \
+             patch('accounts.turnstile.verify_turnstile', return_value=True):
+            self.client.post('/register/', {
+                'username': 'typed', 'email': 'typed@test.com',
+                'password': 'pass12345', 'password_confirm': 'pass12345',
+                'referral_code': referrer.referral_code.lower(),  # case-insensitive
+                'cf-turnstile-response': 'x',
+            })
+        self.assertEqual(User.objects.get(username='typed').referred_by_id, referrer.pk)
+
     def test_unknown_code_is_ignored(self):
         with patch('main.notifications.send_welcome_email'), \
              patch('accounts.turnstile.verify_turnstile', return_value=True):
