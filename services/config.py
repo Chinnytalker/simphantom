@@ -1,3 +1,8 @@
+_FX_FALLBACK = 1650.0
+_FX_CACHE_KEY = 'usd_to_ngn_rate'
+_FX_TTL = 6 * 3600  # refresh at most every 6 hours
+
+
 def _fetch_usd_to_ngn():
     """Fetch live USD→NGN rate. Falls back to hardcoded rate on any error."""
     try:
@@ -6,16 +11,68 @@ def _fetch_usd_to_ngn():
             'https://open.er-api.com/v6/latest/USD',
             timeout=4
         )
-        rate = r.json()['rates']['NGN']
-        return float(rate)
+        rate = float(r.json()['rates']['NGN'])
+        if rate > 0:
+            return rate
     except Exception:
-        return 1650.0
+        pass
+    return _FX_FALLBACK
 
-USD_TO_NGN = _fetch_usd_to_ngn()
+
+def get_usd_to_ngn():
+    """
+    Current USD→NGN rate, cached in the shared Django cache with a TTL so the
+    rate actually refreshes while the app runs (instead of being frozen at
+    process import). All workers share one value when Redis is configured.
+    """
+    from django.core.cache import cache
+    rate = cache.get(_FX_CACHE_KEY)
+    if rate is None:
+        rate = _fetch_usd_to_ngn()
+        cache.set(_FX_CACHE_KEY, rate, _FX_TTL)
+    return rate
+
+
+def __getattr__(name):
+    # Backwards compatibility: `from services.config import USD_TO_NGN` and
+    # `config.USD_TO_NGN` still work, now resolving to the live cached rate.
+    if name == 'USD_TO_NGN':
+        return get_usd_to_ngn()
+    raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
 
 # Flat markup for 5sim (OTP / virtual numbers — costs are tiny, flat works well)
 FLAT_MARKUP_NGN = 1500  # flat ₦1500 profit on every virtual number sale
 OTP_MARKUP_NGN  = 1700  # flat ₦1700 profit on every OTP verification sale
+
+# ── Reloadly percentage markups (tune here) ───────────────────────────────────
+AIRTIME_MARKUP_PCT = 0.15   # 15% on INTERNATIONAL airtime/data (UK, USA, etc.)
+GIFTCARD_MARKUP_PCT = 0.10  # 10% on gift cards (on top of Reloadly's discount)
+UTILITY_MARKUP_PCT = 0.07   # 7% on utility bills
+
+# Airtime/data top-ups TO these countries are sold at EXACT FACE VALUE — the
+# customer pays the same amount they're topping up (e.g. ₦100 airtime = ₦100).
+# We absorb any provider FX difference to stay competitive at home, and take our
+# margin on international top-ups instead.
+AIRTIME_HOME_COUNTRIES = {'NG'}
+
+
+def _reloadly_naira(cost_usd: float, pct: float) -> float:
+    """USD cost → NGN price with a percentage markup, rounded to whole naira."""
+    return round(cost_usd * get_usd_to_ngn() * (1 + pct), 0)
+
+
+def airtime_naira_price(cost_usd: float) -> float:
+    """NGN price for an INTERNATIONAL airtime/data top-up (our cost + markup).
+    Home-country top-ups are priced at face value directly in the view."""
+    return _reloadly_naira(cost_usd, AIRTIME_MARKUP_PCT)
+
+
+def giftcard_naira_price(cost_usd: float) -> float:
+    return _reloadly_naira(cost_usd, GIFTCARD_MARKUP_PCT)
+
+
+def utility_naira_price(cost_usd: float) -> float:
+    return _reloadly_naira(cost_usd, UTILITY_MARKUP_PCT)
 
 
 def pack_naira_price(cost_usd: float) -> float:
@@ -110,6 +167,27 @@ SERVICES = {
         'icon': '🔍',
         'description': 'Get detailed information about phone numbers',
         'service_type': 'PHONE_LOOKUP',
+        'popular': False,
+    },
+    'airtime': {
+        'name': 'Airtime & Data',
+        'icon': '📶',
+        'description': 'Top up airtime and data to any phone in 140+ countries',
+        'service_type': 'AIRTIME',
+        'popular': True,
+    },
+    'gift-cards': {
+        'name': 'Gift Cards',
+        'icon': '🎁',
+        'description': 'Buy Amazon, Google Play, Steam and hundreds more gift cards',
+        'service_type': 'GIFT_CARD',
+        'popular': True,
+    },
+    'utility-bills': {
+        'name': 'Utility Bills',
+        'icon': '💡',
+        'description': 'Pay electricity, water, TV and internet bills',
+        'service_type': 'UTILITY',
         'popular': False,
     },
 }

@@ -310,6 +310,87 @@ def send_agent_credentials_email(agent, plain_password):
           [agent.email])
 
 
+def send_sms_code_email(user, order, code):
+    """Deliver a received OTP code by email (user may have closed the tab)."""
+    name = user.first_name or user.username
+    subject = f'{BRAND} — Your {order.product} code: {code}'
+    preheader = f'Your verification code for {order.product} has arrived.'
+
+    inner = f'''
+    <h2 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#18181b;">Your code has arrived ✅</h2>
+    <p style="margin:0 0 20px;font-size:15px;color:#52525b;line-height:1.6;">
+      Hi {name}, the verification code for your <strong>{order.product}</strong> number just came in:
+    </p>
+    <div style="text-align:center;margin:24px 0;">
+      <span style="display:inline-block;background:#f0fdf4;border:2px solid #22c55e;border-radius:12px;
+                   padding:16px 32px;font-family:monospace;font-size:28px;font-weight:800;
+                   letter-spacing:4px;color:#15803d;">{code}</span>
+    </div>
+    {_detail_table([
+        ('Order #', str(order.id)),
+        ('Service', order.product),
+        ('Number', order.phone or '—'),
+    ])}
+    {_btn("Open Dashboard", "https://simphantom.com/dashboard/")}'''
+
+    text = f'Hi {name},\n\nYour {order.product} verification code: {code}\nNumber: {order.phone}\nOrder #{order.id}'
+    _send(subject, text, _wrap(inner, preheader=preheader), [user.email])
+
+
+def send_number_swapped_email(user, order):
+    """Tell the user their silent number was auto-swapped for a fresh one."""
+    name = user.first_name or user.username
+    subject = f'{BRAND} — New number for your {order.product} order: {order.phone}'
+    preheader = f'We swapped in a fresh number for your {order.product} order.'
+
+    inner = f'''
+    <h2 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#18181b;">We swapped your number 🔄</h2>
+    <p style="margin:0 0 20px;font-size:15px;color:#52525b;line-height:1.6;">
+      Hi {name}, your previous <strong>{order.product}</strong> number wasn't receiving the code,
+      so we automatically replaced it with a fresh one at no extra cost.
+      <strong>Use this new number:</strong>
+    </p>
+    <div style="text-align:center;margin:24px 0;">
+      <span style="display:inline-block;background:#eff6ff;border:2px solid #3b82f6;border-radius:12px;
+                   padding:14px 28px;font-family:monospace;font-size:22px;font-weight:800;
+                   color:#1d4ed8;">{order.phone}</span>
+    </div>
+    <p style="margin:0 0 16px;font-size:14px;color:#52525b;line-height:1.6;">
+      If this one stays silent too, your wallet will be refunded automatically — you only pay
+      when the code arrives.
+    </p>
+    {_btn("Open Dashboard", "https://simphantom.com/dashboard/")}'''
+
+    text = (f'Hi {name},\n\nYour {order.product} number was not receiving a code, so we swapped in '
+            f'a fresh one: {order.phone}\n\nUse this new number. If no code arrives, you will be '
+            f'refunded automatically.')
+    _send(subject, text, _wrap(inner, preheader=preheader), [user.email])
+
+
+def send_order_refunded_email(user, order):
+    """Tell the user their order expired with no SMS and was refunded."""
+    name = user.first_name or user.username
+    subject = f'{BRAND} — ₦{order.amount_charged:,.2f} refunded (order #{order.id})'
+    preheader = 'No code arrived, so we refunded you in full.'
+
+    inner = f'''
+    <h2 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#18181b;">Full refund issued 💸</h2>
+    <p style="margin:0 0 20px;font-size:15px;color:#52525b;line-height:1.6;">
+      Hi {name}, no verification code arrived for your <strong>{order.product}</strong> order,
+      so we refunded the full amount to your wallet — you only pay when the code arrives.
+    </p>
+    {_detail_table([
+        ('Order #', str(order.id)),
+        ('Service', order.product),
+        ('Amount refunded', f'₦{order.amount_charged:,.2f}'),
+    ])}
+    {_btn("Try Again", "https://simphantom.com/services/virtual-numbers/")}'''
+
+    text = (f'Hi {name},\n\nNo code arrived for your {order.product} order #{order.id}, so '
+            f'₦{order.amount_charged:,.2f} was refunded to your wallet. You can reorder any time.')
+    _send(subject, text, _wrap(inner, preheader=preheader), [user.email])
+
+
 # ── Broadcast / announcement emails ──────────────────────────────────────────
 
 TYPE_BADGE = {
@@ -496,4 +577,3 @@ def send_esim_expired_email(user, order):
             f'Your {order.product} eSIM has expired. '
             f'Buy a new plan at https://simphantom.com/services/esim/')
     _send(subject, text, html, [user.email])
-    logger.info('[%s] Broadcast "%s" queued for %d recipients', BRAND, subject, len(recipient_list))

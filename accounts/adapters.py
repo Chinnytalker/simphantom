@@ -42,6 +42,11 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
         user = super().save_user(request, sociallogin, form)
         if is_new:
             try:
+                from .referrals import apply_referral
+                apply_referral(request, user)
+            except Exception:
+                pass
+            try:
                 from main.notifications import send_welcome_email
                 send_welcome_email(user)
             except Exception:

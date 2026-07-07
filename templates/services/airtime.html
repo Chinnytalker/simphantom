@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+{% block title %}Airtime & Data Top-up | 140+ Countries | SimPhantom{% endblock %}
+{% block meta_description %}Send airtime and mobile data to any phone in 140+ countries. Instant delivery, pay in Naira. SimPhantom.{% endblock %}
+
+{% block content %}
+<div class="mb-6 text-sm">
+    <a href="/" class="text-blue-400 hover:underline">Home</a>
+    <span class="text-zinc-500"> / </span>
+    <a href="/services/" class="text-blue-400 hover:underline">Services</a>
+    <span class="text-zinc-500"> / Airtime &amp; Data</span>
+</div>
+
+<!-- Hero -->
+<div class="rounded-2xl bg-gradient-to-br from-emerald-600 via-green-700 to-teal-800 p-8 mb-8 text-white relative overflow-hidden">
+    <div class="relative flex flex-col md:flex-row md:items-center gap-6">
+        <div class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center flex-shrink-0 text-3xl">📶</div>
+        <div class="flex-1">
+            <h1 class="text-3xl font-extrabold mb-1">Airtime &amp; Data Top-up</h1>
+            <p class="text-emerald-100 text-sm max-w-xl">Send airtime or data to any phone in 140+ countries. Instant delivery, pay in Naira.</p>
+        </div>
+    </div>
+</div>
+
+{% if not user.is_authenticated %}
+<div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-2xl p-5 mb-8 text-sm text-amber-800 dark:text-amber-300">
+    Please <a href="/login/" class="font-semibold underline">log in</a> to send airtime.
+</div>
+{% endif %}
+
+<div class="grid lg:grid-cols-3 gap-6">
+    <!-- Form -->
+    <div class="lg:col-span-2 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+        <h2 class="font-bold text-gray-900 dark:text-white mb-4">Send a top-up</h2>
+        <div class="grid sm:grid-cols-3 gap-3 mb-4">
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">Country</label>
+                <select id="country" class="w-full border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5 bg-white dark:bg-zinc-800 text-sm text-gray-900 dark:text-white">
+                    <option value="NG">Nigeria</option>
+                </select>
+            </div>
+            <div class="sm:col-span-2">
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">Phone number (with country code)</label>
+                <input id="phone" type="tel" placeholder="e.g. 2348012345678"
+                       class="w-full border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5 bg-white dark:bg-zinc-800 text-sm text-gray-900 dark:text-white"/>
+            </div>
+        </div>
+        <button onclick="detect()" id="detect-btn"
+                class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition disabled:opacity-50">
+            Detect network
+        </button>
+
+        <div id="result" class="hidden mt-6">
+            <!-- Manual network picker (shown when auto-detect can't match the number) -->
+            <div id="picker" class="hidden mb-4">
+                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">We couldn't auto-detect the network — pick it:</p>
+                <div id="operators" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5"></div>
+            </div>
+            <!-- Selected operator + amounts -->
+            <div id="op-block" class="hidden">
+                <button id="back-btn" onclick="showPicker()" class="hidden text-xs text-emerald-600 dark:text-emerald-400 mb-3">&larr; Choose a different network</button>
+                <div class="flex items-center gap-3 mb-4">
+                    <img id="op-logo" src="" alt="" class="w-10 h-10 rounded-lg object-contain bg-gray-50 dark:bg-zinc-800 hidden"/>
+                    <div>
+                        <p class="text-sm font-bold text-gray-900 dark:text-white" id="op-name">—</p>
+                        <p class="text-xs text-gray-400" id="op-type">—</p>
+                    </div>
+                </div>
+                <!-- Airtime / Data switch (shown when the network has data bundles) -->
+                <div id="type-tabs" class="hidden flex flex-wrap gap-2 mb-4"></div>
+                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2" id="denoms-label">Choose an amount</p>
+                <div id="denoms" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5"></div>
+                <!-- Custom naira amount (airtime only) -->
+                <div id="custom-box" class="hidden mt-4">
+                    <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">Or enter a custom amount</p>
+                    <div class="flex gap-2">
+                        <input id="custom-amount" type="number" placeholder="e.g. 300"
+                               class="flex-1 border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5 bg-white dark:bg-zinc-800 text-sm text-gray-900 dark:text-white"/>
+                        <button onclick="buyCustom()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition">Buy</button>
+                    </div>
+                    <p id="custom-hint" class="text-xs text-gray-400 mt-1"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- History -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+        <h2 class="font-bold text-gray-900 dark:text-white mb-4">Recent top-ups</h2>
+        <div id="history" class="space-y-2 text-sm text-gray-500 dark:text-gray-400">Loading…</div>
+    </div>
+</div>
+
+<script>
+function getCookie(name){var v=document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');return v?v.pop():'';}
+var CSRF = getCookie('csrftoken');
+var IS_AUTH = {% if user.is_authenticated %}true{% else %}false{% endif %};
+var current = null;
+var operators = [];  // populated when we fall back to manual selection
+var group = [];      // the detected network's operators (airtime + data/bundles)
+
+function toast(msg, ok){ if(window.showToast){showToast(msg, ok?'success':'error', 5000);} else {alert(msg);} }
+
+async function detect(){
+    var phone = document.getElementById('phone').value.trim();
+    var country = document.getElementById('country').value;
+    if(!phone){ toast('Enter a phone number', false); return; }
+    var btn = document.getElementById('detect-btn'); btn.disabled = true; btn.textContent='Detecting…';
+    try{
+        var r = await fetch('/api/services/airtime/detect/?phone='+encodeURIComponent(phone)+'&country='+country);
+        var d = await r.json().catch(function(){ return {}; });
+        if(!r.ok) throw new Error(d.error || 'Could not detect the network. Try the full number with country code, e.g. 234...');
+        document.getElementById('result').classList.remove('hidden');
+        if(d.detected){
+            operators = [];
+            // Group = the airtime operator plus its data/bundle operators
+            group = [d.airtime].concat(d.related || []);
+            renderTypeTabs(group);
+            selectOperator(d.airtime);
+        } else {
+            operators = d.operators || [];
+            group = [];
+            document.getElementById('type-tabs').classList.add('hidden');
+            renderPicker(operators);
+        }
+    }catch(e){ toast(e.message, false); }
+    btn.disabled=false; btn.textContent='Detect network';
+}
+
+function renderTypeTabs(ops){
+    var tabs = document.getElementById('type-tabs');
+    if(ops.length < 2){ tabs.classList.add('hidden'); tabs.innerHTML=''; return; }
+    tabs.innerHTML='';
+    ops.forEach(function(op){
+        var b = document.createElement('button');
+        b.dataset.id = op.operator_id;
+        b.className='type-tab text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-300 hover:border-emerald-500 transition';
+        b.textContent = op.is_data ? 'Data / Bundles' : 'Airtime';
+        // de-duplicate labels (some networks have several bundle operators)
+        if(op.is_data && ops.filter(function(x){return x.is_data;}).length>1){ b.textContent = op.operator.replace(/^.*?(Data|Bundle).*$/i, '$1'); }
+        b.onclick=function(){ selectOperator(op); };
+        tabs.appendChild(b);
+    });
+    tabs.classList.remove('hidden');
+}
+
+function highlightTab(id){
+    document.querySelectorAll('.type-tab').forEach(function(t){
+        var on = String(t.dataset.id)===String(id);
+        t.classList.toggle('bg-emerald-600', on);
+        t.classList.toggle('text-white', on);
+        t.classList.toggle('border-emerald-600', on);
+    });
+}
+
+function renderPicker(ops){
+    document.getElementById('op-block').classList.add('hidden');
+    var box = document.getElementById('operators'); box.innerHTML='';
+    ops.forEach(function(op){
+        var b = document.createElement('button');
+        b.className='border border-gray-200 dark:border-zinc-700 rounded-xl p-3 text-left hover:border-emerald-500 transition';
+        b.innerHTML='<p class="text-sm font-semibold text-gray-900 dark:text-white leading-tight">'+op.operator+'</p>'+
+                    '<p class="text-xs text-gray-400">'+(op.is_data?'Data / Bundles':'Airtime')+'</p>';
+        b.onclick=function(){ selectOperator(op); };
+        box.appendChild(b);
+    });
+    document.getElementById('picker').classList.remove('hidden');
+}
+
+function showPicker(){ if(operators.length){ renderPicker(operators); } }
+
+function cur(op){ return (op.currency||'').toUpperCase()==='NGN' ? '₦' : (op.currency? op.currency+' ' : ''); }
+
+function selectOperator(op){
+    current = op;
+    document.getElementById('picker').classList.add('hidden');
+    document.getElementById('op-name').textContent = op.operator || 'Network';
+    document.getElementById('op-type').textContent = (op.is_data?'Data / Bundles':'Airtime')+' · '+op.country;
+    var logo = document.getElementById('op-logo');
+    if(op.logo){ logo.src=op.logo; logo.classList.remove('hidden'); } else { logo.classList.add('hidden'); }
+    highlightTab(op.operator_id);
+
+    document.getElementById('denoms-label').textContent = op.is_data ? 'Choose a bundle' : 'Choose an amount';
+    var box = document.getElementById('denoms'); box.innerHTML='';
+    (op.denominations||[]).forEach(function(dn){
+        var b = document.createElement('button');
+        b.className='border border-gray-200 dark:border-zinc-700 rounded-xl p-3 text-left hover:border-emerald-500 transition';
+        var top = dn.description
+            ? '<p class="text-xs font-semibold text-gray-900 dark:text-white leading-tight mb-1">'+dn.description+'</p>'
+            : '<p class="text-base font-bold text-gray-900 dark:text-white">'+cur(op)+Number(dn.local_amount).toLocaleString()+'</p>';
+        b.innerHTML = top + '<p class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">Pay ₦'+Number(dn.naira_price).toLocaleString()+'</p>';
+        b.onclick=function(){ buy(dn.local_amount, dn.naira_price, dn.description); };
+        box.appendChild(b);
+    });
+
+    // Custom amount only for RANGE (airtime), not fixed bundles
+    var customBox = document.getElementById('custom-box');
+    if(op.is_range){
+        customBox.classList.remove('hidden');
+        document.getElementById('custom-hint').textContent =
+            'Between '+cur(op)+Number(op.min_local).toLocaleString()+' and '+cur(op)+Number(op.max_local).toLocaleString();
+    } else {
+        customBox.classList.add('hidden');
+    }
+
+    document.getElementById('back-btn').classList.toggle('hidden', operators.length===0);
+    document.getElementById('op-block').classList.remove('hidden');
+}
+
+function buyCustom(){
+    if(!current) return;
+    var amt = parseFloat(document.getElementById('custom-amount').value);
+    if(!(amt>0)){ toast('Enter an amount', false); return; }
+    if(current.min_local && amt < current.min_local){ toast('Minimum is '+cur(current)+current.min_local, false); return; }
+    if(current.max_local && amt > current.max_local){ toast('Maximum is '+cur(current)+current.max_local, false); return; }
+    buy(amt, null, null);
+}
+
+async function buy(localAmount, naira, description){
+    if(!current) return;
+    if(!IS_AUTH){ window.location.href='/login/'; return; }
+    var label = description || (cur(current)+Number(localAmount).toLocaleString());
+    var priceTxt = naira ? (' — pay ₦'+Number(naira).toLocaleString()) : '';
+    var phone = document.getElementById('phone').value.trim();
+    if(!confirm('Buy '+label+priceTxt+' for '+phone+'?')) return;
+    try{
+        var r = await fetch('/api/services/airtime/purchase/',{
+            method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+            body: JSON.stringify({phone:phone, country:document.getElementById('country').value,
+                operator_id:current.operator_id, local_amount:localAmount})
+        });
+        var d = await r.json();
+        if(!r.ok) throw new Error(d.error||'Purchase failed');
+        toast('Done! ' + (d.bought||label) + ' sent to ' + phone + '. Order #' + d.id, true);
+        loadHistory();
+    }catch(e){ toast(e.message, false); }
+}
+
+async function loadHistory(){
+    try{
+        var r = await fetch('/api/services/airtime/orders/');
+        var rows = await r.json();
+        var box = document.getElementById('history');
+        if(!rows.length){ box.innerHTML='<p class="text-xs">No top-ups yet.</p>'; return; }
+        box.innerHTML = rows.map(function(o){
+            return '<div class="border-b border-gray-50 dark:border-zinc-800 pb-2">'+
+                '<div class="flex justify-between"><span class="font-mono text-xs">'+o.phone+'</span>'+
+                '<span class="text-xs font-semibold">₦'+Number(o.amount_charged).toLocaleString()+'</span></div>'+
+                '<p class="text-xs text-gray-400">'+(o.bought||'')+'</p></div>';
+        }).join('');
+    }catch(e){ document.getElementById('history').innerHTML='<p class="text-xs">Could not load.</p>'; }
+}
+function flag(code){ if(!code||code.length!==2) return ''; return code.toUpperCase().replace(/./g,function(ch){return String.fromCodePoint(127397+ch.charCodeAt(0));}); }
+async function loadCountries(endpoint, def){
+    var sel = document.getElementById('country');
+    try{
+        var r = await fetch(endpoint); var list = await r.json();
+        if(Array.isArray(list) && list.length){
+            sel.innerHTML = list.map(function(c){ return '<option value="'+c.code+'"'+(c.code===def?' selected':'')+'>'+flag(c.code)+' '+c.name+'</option>'; }).join('');
+        }
+    }catch(e){}
+}
+loadCountries('/api/services/airtime/countries/', 'NG');
+{% if user.is_authenticated %}loadHistory();{% else %}document.getElementById('history').innerHTML='<p class="text-xs">Log in to see your top-ups.</p>';{% endif %}
+</script>
+{% endblock %}

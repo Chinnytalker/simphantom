@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% block title %}Pay Utility Bills | Electricity, Water, TV, Internet | SimPhantom{% endblock %}
+{% block meta_description %}Pay electricity, water, TV and internet bills instantly. Pay in Naira from your wallet. SimPhantom.{% endblock %}
+
+{% block content %}
+<div class="mb-6 text-sm">
+    <a href="/" class="text-blue-400 hover:underline">Home</a>
+    <span class="text-zinc-500"> / </span>
+    <a href="/services/" class="text-blue-400 hover:underline">Services</a>
+    <span class="text-zinc-500"> / Utility Bills</span>
+</div>
+
+<div class="rounded-2xl bg-gradient-to-br from-amber-500 via-orange-600 to-red-700 p-8 mb-8 text-white relative overflow-hidden">
+    <div class="relative flex flex-col md:flex-row md:items-center gap-6">
+        <div class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center flex-shrink-0 text-3xl">💡</div>
+        <div class="flex-1">
+            <h1 class="text-3xl font-extrabold mb-1">Utility Bills</h1>
+            <p class="text-amber-100 text-sm max-w-xl">Pay electricity, water, TV and internet bills instantly from your wallet.</p>
+        </div>
+    </div>
+</div>
+
+{% if not user.is_authenticated %}
+<div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-2xl p-5 mb-8 text-sm text-amber-800 dark:text-amber-300">
+    Please <a href="/login/" class="font-semibold underline">log in</a> to pay bills.
+</div>
+{% endif %}
+
+<div class="flex flex-col sm:flex-row gap-3 mb-6">
+    <select id="country" onchange="loadBillers()" class="border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5 bg-white dark:bg-zinc-800 text-sm text-gray-900 dark:text-white">
+        <option value="NG">Nigeria</option>
+    </select>
+    <select id="type" onchange="loadBillers()" class="border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5 bg-white dark:bg-zinc-800 text-sm text-gray-900 dark:text-white">
+        <option value="">All types</option>
+        <option value="ELECTRICITY_BILL_PAYMENT">Electricity</option>
+        <option value="WATER_BILL_PAYMENT">Water</option>
+        <option value="TV_BILL_PAYMENT">TV</option>
+        <option value="INTERNET_BILL_PAYMENT">Internet</option>
+    </select>
+</div>
+
+<div id="billers" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <p class="col-span-full text-sm text-gray-400">Loading billers…</p>
+</div>
+
+<div class="mt-10">
+    <h2 class="font-bold text-gray-900 dark:text-white mb-4">Recent payments</h2>
+    <div id="history" class="space-y-2 text-sm text-gray-500 dark:text-gray-400">Loading…</div>
+</div>
+
+<!-- Pay modal -->
+<div id="pay-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick="closePay()">
+    <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-md p-6" onclick="event.stopPropagation()">
+        <h3 class="font-bold text-gray-900 dark:text-white mb-1" id="p-name">—</h3>
+        <p class="text-xs text-gray-400 mb-4" id="p-limits">—</p>
+        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">Account / meter number</label>
+        <input id="p-account" class="w-full border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5 bg-white dark:bg-zinc-800 text-sm mb-3 text-gray-900 dark:text-white"/>
+        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">Amount (<span id="p-cur">NGN</span>)</label>
+        <input id="p-amount" type="number" class="w-full border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5 bg-white dark:bg-zinc-800 text-sm mb-4 text-gray-900 dark:text-white"/>
+        <button onclick="pay()" id="pay-btn" class="w-full bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold py-3 rounded-xl transition disabled:opacity-50">Pay bill</button>
+    </div>
+</div>
+
+<script>
+function getCookie(name){var v=document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');return v?v.pop():'';}
+var CSRF = getCookie('csrftoken');
+var current = null;
+function toast(m, ok){ if(window.showToast){showToast(m, ok?'success':'error',6000);} else {alert(m);} }
+
+async function loadBillers(){
+    var box = document.getElementById('billers');
+    box.innerHTML='<p class="col-span-full text-sm text-gray-400">Loading billers…</p>';
+    try{
+        var r = await fetch('/api/services/utilities/billers/?country='+document.getElementById('country').value+'&type='+document.getElementById('type').value);
+        var d = await r.json();
+        if(!r.ok) throw new Error(d.error||'Failed');
+        if(!d.length){ box.innerHTML='<p class="col-span-full text-sm text-gray-400">No billers for this selection.</p>'; return; }
+        box.innerHTML='';
+        d.forEach(function(b){
+            var el=document.createElement('button');
+            el.className='bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-4 text-left hover:border-amber-500 transition shadow-sm';
+            el.innerHTML='<p class="text-sm font-semibold text-gray-900 dark:text-white">'+b.name+'</p>'+
+                '<p class="text-xs text-gray-400 mt-1">'+(b.type||'').replace(/_/g,' ').toLowerCase()+'</p>';
+            el.onclick=function(){ openPay(b); };
+            box.appendChild(el);
+        });
+    }catch(e){ box.innerHTML='<p class="col-span-full text-sm text-red-500">'+e.message+'</p>'; }
+}
+
+function openPay(b){
+    current=b;
+    document.getElementById('p-name').textContent=b.name;
+    document.getElementById('p-cur').textContent=b.currency||'NGN';
+    document.getElementById('p-limits').textContent='Min '+(b.min_local||'-')+' · Max '+(b.max_local||'-')+' '+(b.currency||'');
+    document.getElementById('p-account').value='';
+    document.getElementById('p-amount').value='';
+    document.getElementById('pay-modal').classList.remove('hidden');
+}
+function closePay(){ document.getElementById('pay-modal').classList.add('hidden'); }
+
+async function pay(){
+    if(!current) return;
+    var account=document.getElementById('p-account').value.trim();
+    var amount=parseFloat(document.getElementById('p-amount').value);
+    if(!account || !(amount>0)){ toast('Enter account and amount', false); return; }
+    var btn=document.getElementById('pay-btn'); btn.disabled=true; btn.textContent='Paying…';
+    try{
+        var r = await fetch('/api/services/utilities/pay/',{
+            method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+            body: JSON.stringify({biller_id:current.id, subscriber_account:account, amount_local:amount, currency:current.currency||'NGN'})
+        });
+        var d = await r.json();
+        if(!r.ok) throw new Error(d.error||'Payment failed');
+        toast('Bill paid! Order #'+d.id, true);
+        closePay(); loadHistory();
+    }catch(e){ toast(e.message, false); }
+    btn.disabled=false; btn.textContent='Pay bill';
+}
+
+async function loadHistory(){
+    try{
+        var r = await fetch('/api/services/utilities/orders/');
+        var rows = await r.json();
+        var box=document.getElementById('history');
+        if(!rows.length){ box.innerHTML='<p class="text-xs">No payments yet.</p>'; return; }
+        box.innerHTML=rows.map(function(o){
+            return '<div class="flex justify-between border-b border-gray-50 dark:border-zinc-800 pb-2">'+
+                '<span class="font-mono text-xs">'+o.subscriber+'</span>'+
+                '<span class="text-xs font-semibold">'+o.amount_local+' '+o.currency+' · ₦'+Number(o.amount_charged).toLocaleString()+'</span></div>';
+        }).join('');
+    }catch(e){ document.getElementById('history').innerHTML='<p class="text-xs">Could not load.</p>'; }
+}
+
+function flag(code){ if(!code||code.length!==2) return ''; return code.toUpperCase().replace(/./g,function(ch){return String.fromCodePoint(127397+ch.charCodeAt(0));}); }
+async function loadCountries(){
+    var sel = document.getElementById('country');
+    var chosen = sel.value;
+    try{
+        var r = await fetch('/api/services/utilities/countries/'); var list = await r.json();
+        if(Array.isArray(list) && list.length){
+            sel.innerHTML = list.map(function(c){ return '<option value="'+c.code+'"'+(c.code===chosen?' selected':'')+'>'+flag(c.code)+' '+c.name+'</option>'; }).join('');
+        }
+    }catch(e){}
+}
+// Load billers for the default country immediately; populate the dropdown in parallel.
+loadBillers();
+loadCountries();
+{% if user.is_authenticated %}loadHistory();{% else %}document.getElementById('history').innerHTML='<p class="text-xs">Log in to see your payments.</p>';{% endif %}
+</script>
+{% endblock %}

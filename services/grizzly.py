@@ -1,3 +1,4 @@
+import re
 import time
 import requests
 from decouple import config
@@ -138,6 +139,90 @@ _prices_cache: dict = {}
 _prices_cache_time: float = 0
 _CACHE_TTL = 3600
 
+# Grizzly's price dump contains thousands of $0.0001 placeholder services with
+# fake stock that always return NO_NUMBERS (verified live July 2026) — anything
+# below this floor is junk and never shown or bought.
+MIN_REAL_COST_USD = 0.01
+
+# ── Dynamic service map (getServicesList) ─────────────────────────────────────
+# Grizzly publishes its official code -> display-name list. We layer it UNDER
+# the static SERVICE_MAP so every existing product name stays identical, while
+# services we never mapped by hand become buyable under a generated slug
+# (e.g. "C6 Bank" -> 'c6_bank', which the frontend renders back as "C6 Bank").
+
+_services_cache: dict = {}          # code -> display name
+_services_cache_time: float = 0
+_services_last_attempt: float = 0
+_SERVICES_TTL = 86400               # refresh daily
+_SERVICES_RETRY_AFTER = 300         # don't hammer the API when it's down
+
+_dynamic_maps_cache = None
+_dynamic_maps_src_time = None
+
+
+def _load_services(force=False) -> dict:
+    global _services_cache, _services_cache_time, _services_last_attempt
+    now = time.time()
+    if not force and _services_cache and (now - _services_cache_time) < _SERVICES_TTL:
+        return _services_cache
+    if not force and not _services_cache and (now - _services_last_attempt) < _SERVICES_RETRY_AFTER:
+        return _services_cache
+    _services_last_attempt = now
+    try:
+        r = requests.get(BASE_URL, params=_params(action='getServicesList'), timeout=30)
+        data = r.json()
+        items = data.get('services', []) if isinstance(data, dict) else []
+        parsed = {}
+        for it in items:
+            if not isinstance(it, dict):
+                continue
+            code = (it.get('code') or '').strip()
+            name = (it.get('name') or '').strip()
+            if code and name:
+                parsed[code] = name
+        if parsed:
+            _services_cache = parsed
+            _services_cache_time = now
+    except Exception:
+        pass
+    return _services_cache
+
+
+def _slugify(name: str) -> str:
+    return re.sub(r'[^a-z0-9]+', '_', name.lower()).strip('_')
+
+
+def _dynamic_maps():
+    """(code -> product slug, product slug -> code) learned from Grizzly's list.
+    Static SERVICE_MAP entries always win for codes/names they already cover."""
+    global _dynamic_maps_cache, _dynamic_maps_src_time
+    services = _load_services()
+    if _dynamic_maps_cache is not None and _dynamic_maps_src_time == _services_cache_time:
+        return _dynamic_maps_cache
+
+    code_to_product = {}
+    product_to_code = {}
+    for code, display in services.items():
+        if code in CODE_TO_FIVESIM:
+            continue  # static mapping wins
+        slug = _slugify(display)
+        if not slug or slug in SERVICE_MAP or slug in product_to_code:
+            continue
+        code_to_product[code] = slug
+        product_to_code[slug] = code
+
+    _dynamic_maps_cache = (code_to_product, product_to_code)
+    _dynamic_maps_src_time = _services_cache_time
+    return _dynamic_maps_cache
+
+
+def code_to_product(service_code):
+    """Service code -> product name (static map first, then Grizzly's own list)."""
+    name = CODE_TO_FIVESIM.get(service_code)
+    if name:
+        return name
+    return _dynamic_maps()[0].get(service_code)
+
 
 def _params(**extra):
     return {'api_key': config('GRIZZLY_API_KEY', default=''), **extra}
@@ -223,7 +308,7 @@ def get_prices(country_id) -> dict:
             continue
         count = _extract_count(info)
         cost = _extract_cost(info)
-        if count <= 0 or cost <= 0:
+        if count <= 0 or cost < MIN_REAL_COST_USD:
             continue
         result[svc_code] = {'count': count, 'cost': cost}
     return result
@@ -266,10 +351,12 @@ def get_status(activation_id):
 def cancel_number(activation_id):
     """Cancel an activation. Returns {'success': True} or {'error': str}."""
     try:
-        # status=6 is the cancel code on SMS-Activate style APIs (status=8 means FINISH)
+        # SMS-Activate protocol: status=8 cancels the activation and returns
+        # ACCESS_CANCEL; status=6 FINISHES it (we get charged) and returns
+        # ACCESS_ACTIVATION — so 6 here silently paid for every "cancel".
         r = requests.get(
             BASE_URL,
-            params=_params(action='setStatus', id=activation_id, status=6),
+            params=_params(action='setStatus', id=activation_id, status=8),
             timeout=10,
         )
         text = r.text.strip()
@@ -290,23 +377,25 @@ def get_service_catalog() -> list:
         for svc_code, info in country_data.items():
             if not isinstance(info, dict):
                 continue
+            # Codes with no product name (static or dynamic) can't be bought — skip
+            if not code_to_product(svc_code):
+                continue
             count = _extract_count(info)
             cost = _extract_cost(info)
-            if count <= 0 or cost <= 0:
+            if count <= 0 or cost < MIN_REAL_COST_USD:
                 continue
             service_counts[svc_code] = service_counts.get(svc_code, 0) + count
 
     result = []
     for svc_code, total_count in service_counts.items():
-        product_name = CODE_TO_FIVESIM.get(svc_code, svc_code)
-        result.append({'name': product_name, 'qty': total_count})
+        result.append({'name': code_to_product(svc_code), 'qty': total_count})
     result.sort(key=lambda x: x['name'])
     return result
 
 
 def get_prices_by_service(fivesim_product_name: str) -> list:
     """Return [{country, cost_usd, count}] for all countries offering the given 5sim product name."""
-    svc_code = SERVICE_MAP.get((fivesim_product_name or '').lower())
+    svc_code = map_service(fivesim_product_name)
     if not svc_code:
         return []
 
@@ -328,7 +417,7 @@ def get_prices_by_service(fivesim_product_name: str) -> list:
             continue
         count = _extract_count(info)
         cost_usd = _extract_cost(info)
-        if count <= 0 or cost_usd <= 0:
+        if count <= 0 or cost_usd < MIN_REAL_COST_USD:
             continue
         country_name = id_to_country.get(country_id_str)
         if not country_name:
@@ -342,4 +431,8 @@ def map_country(fivesim_country):
 
 
 def map_service(fivesim_product):
-    return SERVICE_MAP.get((fivesim_product or '').lower())
+    name = (fivesim_product or '').lower()
+    code = SERVICE_MAP.get(name)
+    if code:
+        return code
+    return _dynamic_maps()[1].get(name)

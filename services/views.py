@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from . import fivesim, mailtm, tigersms, grizzly as grizzlysms
-from .config import USD_TO_NGN, FLAT_MARKUP_NGN, OTP_MARKUP_NGN, esim_naira_price, VPN_PLANS
+from .config import get_usd_to_ngn, FLAT_MARKUP_NGN, OTP_MARKUP_NGN, esim_naira_price, VPN_PLANS
 from orders.models import Order, Transaction
 
 
@@ -28,9 +28,10 @@ class ProductsView(APIView):
         data = fivesim.get_products(country, operator)
 
         if isinstance(data, dict) and 'error' not in data:
+            usd_to_ngn = get_usd_to_ngn()
             for service in data:
                 if 'Price' in data[service]:
-                    cost_ngn = data[service]['Price'] * USD_TO_NGN
+                    cost_ngn = data[service]['Price'] * usd_to_ngn
                     data[service]['naira_price'] = round(cost_ngn + FLAT_MARKUP_NGN, 2)
 
         return Response(data)
@@ -79,7 +80,7 @@ class PricesByProductView(APIView):
                 continue
             if count <= 0:
                 continue
-            naira_price = round(cost_usd * USD_TO_NGN + FLAT_MARKUP_NGN, 2)
+            naira_price = round(cost_usd * get_usd_to_ngn() + FLAT_MARKUP_NGN, 2)
             results.append({
                 'country': country_key,
                 'operator': op_key,
@@ -1169,8 +1170,11 @@ class TigerProductsView(APIView):
                 cost_usd = data.get('cost', 0.0)
                 if count <= 0 or cost_usd <= 0:
                     continue
-                product_name = tigersms.CODE_TO_FIVESIM.get(service_code, service_code)
-                naira_price = round(cost_usd * USD_TO_NGN + FLAT_MARKUP_NGN, 2)
+                # Skip raw codes we can't map — they aren't buyable through our flow
+                product_name = tigersms.CODE_TO_FIVESIM.get(service_code)
+                if not product_name:
+                    continue
+                naira_price = round(cost_usd * get_usd_to_ngn() + FLAT_MARKUP_NGN, 2)
                 tiger_result[product_name] = {
                     'Price': cost_usd,
                     'Qty': count,
@@ -1186,7 +1190,7 @@ class TigerProductsView(APIView):
             for svc in data:
                 if 'Price' in data[svc]:
                     data[svc]['naira_price'] = round(
-                        data[svc]['Price'] * USD_TO_NGN + FLAT_MARKUP_NGN, 2
+                        data[svc]['Price'] * get_usd_to_ngn() + FLAT_MARKUP_NGN, 2
                     )
         return Response(data)
 
@@ -1217,8 +1221,11 @@ class GrizzlyProductsView(APIView):
                 cost_usd = data.get('cost', 0.0)
                 if count <= 0 or cost_usd <= 0:
                     continue
-                product_name = grizzlysms.CODE_TO_FIVESIM.get(service_code, service_code)
-                naira_price = round(cost_usd * USD_TO_NGN + FLAT_MARKUP_NGN, 2)
+                # Skip raw codes we can't map — they aren't buyable through our flow
+                product_name = grizzlysms.code_to_product(service_code)
+                if not product_name:
+                    continue
+                naira_price = round(cost_usd * get_usd_to_ngn() + FLAT_MARKUP_NGN, 2)
                 grizzly_result[product_name] = {
                     'Price': cost_usd,
                     'Qty': count,
@@ -1234,7 +1241,7 @@ class GrizzlyProductsView(APIView):
             for svc in data:
                 if 'Price' in data[svc]:
                     data[svc]['naira_price'] = round(
-                        data[svc]['Price'] * USD_TO_NGN + FLAT_MARKUP_NGN, 2
+                        data[svc]['Price'] * get_usd_to_ngn() + FLAT_MARKUP_NGN, 2
                     )
         return Response(data)
 
@@ -1273,7 +1280,7 @@ class GrizzlyOTPPricesView(APIView):
         if country_data:
             results = []
             for item in country_data:
-                naira_price = round(item['cost_usd'] * USD_TO_NGN + OTP_MARKUP_NGN, 2)
+                naira_price = round(item['cost_usd'] * get_usd_to_ngn() + OTP_MARKUP_NGN, 2)
                 results.append({
                     'country': item['country'],
                     'operator': 'any',
@@ -1313,7 +1320,7 @@ class GrizzlyOTPPricesView(APIView):
                 'country': country_key,
                 'operator': op_key,
                 'cost_usd': cost_usd,
-                'naira_price': round(cost_usd * USD_TO_NGN + OTP_MARKUP_NGN, 2),
+                'naira_price': round(cost_usd * get_usd_to_ngn() + OTP_MARKUP_NGN, 2),
                 'count': count,
             })
         results.sort(key=lambda x: x['naira_price'])

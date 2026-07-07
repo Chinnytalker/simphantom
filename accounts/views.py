@@ -71,7 +71,8 @@ class ProfileView(APIView):
 
 def home(request):
     from orders.models import Order
-    from decimal import Decimal
+    from .referrals import capture_referral
+    capture_referral(request)
     context = {
         'total_users': get_user_model().objects.count(),
         'total_orders': Order.objects.filter(status__in=['RECEIVED', 'FINISHED']).count(),
@@ -81,6 +82,9 @@ def home(request):
 
 @ratelimit(key='ip', rate='8/h', method='POST')
 def register_page(request):
+    from .referrals import capture_referral, apply_referral
+    capture_referral(request)
+
     if getattr(request, 'limited', False):
         return render(request, 'register.html', {'error': 'Too many registration attempts. Please try again later.'})
 
@@ -105,6 +109,7 @@ def register_page(request):
             return render(request, 'register.html', {'error': 'Email already exists'})
 
         user = get_user_model().objects.create_user(username=username, email=email, password=password)
+        apply_referral(request, user)
         from main.notifications import send_welcome_email
         send_welcome_email(user)
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
@@ -150,13 +155,11 @@ def dashboard(request):
     payment_credited = False
     if paystack_ref:
         from orders.models import Transaction as Txn
-        from django.db import transaction as db_txn
-        from django.db.models import F
         import requests as http_req
         from django.conf import settings as dj_settings
         try:
             txn = Txn.objects.get(reference=paystack_ref, user=user, type='CREDIT')
-            if 'pending' in txn.description:
+            if txn.status == 'PENDING':
                 resp = http_req.get(
                     f'https://api.paystack.co/transaction/verify/{paystack_ref}',
                     headers={'Authorization': f'Bearer {dj_settings.PAYSTACK_SECRET}'},
@@ -165,19 +168,15 @@ def dashboard(request):
                 result = resp.json()
                 if result.get('status') and result['data']['status'] == 'success':
                     amount = Decimal(result['data']['amount']) / 100
-                    with db_txn.atomic():
-                        get_user_model().objects.filter(pk=user.pk).update(
-                            wallet_balance=F('wallet_balance') + amount
-                        )
-                        txn.description = 'Wallet top-up (confirmed)'
-                        txn.save()
-                    user.refresh_from_db()
-                    payment_credited = True
-                    try:
-                        from main.notifications import send_deposit_confirmed_email
-                        send_deposit_confirmed_email(user, amount, user.wallet_balance)
-                    except Exception:
-                        pass
+                    from payments.views import credit_wallet_once
+                    if credit_wallet_once(paystack_ref, user.pk, amount):
+                        user.refresh_from_db()
+                        payment_credited = True
+                        try:
+                            from main.notifications import send_deposit_confirmed_email
+                            send_deposit_confirmed_email(user, amount, user.wallet_balance)
+                        except Exception:
+                            pass
         except Exception:
             pass
     orders = Order.objects.filter(user=user)
@@ -248,6 +247,19 @@ def dashboard(request):
         except Exception:
             pass
 
+    # Live USD→NGN rate for the top-up modal (matches what the backend charges)
+    from services.config import get_usd_to_ngn
+    usd_to_ngn = round(get_usd_to_ngn())
+    usd_to_ngn_display = f'{usd_to_ngn:,}'
+
+    # ── Referral summary ──────────────────────────────────────────────────
+    from orders.models import Transaction as _Txn
+    referral_count = user.referrals.count()
+    referral_earned = _Txn.objects.filter(
+        user=user, reference__startswith='REFERRAL-'
+    ).aggregate(t=Sum('amount'))['t'] or Decimal('0.00')
+    referral_link = request.build_absolute_uri(f'/register/?ref={user.referral_code}')
+
     return render(request, 'dashboard.html', {
         'user': user,
         'active_orders': active_orders,
@@ -263,6 +275,12 @@ def dashboard(request):
         'esimcard_balance': esimcard_balance,
         'paystack_balance': paystack_balance,
         'payment_credited': payment_credited,
+        'referral_code': user.referral_code,
+        'referral_link': referral_link,
+        'referral_count': referral_count,
+        'referral_earned': referral_earned,
+        'usd_to_ngn': usd_to_ngn,
+        'usd_to_ngn_display': usd_to_ngn_display,
     })
 
 
@@ -290,6 +308,9 @@ def service_detail(request, service_slug):
         'residential-proxies': 'services/residential-proxies.html',
         'bulk-sms': 'services/bulk-sms.html',
         'phone-number-lookup': 'services/phone-number-lookup.html',
+        'airtime': 'services/airtime.html',
+        'gift-cards': 'services/gift-cards.html',
+        'utility-bills': 'services/utility-bills.html',
     }
 
     template = service_templates.get(service_slug)

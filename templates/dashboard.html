@@ -255,6 +255,48 @@
 {% endif %}
 
 <!-- ══════════════════════════════════════════════════════
+     REFER & EARN
+═══════════════════════════════════════════════════════ -->
+<div class="mb-8 rounded-2xl border border-indigo-100 dark:border-indigo-900/40
+            bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/30 dark:to-blue-950/20 p-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h2 class="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <span>🎁</span> Refer &amp; Earn
+            </h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400 max-w-md">
+                Share your link. When a friend signs up and funds their wallet, you earn
+                <strong>5% of their first deposit</strong> (up to ₦500) straight to your wallet.
+            </p>
+            <div class="mt-3 flex gap-6">
+                <div>
+                    <p class="text-xl font-extrabold text-indigo-600 dark:text-indigo-400">{{ referral_count }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Friends invited</p>
+                </div>
+                <div>
+                    <p class="text-xl font-extrabold text-indigo-600 dark:text-indigo-400">₦{{ referral_earned|floatformat:2 }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Bonus earned</p>
+                </div>
+            </div>
+        </div>
+        <div class="w-full md:w-80">
+            <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Your invite link</label>
+            <div class="mt-1.5 flex gap-2">
+                <input id="referral-link" type="text" readonly value="{{ referral_link }}"
+                       class="flex-1 min-w-0 text-xs font-mono bg-white dark:bg-zinc-900 border border-gray-200
+                              dark:border-zinc-700 rounded-lg px-3 py-2.5 text-gray-700 dark:text-gray-300" />
+                <button onclick="copyReferral()"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold
+                               px-4 py-2.5 rounded-lg transition whitespace-nowrap">Copy</button>
+            </div>
+            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                Code: <span class="font-mono font-bold text-gray-700 dark:text-gray-300">{{ referral_code }}</span>
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
      MAIN CONTENT GRID
 ═══════════════════════════════════════════════════════ -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -264,7 +306,7 @@
                 rounded-2xl shadow-sm overflow-hidden">
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800">
             <h2 class="font-bold text-gray-900 dark:text-white">Recent Orders</h2>
-            <span class="text-xs text-gray-400 dark:text-gray-500">Last 10</span>
+            <span class="text-xs text-gray-400 dark:text-gray-500">Last 10<span class="md:hidden"> · swipe →</span></span>
         </div>
         {% if recent_orders %}
         <div class="overflow-x-auto">
@@ -276,9 +318,9 @@
                         <th class="px-6 py-3 font-medium">Number</th>
                         <th class="px-6 py-3 font-medium">SMS Code</th>
                         <th class="px-6 py-3 font-medium">Amount</th>
-                        <th class="px-6 py-3 font-medium">Provider</th>
+                        <th class="px-6 py-3 font-medium hidden md:table-cell">Provider</th>
                         <th class="px-6 py-3 font-medium">Status</th>
-                        <th class="px-6 py-3 font-medium">Date</th>
+                        <th class="px-6 py-3 font-medium hidden md:table-cell">Date</th>
                         <th class="px-6 py-3 font-medium">Actions</th>
                     </tr>
                 </thead>
@@ -288,7 +330,7 @@
                         <td class="px-6 py-3 text-gray-900 dark:text-white font-medium text-sm">
                             {{ order.product|default:"—" }}
                         </td>
-                        <td class="px-6 py-3 whitespace-nowrap">
+                        <td class="px-6 py-3 whitespace-nowrap" id="phone-{{ order.id }}">
                             {% if order.phone %}
                             <div class="flex items-center gap-1.5">
                                 <span class="font-mono text-xs text-gray-500 dark:text-gray-400">{{ order.phone }}</span>
@@ -327,19 +369,12 @@
                             ₦{{ order.amount_charged|floatformat:2 }}
                         </td>
                         <!-- Provider badge -->
-                        <td class="px-6 py-3">
+                        <td class="px-6 py-3 hidden md:table-cell">
                             {% if order.service_type == 'VIRTUAL_NUMBER' or order.service_type == 'OTP_VERIFICATION' %}
-                                {% if order.provider == 'tigersms' %}
                                 <span class="inline-block text-xs px-2 py-0.5 rounded-full font-semibold
                                              bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
                                     SimPhantom
                                 </span>
-                                {% else %}
-                                <span class="inline-block text-xs px-2 py-0.5 rounded-full font-semibold
-                                             bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
-                                    SimPhantom
-                                </span>
-                                {% endif %}
                             {% else %}
                                 <span class="text-xs text-gray-300 dark:text-zinc-700">—</span>
                             {% endif %}
@@ -359,7 +394,7 @@
                                 {{ order.status|title }}
                             </span>
                         </td>
-                        <td class="px-6 py-3 text-gray-400 dark:text-gray-500 text-xs whitespace-nowrap">
+                        <td class="px-6 py-3 text-gray-400 dark:text-gray-500 text-xs whitespace-nowrap hidden md:table-cell">
                             {{ order.created_at|date:"d M Y, H:i" }}
                         </td>
                         <!-- Action buttons -->
@@ -723,7 +758,7 @@
                                hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-400
                                text-gray-600 dark:text-gray-400 transition">₦10,000</button>
             </div>
-            <p class="text-xs text-gray-400 dark:text-gray-500 mb-5">Minimum: ₦500 · Processed instantly via Paystack</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500 mb-5">Minimum: ₦500 · Local &amp; international cards · Instant via Paystack</p>
             <button onclick="initiatePayment('NGN')" id="ngn-btn"
                     class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl
                            transition flex items-center justify-center gap-2 disabled:opacity-60">
@@ -734,8 +769,14 @@
         <!-- USD Panel -->
         <div id="panel-usd" class="p-6 hidden">
             <div class="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800
-                        rounded-xl px-4 py-3 mb-4 text-sm text-blue-700 dark:text-blue-300">
-                Exchange rate: <strong>$1 = ₦1,650</strong> · Converted and credited to your Naira wallet.
+                        rounded-xl px-4 py-3 mb-3 text-sm text-blue-700 dark:text-blue-300">
+                Exchange rate: <strong>$1 = ₦{{ usd_to_ngn_display }}</strong> · Converted and credited to your Naira wallet.
+            </div>
+            <div class="flex items-start gap-2 mb-4 text-xs text-green-600 dark:text-green-400 font-medium">
+                <svg class="w-4 h-4 flex-shrink-0 mt-px" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>International cards accepted — Visa &amp; Mastercard from any country.</span>
             </div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Amount (USD)</label>
             <div class="relative mb-3">
@@ -761,43 +802,32 @@
 
         <!-- Crypto Panel -->
         <div id="panel-crypto" class="p-6 hidden">
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">
-                Send crypto to one of the addresses below. After network confirmation (≈30 min),
-                contact support with your transaction hash to get credited.
-            </p>
-            <div class="space-y-4">
-                <div class="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="text-xl">₿</span>
-                        <span class="font-bold text-gray-900 dark:text-white text-sm">Bitcoin (BTC)</span>
-                    </div>
-                    <p class="font-mono text-xs text-gray-600 dark:text-gray-400 break-all
-                               bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-gray-200
-                               dark:border-zinc-700 select-all">coming-soon-btc-address</p>
-                </div>
-                <div class="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="text-xl">⟠</span>
-                        <span class="font-bold text-gray-900 dark:text-white text-sm">Ethereum (ETH)</span>
-                    </div>
-                    <p class="font-mono text-xs text-gray-600 dark:text-gray-400 break-all
-                               bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-gray-200
-                               dark:border-zinc-700 select-all">coming-soon-eth-address</p>
-                </div>
-                <div class="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="text-xl">💵</span>
-                        <span class="font-bold text-gray-900 dark:text-white text-sm">USDT (TRC-20)</span>
-                    </div>
-                    <p class="font-mono text-xs text-gray-600 dark:text-gray-400 break-all
-                               bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-gray-200
-                               dark:border-zinc-700 select-all">coming-soon-usdt-address</p>
-                </div>
+            <div class="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800
+                        rounded-xl px-4 py-3 mb-4 text-sm text-blue-700 dark:text-blue-300">
+                Pay with <strong>BTC, ETH, USDT, USDC, BNB</strong> &amp; more. Your wallet is credited
+                automatically once the payment confirms on-chain.
             </div>
-            <div class="mt-5 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800
-                        rounded-xl px-4 py-3 text-xs text-yellow-700 dark:text-yellow-300">
-                ⚠️ Always double check the address before sending. Contact support after your transaction is confirmed.
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Amount (USD)</label>
+            <div class="relative mb-3">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold select-none">$</span>
+                <input id="crypto-amount" type="number" min="3" step="1" placeholder="e.g. 10"
+                       class="w-full pl-8 border border-gray-200 dark:border-zinc-700 rounded-xl px-4 py-3
+                              bg-white dark:bg-zinc-800 text-gray-900 dark:text-white
+                              focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"/>
             </div>
+            <p class="text-xs text-blue-600 dark:text-blue-400 mb-3 font-medium" id="crypto-equiv">Equivalent: ₦0</p>
+            <div class="flex flex-wrap gap-2 mb-5">
+                <button onclick="setCrypto(5)"  class="text-xs border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-400 text-gray-600 dark:text-gray-400 transition">$5</button>
+                <button onclick="setCrypto(10)" class="text-xs border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-400 text-gray-600 dark:text-gray-400 transition">$10</button>
+                <button onclick="setCrypto(25)" class="text-xs border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-400 text-gray-600 dark:text-gray-400 transition">$25</button>
+                <button onclick="setCrypto(50)" class="text-xs border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-400 text-gray-600 dark:text-gray-400 transition">$50</button>
+            </div>
+            <button onclick="payCrypto()" id="crypto-btn"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl
+                           transition flex items-center justify-center gap-2 disabled:opacity-60">
+                <span>Continue to payment</span>
+            </button>
+            <p class="text-xs text-gray-400 dark:text-gray-500 mt-3 text-center">Minimum $3 · Powered by NOWPayments</p>
         </div>
     </div>
 </div>
@@ -807,7 +837,7 @@
 {% block extra_scripts %}
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <script>
-var USD_TO_NGN = 1650;
+var USD_TO_NGN = {{ usd_to_ngn|default:1650 }};
 
 // ── Modal open / close ─────────────────────────────────────────────────────
 function openTopUp() {
@@ -851,6 +881,39 @@ function updateUSDEquiv() {
         'Equivalent: ₦' + (v * USD_TO_NGN).toLocaleString();
 }
 document.getElementById('usd-amount').addEventListener('input', updateUSDEquiv);
+
+// ── Crypto (NOWPayments) ───────────────────────────────────────────────────
+function setCrypto(v) {
+    document.getElementById('crypto-amount').value = v;
+    updateCryptoEquiv();
+}
+function updateCryptoEquiv() {
+    var v = parseFloat(document.getElementById('crypto-amount').value) || 0;
+    document.getElementById('crypto-equiv').textContent =
+        'Equivalent: ₦' + (v * USD_TO_NGN).toLocaleString();
+}
+document.getElementById('crypto-amount').addEventListener('input', updateCryptoEquiv);
+
+function payCrypto() {
+    var usd = parseFloat(document.getElementById('crypto-amount').value);
+    if (!(usd >= 3)) { showToast('Minimum crypto deposit is $3.', 'error'); return; }
+    setLoading('crypto-btn', true, 'Continue to payment');
+    fetch('/api/payments/crypto/deposit/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+        body: JSON.stringify({ amount_usd: usd }),
+    })
+    .then(function(r) { return r.json().then(function(d){ return { ok: r.ok, d: d }; }); })
+    .then(function(res) {
+        if (!res.ok || !res.d.invoice_url) throw new Error(res.d.error || 'Could not start payment');
+        // Hand off to NOWPayments' hosted checkout
+        window.location.href = res.d.invoice_url;
+    })
+    .catch(function(e) {
+        setLoading('crypto-btn', false, 'Continue to payment');
+        showToast(e.message || 'Could not start crypto payment.', 'error');
+    });
+}
 
 // ── Spinner helper ─────────────────────────────────────────────────────────
 function setLoading(btnId, loading, label) {
@@ -999,6 +1062,46 @@ function copyPhone(number) {
     });
 }
 
+function copyReferral() {
+    var el = document.getElementById('referral-link');
+    if (!el) return;
+    navigator.clipboard.writeText(el.value).then(function() {
+        showToast('Invite link copied — share it and earn!', 'success', 3000);
+    }).catch(function() {
+        el.select();
+        showToast('Copy the highlighted link', 'info', 4000);
+    });
+}
+
+function showNewPhone(orderId, phone, expiresAt) {
+    var cell = document.getElementById('phone-' + orderId);
+    if (cell) {
+        cell.innerHTML =
+            '<div class="flex items-center gap-1.5">' +
+              '<span class="font-mono text-xs font-bold text-blue-600 dark:text-blue-400">' + phone + '</span>' +
+              '<button onclick="copyPhone(\'' + phone + '\')" ' +
+                      'class="text-gray-300 hover:text-blue-500 dark:text-zinc-600 dark:hover:text-blue-400 transition" ' +
+                      'title="Copy number">' +
+                '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">' +
+                  '<path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>' +
+                '</svg>' +
+              '</button>' +
+              '<span class="text-[10px] uppercase font-bold text-blue-500 dark:text-blue-400">New</span>' +
+            '</div>';
+    }
+    var timer = document.getElementById('timer-' + orderId);
+    if (timer && expiresAt) timer.dataset.expires = expiresAt;
+}
+
+function handleNumberSwap(orderId, data) {
+    showNewPhone(orderId, data.phone, data.expires_at);
+    showToast(
+        'No OTP on the old number — we swapped in a fresh one: <strong>' + data.phone +
+        '</strong>. Use this new number.',
+        'info', 10000
+    );
+}
+
 function updateWalletDisplay(newBalance) {
     var balEl = document.getElementById('wallet-balance-display');
     if (balEl && newBalance !== undefined) {
@@ -1027,6 +1130,11 @@ function checkSms(orderId) {
 
         if (data.refunded && data.new_balance) {
             updateWalletDisplay(data.new_balance);
+        }
+
+        if (data.number_changed) {
+            handleNumberSwap(orderId, data);
+            return;
         }
 
         if (data.status === 'EXPIRED') {
@@ -1110,6 +1218,13 @@ function cancelOrder(orderId, amount) {
     if (p.get('otp_success') === '1') {
         var phone = p.get('phone') || '';
         showToast('OTP number purchased' + (phone ? ': ' + phone : '') + ' — check SMS from your dashboard.', 'success', 8000);
+        history.replaceState({}, '', window.location.pathname);
+    }
+    if (p.get('crypto') === 'success') {
+        showToast('Crypto payment received! Your wallet will be credited automatically once it confirms on-chain (usually a few minutes).', 'success', 9000);
+        history.replaceState({}, '', window.location.pathname);
+    } else if (p.get('crypto') === 'cancel') {
+        showToast('Crypto payment cancelled. You were not charged.', 'info', 6000);
         history.replaceState({}, '', window.location.pathname);
     }
     {% if payment_credited %}
@@ -1338,6 +1453,10 @@ document.getElementById('dash-inbox-overlay').addEventListener('click', function
             if (data.error) return;
             updateStatusBadge(id, data.status);
             if (data.refunded && data.new_balance) updateWalletDisplay(data.new_balance);
+            if (data.number_changed) {
+                handleNumberSwap(id, data);
+                return;
+            }
             var actionsDiv = document.getElementById('actions-' + id);
             if (data.status === 'EXPIRED') {
                 pendingIds = pendingIds.filter(function(x) { return x !== id; });

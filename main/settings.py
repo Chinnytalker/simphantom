@@ -170,12 +170,27 @@ REST_FRAMEWORK = {
     ),
 }
 
-# ── Cache (used for rate limiting) ────────────────────────────────────────────
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+# ── Cache (shared across workers; powers rate limiting + FX/price caches) ─────
+# With multiple Gunicorn workers, LocMemCache is per-process, so rate limits and
+# cached rates aren't shared. Point REDIS_URL at Redis in production for a single
+# shared cache; falls back to LocMemCache locally when REDIS_URL is unset.
+REDIS_URL = config('REDIS_URL', default='')
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': REDIS_URL,
+        }
     }
-}
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    }
+
+# django-ratelimit uses the default cache; disable it in tests via override.
+RATELIMIT_ENABLE = config('RATELIMIT_ENABLE', default=True, cast=bool)
 
 # ── API keys ──────────────────────────────────────────────────────────────────
 FIVESIM_API_KEY    = config('FIVESIM_API_KEY')
@@ -192,6 +207,17 @@ TWILIO_AUTH_TOKEN   = config('TWILIO_AUTH_TOKEN', default='')
 TWILIO_FROM_NUMBER  = config('TWILIO_FROM_NUMBER', default='')
 
 ESIMCARD_API_TOKEN  = config('ESIMCARD_API_TOKEN', default='')
+
+# Reloadly (airtime/data top-ups, gift cards, utility bill payments)
+RELOADLY_CLIENT_ID     = config('RELOADLY_CLIENT_ID', default='')
+RELOADLY_CLIENT_SECRET = config('RELOADLY_CLIENT_SECRET', default='')
+RELOADLY_SANDBOX       = config('RELOADLY_SANDBOX', default=True, cast=bool)
+
+# NOWPayments (crypto deposits)
+NOWPAYMENTS_API_KEY    = config('NOWPAYMENTS_API_KEY', default='')
+NOWPAYMENTS_IPN_SECRET = config('NOWPAYMENTS_IPN_SECRET', default='')
+NOWPAYMENTS_SANDBOX    = config('NOWPAYMENTS_SANDBOX', default=False, cast=bool)
+MIN_CRYPTO_USD         = 3   # minimum crypto deposit in USD
 
 CLOUDFLARE_TURNSTILE_SECRET_KEY = config('CLOUDFLARE_TURNSTILE_SECRET_KEY', default='')
 
@@ -254,51 +280,20 @@ LOGGING = {
         },
     },
     'handlers': {
+        # Containers collect stdout/stderr — a file handler inside an ephemeral
+        # container interleaves across workers and is lost on every redeploy.
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
         },
-        'file': {
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'server.log',
-            'formatter': 'verbose',
-        },
     },
     'loggers': {
-        'django': {
-            'handlers': ['console', 'file'],
-            'level': 'WARNING',
-            'propagate': False,
-        },
-        'django.security': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'main': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'payments': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'orders': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'accounts': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'support': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
+        'django':          {'handlers': ['console'], 'level': 'WARNING', 'propagate': False},
+        'django.security': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+        'main':            {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+        'payments':        {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+        'orders':          {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+        'accounts':        {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+        'support':         {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
     },
 }

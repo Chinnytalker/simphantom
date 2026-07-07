@@ -1,18 +1,33 @@
 services:
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --save "" --appendonly no
+    expose:
+      - "6379"
+
   web:
     build: .
     restart: unless-stopped
     env_file: .env
+    environment:
+      # Shared cache for all workers (rate limiting, FX/price caches, Reloadly
+      # tokens). Points at the redis service; overrides any REDIS_URL in .env.
+      - REDIS_URL=redis://redis:6379/0
     volumes:
       - static_volume:/app/staticfiles
     expose:
       - "8000"
+    depends_on:
+      - redis
 
   cron:
     build: .
     restart: unless-stopped
     env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
     entrypoint: []
     command: >
       sh -c "
@@ -24,10 +39,12 @@ services:
         while true; do
           python manage.py send_renewal_reminders &&
           sleep 21600
-        done
+        done &
+        python manage.py process_number_orders --loop 20
       "
     depends_on:
       - web
+      - redis
 
   nginx:
     image: nginx:1.27-alpine

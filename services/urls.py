@@ -1,7 +1,26 @@
 from django.urls import path
 from . import views
+from . import reloadly_views as rl
 
 urlpatterns = [
+    # ── Reloadly: Airtime / Data ──
+    path('airtime/countries/', rl.AirtimeCountriesView.as_view(), name='airtime-countries'),
+    path('airtime/detect/', rl.AirtimeDetectView.as_view(), name='airtime-detect'),
+    path('airtime/operators/', rl.AirtimeOperatorsView.as_view(), name='airtime-operators'),
+    path('airtime/purchase/', rl.AirtimePurchaseView.as_view(), name='airtime-purchase'),
+    path('airtime/orders/', rl.AirtimeOrdersView.as_view(), name='airtime-orders'),
+    # ── Reloadly: Gift Cards ──
+    path('giftcards/countries/', rl.GiftCardCountriesView.as_view(), name='giftcard-countries'),
+    path('giftcards/', rl.GiftCardProductsView.as_view(), name='giftcard-products'),
+    path('giftcards/purchase/', rl.GiftCardPurchaseView.as_view(), name='giftcard-purchase'),
+    path('giftcards/orders/', rl.GiftCardOrdersView.as_view(), name='giftcard-orders'),
+    path('giftcards/orders/<int:order_id>/refresh/', rl.GiftCardRefreshView.as_view(), name='giftcard-refresh'),
+    # ── Reloadly: Utility Bills ──
+    path('utilities/countries/', rl.UtilityCountriesView.as_view(), name='utility-countries'),
+    path('utilities/billers/', rl.UtilityBillersView.as_view(), name='utility-billers'),
+    path('utilities/pay/', rl.UtilityPayView.as_view(), name='utility-pay'),
+    path('utilities/orders/', rl.UtilityOrdersView.as_view(), name='utility-orders'),
+
     path('countries/', views.CountriesView.as_view(), name='countries'),
     path('products/<str:country>/', views.ProductsView.as_view(), name='products'),
     path('prices/', views.PricesByProductView.as_view(), name='prices-by-product'),

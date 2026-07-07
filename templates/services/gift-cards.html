@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% block title %}Buy Gift Cards | Amazon, Google Play, Steam & more | SimPhantom{% endblock %}
+{% block meta_description %}Buy digital gift cards — Amazon, Google Play, Steam, Apple and hundreds more. Instant delivery, pay in Naira. SimPhantom.{% endblock %}
+
+{% block content %}
+<div class="mb-6 text-sm">
+    <a href="/" class="text-blue-400 hover:underline">Home</a>
+    <span class="text-zinc-500"> / </span>
+    <a href="/services/" class="text-blue-400 hover:underline">Services</a>
+    <span class="text-zinc-500"> / Gift Cards</span>
+</div>
+
+<div class="rounded-2xl bg-gradient-to-br from-fuchsia-600 via-purple-700 to-indigo-800 p-8 mb-8 text-white relative overflow-hidden">
+    <div class="relative flex flex-col md:flex-row md:items-center gap-6">
+        <div class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center flex-shrink-0 text-3xl">🎁</div>
+        <div class="flex-1">
+            <h1 class="text-3xl font-extrabold mb-1">Gift Cards</h1>
+            <p class="text-fuchsia-100 text-sm max-w-xl">Amazon, Google Play, Steam, Apple &amp; hundreds more. Instant delivery, pay in Naira.</p>
+        </div>
+    </div>
+</div>
+
+{% if not user.is_authenticated %}
+<div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-2xl p-5 mb-8 text-sm text-amber-800 dark:text-amber-300">
+    Please <a href="/login/" class="font-semibold underline">log in</a> to buy gift cards.
+</div>
+{% endif %}
+
+<div class="flex flex-col sm:flex-row gap-3 mb-6">
+    <select id="country" onchange="loadProducts()" class="border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5 bg-white dark:bg-zinc-800 text-sm text-gray-900 dark:text-white">
+        <option value="US">United States</option>
+    </select>
+    <input id="search" oninput="renderProducts()" placeholder="Search gift cards…"
+           class="flex-1 border border-gray-200 dark:border-zinc-700 rounded-xl px-3 py-2.5 bg-white dark:bg-zinc-800 text-sm text-gray-900 dark:text-white"/>
+</div>
+
+<div id="products" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+    <p class="col-span-full text-sm text-gray-400">Loading gift cards…</p>
+</div>
+
+<!-- My gift cards -->
+<div class="mt-10">
+    <h2 class="font-bold text-gray-900 dark:text-white mb-4">My gift cards</h2>
+    <div id="my-cards" class="space-y-3 text-sm text-gray-500 dark:text-gray-400">Loading…</div>
+</div>
+
+<!-- Buy modal -->
+<div id="buy-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick="closeBuy()">
+    <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-md p-6" onclick="event.stopPropagation()">
+        <h3 class="font-bold text-gray-900 dark:text-white mb-1" id="m-name">—</h3>
+        <p class="text-xs text-gray-400 mb-4" id="m-country">—</p>
+        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">Choose a value</p>
+        <div id="m-denoms" class="grid grid-cols-3 gap-2 mb-2"></div>
+        <p class="text-xs text-gray-400 mt-4">Delivered to your dashboard as a redeem code.</p>
+    </div>
+</div>
+
+<script>
+function getCookie(name){var v=document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');return v?v.pop():'';}
+var CSRF = getCookie('csrftoken');
+var allProducts = [];
+
+function toast(m, ok){ if(window.showToast){showToast(m, ok?'success':'error',6000);} else {alert(m);} }
+
+async function loadProducts(){
+    var box = document.getElementById('products');
+    box.innerHTML='<p class="col-span-full text-sm text-gray-400">Loading gift cards…</p>';
+    try{
+        var r = await fetch('/api/services/giftcards/?country='+document.getElementById('country').value);
+        var d = await r.json();
+        if(!r.ok) throw new Error(d.error||'Failed');
+        allProducts = d; renderProducts();
+    }catch(e){ box.innerHTML='<p class="col-span-full text-sm text-red-500">'+e.message+'</p>'; }
+}
+
+function renderProducts(){
+    var q = (document.getElementById('search').value||'').toLowerCase();
+    var box = document.getElementById('products');
+    var list = allProducts.filter(function(p){ return p.name.toLowerCase().includes(q); }).slice(0,60);
+    if(!list.length){ box.innerHTML='<p class="col-span-full text-sm text-gray-400">No cards found.</p>'; return; }
+    box.innerHTML='';
+    list.forEach(function(p){
+        var d = document.createElement('button');
+        d.className='bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-3 text-center hover:border-fuchsia-500 transition shadow-sm';
+        d.innerHTML=(p.logo?'<img src="'+p.logo+'" class="w-full h-16 object-contain mb-2"/>':'<div class="h-16 flex items-center justify-center text-3xl">🎁</div>')+
+            '<p class="text-xs font-semibold text-gray-900 dark:text-white truncate">'+p.name+'</p>';
+        d.onclick=function(){ openBuy(p); };
+        box.appendChild(d);
+    });
+}
+
+function openBuy(p){
+    document.getElementById('m-name').textContent = p.name;
+    document.getElementById('m-country').textContent = p.country + ' · ' + p.recipient_currency;
+    var box = document.getElementById('m-denoms'); box.innerHTML='';
+    if(p.denominations && p.denominations.length){
+        p.denominations.forEach(function(dn){
+            var b=document.createElement('button');
+            b.className='border border-gray-200 dark:border-zinc-700 rounded-lg p-2 hover:border-fuchsia-500 transition';
+            b.innerHTML='<p class="text-xs font-bold">'+dn.recipient_denom+' '+dn.recipient_currency+'</p>'+
+                        '<p class="text-xs text-fuchsia-600 dark:text-fuchsia-400">₦'+Number(dn.naira_price).toLocaleString()+'</p>';
+            b.onclick=function(){ buy(p.product_id, dn.recipient_denom, dn.naira_price); };
+            box.appendChild(b);
+        });
+    } else {
+        box.innerHTML='<p class="col-span-3 text-xs text-gray-400">This card uses a custom amount — not yet supported here.</p>';
+    }
+    document.getElementById('buy-modal').classList.remove('hidden');
+}
+function closeBuy(){ document.getElementById('buy-modal').classList.add('hidden'); }
+
+async function buy(productId, denom, naira){
+    if(!confirm('Buy this gift card for ₦'+Number(naira).toLocaleString()+'?')) return;
+    closeBuy();
+    try{
+        var r = await fetch('/api/services/giftcards/purchase/',{
+            method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+            body: JSON.stringify({product_id:productId, recipient_denom:denom})
+        });
+        var d = await r.json();
+        if(!r.ok) throw new Error(d.error||'Purchase failed');
+        if(d.status==='FINISHED' && d.cards && d.cards.length){
+            toast('Gift card purchased! Code is in "My gift cards".', true);
+        } else {
+            toast('Gift card is processing — check "My gift cards" shortly.', true);
+        }
+        loadMine();
+    }catch(e){ toast(e.message, false); }
+}
+
+async function loadMine(){
+    try{
+        var r = await fetch('/api/services/giftcards/orders/');
+        var rows = await r.json();
+        var box = document.getElementById('my-cards');
+        if(!rows.length){ box.innerHTML='<p class="text-xs">No gift cards yet.</p>'; return; }
+        box.innerHTML = rows.map(function(o){
+            var codes = (o.cards||[]).map(function(c){
+                return '<div class="font-mono text-xs bg-gray-50 dark:bg-zinc-800 rounded px-2 py-1 mt-1 select-all">'+
+                    (c.cardNumber||'')+(c.pinCode?(' · PIN '+c.pinCode):'')+'</div>';
+            }).join('');
+            var refresh = (o.status!=='FINISHED') ? '<button onclick="refresh('+o.id+')" class="text-xs text-fuchsia-600 dark:text-fuchsia-400 underline">Check now</button>' : '';
+            return '<div class="border border-gray-100 dark:border-zinc-800 rounded-xl p-3">'+
+                '<div class="flex justify-between"><span class="font-semibold text-gray-900 dark:text-white text-xs">'+o.name+' · '+o.value+'</span>'+
+                '<span class="text-xs">'+o.status+'</span></div>'+ (codes||refresh) +'</div>';
+        }).join('');
+    }catch(e){ document.getElementById('my-cards').innerHTML='<p class="text-xs">Could not load.</p>'; }
+}
+
+async function refresh(id){
+    try{
+        var r = await fetch('/api/services/giftcards/orders/'+id+'/refresh/',{method:'POST',headers:{'X-CSRFToken':CSRF}});
+        var d = await r.json();
+        if(d.ready){ toast('Code ready!', true); } else { toast('Still processing.', false); }
+        loadMine();
+    }catch(e){ toast('Error', false); }
+}
+
+function flag(code){ if(!code||code.length!==2) return ''; return code.toUpperCase().replace(/./g,function(ch){return String.fromCodePoint(127397+ch.charCodeAt(0));}); }
+async function loadCountries(){
+    var sel = document.getElementById('country');
+    var chosen = sel.value;
+    try{
+        var r = await fetch('/api/services/giftcards/countries/'); var list = await r.json();
+        if(Array.isArray(list) && list.length){
+            sel.innerHTML = list.map(function(c){ return '<option value="'+c.code+'"'+(c.code===chosen?' selected':'')+'>'+flag(c.code)+' '+c.name+'</option>'; }).join('');
+        }
+    }catch(e){}
+}
+// Load products for the default country immediately; populate the dropdown in parallel.
+loadProducts();
+loadCountries();
+{% if user.is_authenticated %}loadMine();{% else %}document.getElementById('my-cards').innerHTML='<p class="text-xs">Log in to see your gift cards.</p>';{% endif %}
+</script>
+{% endblock %}

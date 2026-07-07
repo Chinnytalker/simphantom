@@ -548,6 +548,7 @@ def cancel_number(activation_id):
     try:
         r = requests.get(
             BASE_URL,
+            # SMS-Activate protocol: status=8 cancels; status=6 FINISHES (charges us)
             params=_params(action='setStatus', id=activation_id, status=8),
             timeout=10,
         )
