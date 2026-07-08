@@ -231,6 +231,7 @@ AUTH_USER_MODEL = 'accounts.User'
 SITE_ID = 1
 
 AUTHENTICATION_BACKENDS = [
+    'accounts.backends.EmailOrUsernameBackend',
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
